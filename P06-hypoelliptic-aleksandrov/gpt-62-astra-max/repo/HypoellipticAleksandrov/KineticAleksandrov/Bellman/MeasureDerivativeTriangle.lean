@@ -19,11 +19,9 @@ theorem bellman_measure_triangle_swap (μ : Measure ℝ) [IsFiniteMeasureOnCompa
   let ν := μ.restrict (Ioc r R)
   let νvol := volume.restrict (Icc r R)
   let T : Set (ℝ × ℝ) := {w | w.1 ≤ w.2}
-  have hT : MeasurableSet T := (isClosed_le continuous_fst continuous_snd).measurableSet
   have hgi : Integrable g ν := hg.continuousOn.integrableOn_Icc.mono_set Ioc_subset_Icc_self
   have hψi : Integrable ψ νvol := hψ.continuousOn.integrableOn_Icc
-  have hp : Integrable (fun w : ℝ × ℝ => g w.1 * ψ w.2) (ν.prod νvol) := hgi.mul_prod hψi
-  have ht := hp.indicator hT
+  have ht := (hgi.mul_prod hψi).indicator ((isClosed_le continuous_fst continuous_snd).measurableSet)
   have hleft : (∫ x, ∫ z, T.indicator (fun w : ℝ × ℝ => g w.1 * ψ w.2) (z, x)
       ∂ν ∂νvol) = ∫ x in Icc r R, ∫ z in Ioc r x, g z * ψ x ∂μ := by
     apply setIntegral_congr_fun measurableSet_Icc
@@ -38,11 +36,7 @@ theorem bellman_measure_triangle_swap (μ : Measure ℝ) [IsFiniteMeasureOnCompa
     change (∫ z, g z * ψ x ∂(μ.restrict (Ioc r R)).restrict (Iic x)) = _
     rw [Measure.restrict_restrict measurableSet_Iic]
     have hs : Iic x ∩ Ioc r R = Ioc r x := by
-      ext z
-      change (z ≤ x ∧ r < z ∧ z ≤ R) ↔ r < z ∧ z ≤ x
-      constructor
-      · exact fun h => ⟨h.2.1, h.1⟩
-      · exact fun h => ⟨h.2, h.1, h.2.trans hx.2⟩
+      grind
     rw [hs]
   have hright : (∫ z, ∫ x, T.indicator (fun w : ℝ × ℝ => g w.1 * ψ w.2) (z, x)
       ∂νvol ∂ν) = ∫ z in Ioc r R, (∫ x in Icc z R, g z * ψ x) ∂μ := by
@@ -58,11 +52,7 @@ theorem bellman_measure_triangle_swap (μ : Measure ℝ) [IsFiniteMeasureOnCompa
     change (∫ x, g z * ψ x ∂(volume.restrict (Icc r R)).restrict (Ici z)) = _
     rw [Measure.restrict_restrict measurableSet_Ici]
     have hs : Ici z ∩ Icc r R = Icc z R := by
-      ext x
-      change (z ≤ x ∧ r ≤ x ∧ x ≤ R) ↔ z ≤ x ∧ x ≤ R
-      constructor
-      · exact fun h => ⟨h.1, h.2.2⟩
-      · exact fun h => ⟨h.1, hz.1.le.trans h.1, h.2⟩
+      grind
     rw [hs]
   calc
     _ = ∫ x, ∫ z, T.indicator (fun w : ℝ × ℝ => g w.1 * ψ w.2) (z, x) ∂ν ∂νvol :=

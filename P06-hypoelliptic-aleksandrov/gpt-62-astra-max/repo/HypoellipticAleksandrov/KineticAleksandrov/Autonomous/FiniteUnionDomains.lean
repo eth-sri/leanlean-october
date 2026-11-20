@@ -23,7 +23,7 @@ def FiniteIntervalUnion.carrier (H : FiniteIntervalUnion) : Set ℝ :=
 
 /-- Every component is contained in the velocity union. -/
 theorem FiniteIntervalUnion.component_subset (H : FiniteIntervalUnion) (i : Fin H.count) :
-    (H.component i).carrier ⊆ H.carrier := subset_iUnion (fun j => (H.component j).carrier) i
+    (H.component i).carrier ⊆ H.carrier := by solve_by_elim [subset_iUnion]
 
 /-- The union is open in the physical scalar velocity coordinate. -/
 theorem FiniteIntervalUnion.isOpen_carrier (H : FiniteIntervalUnion) : IsOpen H.carrier :=
@@ -88,11 +88,6 @@ def Interval.toFiniteUnion (H : Interval) : FiniteIntervalUnion where
 /-- The singleton representation has exactly the original scalar carrier. -/
 theorem Interval.toFiniteUnion_carrier (H : Interval) : H.toFiniteUnion.carrier = H.carrier := by
   ext v
-  simp only [FiniteIntervalUnion.carrier, Interval.toFiniteUnion, mem_iUnion]
-  constructor
-  · rintro ⟨i, hi⟩
-    exact hi
-  · intro hv
-    exact ⟨0, hv⟩
+  simp_all [FiniteIntervalUnion.carrier, Interval.toFiniteUnion, mem_iUnion]
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

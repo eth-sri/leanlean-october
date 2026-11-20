@@ -21,7 +21,7 @@ theorem bellman_exists_test_primitive (φ : ℝ → ℝ)
     obtain ⟨b₀, _, hmax⟩ := hc.exists_isMaxOn hn continuousOn_id
     let a := a₀ - 1
     let b := b₀ + 1
-    let ψ : ℝ → ℝ := fun t => ∫ x in a..t, φ x
+    let ψ := fun t => ∫ x in a..t, φ x
     have hleft : ∀ t : ℝ, t < a → ψ t = 0 := by
       intro t ht
       rw [show ψ t = ∫ x in a..t, φ x from rfl,
@@ -42,22 +42,21 @@ theorem bellman_exists_test_primitive (φ : ℝ → ℝ)
       · exact hm
       · intro x hx
         have hs := subset_tsupport φ hx
-        have hl : a₀ ≤ x := hmin hs
-        have hr : x ≤ b₀ := hmax hs
-        dsimp [a, b] at *
-        constructor <;> linarith
+        have hl := hmin hs
+        have hr := hmax hs
+        grind
     have hsupp : Function.support ψ ⊆ Icc a b := by
       intro t ht
       rcases lt_or_ge t a with hta | hta
-      · exact False.elim (ht (hleft t hta))
+      · aesop
       · have htb : t ≤ b := by
           by_contra hn
-          exact ht (hright t (lt_of_not_ge hn))
+          bound
         exact ⟨hta, htb⟩
-    have hts : tsupport ψ ⊆ Icc a b := closure_minimal hsupp isClosed_Icc
+    have hts := closure_minimal hsupp isClosed_Icc
     have hderiv : deriv ψ = φ := by
       funext t
-      exact hφ.continuous.deriv_integral _ a t
+      apply hφ.continuous.deriv_integral
     refine ⟨ψ, ?_, isCompact_Icc.of_isClosed_subset (isClosed_tsupport _) hts, hderiv⟩
     apply contDiff_infty_iff_deriv.mpr
     refine ⟨?_, ?_⟩
@@ -68,8 +67,6 @@ theorem bellman_exists_test_primitive (φ : ℝ → ℝ)
   · have hz : φ = 0 := by
       funext t
       exact image_eq_zero_of_notMem_tsupport (fun ht => hn ⟨t, ht⟩)
-    refine ⟨0, contDiff_zero_fun, HasCompactSupport.zero, ?_⟩
-    rw [hz]
-    exact deriv_zero
+    aesop
 
 end HypoellipticAleksandrov.KineticAleksandrov

@@ -19,27 +19,24 @@ theorem reconstruction_forwardScalarOperator_const (a : ℝ → ℝ → ℝ) (c 
 
 /-- The actual finite-horizon exit measure is a probability measure. -/
 theorem stripExitOfRealization_mass_one
-    (hH : HormanderHypoellipticityStatement)
     {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : SmoothAutonomous lam Lam) (H : Interval) (E : StripEvolution H)
     (hE : IsStripEvolution A H E) (T : ℝ) (e : StripPole H (T : WithTop ℝ)) :
-    stripExitOfRealization hH hlam hLam A H E hE T e univ = 1 := by
-  have hi := strip_identity_bounded_smooth_of_realization hH hlam hLam A H E hE T e
+    stripExitOfRealization hlam hLam A H E hE T e univ = 1 := by
+  have hi := strip_identity_bounded_smooth_of_realization hlam hLam A H E hE T e
     (fun _ => 1) contDiff_const (by
       refine ⟨1, fun p _ => ?_⟩
-      simp only [abs_one, le_refl, reconstruction_forwardScalarOperator_const, abs_zero,
-        zero_le_one, and_self])
+      simp [le_refl, reconstruction_forwardScalarOperator_const])
   simp only [reconstruction_forwardScalarOperator_const, integral_zero, sub_zero,
     integral_const, smul_eq_mul, mul_one, Measure.real] at hi
   exact (ENNReal.toReal_eq_one_iff _).mp hi.symm
 
 /-- The actual exit measure carries the probability instance with no extra hypothesis. -/
 instance stripExitOfRealization_isProbabilityMeasure
-    (hH : HormanderHypoellipticityStatement)
     {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : SmoothAutonomous lam Lam) (H : Interval) (E : StripEvolution H)
     (hE : IsStripEvolution A H E) (T : ℝ) (e : StripPole H (T : WithTop ℝ)) :
-    IsProbabilityMeasure (stripExitOfRealization hH hlam hLam A H E hE T e) :=
-  ⟨stripExitOfRealization_mass_one hH hlam hLam A H E hE T e⟩
+    IsProbabilityMeasure (stripExitOfRealization hlam hLam A H E hE T e) :=
+  ⟨stripExitOfRealization_mass_one hlam hLam A H E hE T e⟩
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

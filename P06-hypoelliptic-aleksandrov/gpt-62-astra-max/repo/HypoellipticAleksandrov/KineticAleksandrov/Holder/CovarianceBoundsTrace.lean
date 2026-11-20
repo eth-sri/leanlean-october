@@ -13,14 +13,16 @@ noncomputable section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Holder
 
+variable (d : ℕ) {lam h s : ℝ} (hlam : 0 < lam) (hh : 0 < h)
+include hlam hh
+
 /-- Exact rescaling of the inverse velocity block. -/
-theorem gramian_inv_velocity_scaling {lam h s : ℝ} (hlam : 0 < lam) (hh : 0 < h)
+theorem gramian_inv_velocity_scaling
     (hs : -(h / 128) ≤ s) :
     (gramian lam h s)⁻¹ 1 1 = (ghat lam (s / h))⁻¹ 1 1 / h := by
-  have hstrip : -(1 / 128 : ℝ) ≤ s / h := by
+  have hstrip : -(1 / 128) ≤ s / h := by
     apply (le_div_iff₀ hh).mpr
     linarith
-  have hd := (posDef_ghat hlam hstrip).det_pos.ne'
   have hscale : covarianceDet lam h s = h ^ 4 * (ghat lam (s / h)).det := by
     rw [det_ghat]
     unfold covarianceDet covarianceXX covarianceVV covarianceXV
@@ -36,17 +38,14 @@ theorem gramian_inv_velocity_scaling {lam h s : ℝ} (hlam : 0 < lam) (hh : 0 < 
   field_simp
 
 /-- Native velocity block trace bound, with the original dimension and physical scale. -/
-theorem gramian_velocity_trace_le (d : ℕ) {lam h s : ℝ}
-    (hlam : 0 < lam) (hh : 0 < h) (hs0 : 0 ≤ s) (hs1 : s ≤ h) :
+theorem gramian_velocity_trace_le (hs0 : 0 ≤ s) (hs1 : s ≤ h) :
     Matrix.trace (((gramian lam h s)⁻¹ 1 1) • (1 : PDE.Mat d)) ≤
       (128 * (d : ℝ) / lam) / h := by
-  have ht0 : 0 ≤ s / h := div_nonneg hs0 hh.le
-  have ht1 : s / h ≤ 1 := (div_le_one hh).mpr hs1
   have hs : -(h / 128) ≤ s := by linarith
   rw [gramian_inv_velocity_scaling hlam hh hs, Matrix.trace_smul, Matrix.trace_one]
   simp only [Fintype.card_fin, smul_eq_mul]
-  have hi := div_le_div_of_nonneg_right (ghat_inv_velocity_le hlam ht0 ht1) hh.le
-  have hm := mul_le_mul_of_nonneg_right hi (Nat.cast_nonneg d : (0 : ℝ) ≤ d)
+  have hi := div_le_div_of_nonneg_right (ghat_inv_velocity_le hlam (div_nonneg hs0 hh.le) ((div_le_one hh).mpr hs1)) hh.le
+  have hm := mul_le_mul_of_nonneg_right hi (Nat.cast_nonneg d)
   convert hm using 1
   ring
 

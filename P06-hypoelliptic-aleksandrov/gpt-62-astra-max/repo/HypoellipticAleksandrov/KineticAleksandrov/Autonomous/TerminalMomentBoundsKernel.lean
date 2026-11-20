@@ -32,22 +32,25 @@ def kernelXV (E : FullSpaceEvolution) (t : NNReal) (z : Z) : Measure Z :=
   (E.2.master (wholeQuery t z)).map nativeToXV
 
 /-- Coordinate projection is measurable. -/
-theorem nativeToXV_measurable : Measurable nativeToXV := by
-  exact (measurable_pi_apply 0 |>.comp measurable_snd).prodMk
+theorem nativeToXV_measurable : Measurable nativeToXV := (measurable_pi_apply 0 |>.comp measurable_snd).prodMk
     (measurable_pi_apply 0 |>.comp measurable_fst)
 
+variable {lam Lam : ℝ} (a : ℝ → ℝ → ℝ) (hlam : 0 < lam) (W : Point → ℝ)
+    (A : SmoothAutonomous lam Lam) (p : Point)
+
+include hlam in
 /-- Scalar kernels have probability mass. -/
-theorem kernelXV_mass_one {lam Lam : ℝ} (hlam : 0 < lam)
-    (A : SmoothAutonomous lam Lam) (E : FullSpaceEvolution) (hE : IsFullSpaceEvolution A E)
+theorem kernelXV_mass_one (E : FullSpaceEvolution) (hE : IsFullSpaceEvolution A E)
     (t : NNReal) (z : Z) : kernelXV E t z univ = 1 := by
   rw [kernelXV, Measure.map_apply nativeToXV_measurable MeasurableSet.univ,
     preimage_univ, fullspace_mass_one hlam A E hE]
 
+include p in
 /-- Exchange spatial fields, keeping terminal time. -/
-def terminalPhysicalPoint (p : Point) : Point := ⟨p.time, p.velocity, p.position⟩
+def terminalPhysicalPoint : Point := ⟨p.time, p.velocity, p.position⟩
 
 /-- Physical and evolution operators agree under the explicit spatial exchange. -/
-theorem terminalPhysicalPoint_operator (a : ℝ → ℝ → ℝ) (W : Point → ℝ) (p : Point) :
+theorem terminalPhysicalPoint_operator :
     transportedForwardOperator (evolutionCoefficient a) (identityDrift 1)
       (W ∘ terminalPhysicalPoint) p = forwardScalarOperator a W (terminalPhysicalPoint p) := by
   rw [transportedForwardOperator_apply, forwardScalarOperator]
@@ -60,10 +63,10 @@ theorem terminalPhysicalPoint_operator (a : ℝ → ℝ → ℝ) (W : Point → 
   dsimp only [terminalPhysicalPoint]
   ring
 
+include hlam in
 /-- A nonnegative supersolution bounds compact-data classical terminal solutions.
 The bounded-above difference uses the proved epsilon-Lyapunov comparison. -/
-theorem terminal_polynomial_comparison {lam Lam : ℝ} (hlam : 0 < lam)
-    (A : SmoothAutonomous lam Lam) (tau : ℝ)
+theorem terminal_polynomial_comparison (tau : ℝ)
     (F : BoundedBorel (EvolutionAmbientState 1)) (u W : Point → ℝ)
     (hu : IsClassicalTerminalSolution autonomousWholeDomain (fun _ => 0)
       (evolutionCoefficient A.a) (identityDrift 1) tau F u)
@@ -77,10 +80,9 @@ theorem terminal_polynomial_comparison {lam Lam : ℝ} (hlam : 0 < lam)
   have hs : ∀ p ∈ movingClosedSlab autonomousWholeDomain (fun _ => 0) p0.time tau,
       p ∈ evolutionPastClosedCylinder autonomousWholeDomain (fun _ => 0) tau :=
     fun _ hp => ⟨hp.2.1, hp.2.2⟩
-  have hus := (isClassicalViscousTerminalSolution_zero_iff _ _ _ _ _ _ _).2 hu
   have hreg (p : Point) (hp : p ∈ movingActiveSlab autonomousWholeDomain
       (fun _ => 0) p0.time tau) : IsSliceRegularAt u p :=
-    hus.isSliceRegularAt hΩ continuous_const ⟨hp.2.1, hp.2.2⟩
+    ((isClassicalViscousTerminalSolution_zero_iff _ _ _ _ _ _ _).2 hu).isSliceRegularAt hΩ continuous_const ⟨hp.2.1, hp.2.2⟩
   obtain ⟨C, -, hC⟩ := hu.1
   have h := growth_comparison hΩ continuous_const hlam (evolutionCoefficient_bounds A)
     (identityDrift_bounds 1).1 (le_refl 0) zero_le_one
@@ -97,8 +99,8 @@ theorem terminal_polynomial_comparison {lam Lam : ℝ} (hlam : 0 < lam)
         viscousTransportedOperator_zero]
       linarith [hop p hp.2.1.le])
     (fun p hp htime => by
-      rw [hu.2.2.2.2.1 p ⟨htime, by simpa only [← htime] using hp.2.2⟩]
-      exact sub_nonpos.mpr (ht p htime))
+      rw [hu.2.2.2.2.1 p ⟨htime, by exact hp.2.2⟩]
+      apply_rules [sub_nonpos.mpr])
     (fun p _ hf => by
       change p.position ∈ frontier (movingDomain (wholeSpace 1) (fun _ => 0) p.time) at hf
       rw [movingDomain_wholeSpace, frontier_univ] at hf
@@ -107,6 +109,6 @@ theorem terminal_polynomial_comparison {lam Lam : ℝ} (hlam : 0 < lam)
     ⟨le_rfl, hp0, by
       change p0.position ∈ closure (movingDomain (wholeSpace 1) (fun _ => 0) p0.time)
       rw [movingDomain_wholeSpace, closure_univ]; trivial⟩
-  exact sub_nonpos.mp (h p0 hm)
+  apply_rules [sub_nonpos.mp]
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

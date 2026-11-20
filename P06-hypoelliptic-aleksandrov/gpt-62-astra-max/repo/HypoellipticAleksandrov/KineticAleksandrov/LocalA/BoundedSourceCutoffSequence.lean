@@ -26,8 +26,7 @@ theorem exists_boundedSourceCutoffSequence
   have hC (n : ℕ) : IsCompact (C n) :=
     (isCompact_compactCovering U n).image continuous_subtype_val
   have hCU (n : ℕ) : C n ⊆ U := by
-    rintro x ⟨y, _, rfl⟩
-    exact y.2
+    grind
   have hex (n : ℕ) := exists_smooth_cutoff (hC n) hU (hCU n)
   choose χ hs hc hsub hb he using hex
   refine ⟨χ, fun n => ⟨hs n, hc n, hsub n⟩, hb, ?_⟩

@@ -20,35 +20,27 @@ theorem sampling_comparison_image_subset {d : ℕ} (m : ℕ) (P : KineticPoint d
   obtain ⟨hr1, htlo, htup, hx, hv⟩ := sampling_subcylinder_bounds m P hr hsub
   have hr2 : r ^ 2 ≤ 1 := by nlinarith only [hr, hr1]
   have hr3 : r ^ 3 ≤ 1 := by
-    have he := mul_le_mul hr2 hr1 hr.le (by norm_num : (0 : ℝ) ≤ 1)
-    nlinarith only [he]
-  have hm : 0 ≤ (m : ℝ) := Nat.cast_nonneg m
+    nlinarith
+  have hm : 0 ≤ m := Nat.cast_nonneg m
   have hB : 0 ≤ stackPathBound m := by unfold stackPathBound; positivity
   rintro _ ⟨Y, hY, rfl⟩
   obtain ⟨hytlo, hytup, hyx, hyv⟩ := hY
-  have hytime : |Y.time| ≤ (m : ℝ) + 3 := by
-    exact abs_le.mpr ⟨by linarith only [hytlo, hm], by linarith only [hytup]⟩
-  have htxlo := mul_lt_mul_of_pos_left hytlo (sq_pos_of_pos hr)
-  have htxup := mul_le_mul_of_nonneg_left hytup.le (sq_nonneg r)
-  have htm := mul_le_mul_of_nonneg_right hr2 (show 0 ≤ (m : ℝ) + 1 by positivity)
+  have hytime : |Y.time| ≤ m + 3 := abs_le.mpr ⟨by linarith only [hytlo, hm], by linarith only [hytup]⟩
   have hyxscaled : r ^ 3 * PDE.vecEuclideanNorm Y.position ≤ stackPathBound m + 1 := by
-    have he := mul_le_mul hr3 hyx.le (PDE.vecEuclideanNorm_nonneg _) (by norm_num)
-    simpa only [one_mul] using he
+    simpa only [one_mul] using (mul_le_mul hr3 hyx.le (PDE.vecEuclideanNorm_nonneg _) (by norm_num))
   have hyvscaled : r * PDE.vecEuclideanNorm Y.velocity ≤ stackPathBound m + 1 := by
-    have he := mul_le_mul hr1 hyv.le (PDE.vecEuclideanNorm_nonneg _) (by norm_num)
-    simpa only [one_mul] using he
-  have htimescaled : r ^ 2 * |Y.time| ≤ (m : ℝ) + 3 := by
-    have he := mul_le_mul hr2 hytime (abs_nonneg _) (by norm_num)
-    simpa only [one_mul] using he
-  have htransport : PDE.vecEuclideanNorm ((r ^ 2 * Y.time) • P.velocity) ≤ (m : ℝ) + 3 := by
+    simpa only [one_mul] using (mul_le_mul hr1 hyv.le (PDE.vecEuclideanNorm_nonneg _) (by norm_num))
+  have htimescaled : r ^ 2 * |Y.time| ≤ m + 3 := by
+    simpa only [one_mul] using (mul_le_mul hr2 hytime (abs_nonneg _) (by norm_num))
+  have htransport : PDE.vecEuclideanNorm ((r ^ 2 * Y.time) • P.velocity) ≤ m + 3 := by
     rw [PDE.vecEuclideanNorm_smul, abs_mul, abs_of_nonneg (sq_nonneg r)]
     have he := mul_le_mul_of_nonneg_left hv (mul_nonneg (sq_nonneg r) (abs_nonneg Y.time))
-    simpa only [mul_one] using he.trans (by simpa only [mul_one] using htimescaled)
+    exact he.trans (by simpa only [mul_one] using htimescaled)
   refine ⟨?_, ?_, ?_, ?_⟩
-  · change -((m : ℝ) + 5) < P.time + r ^ 2 * Y.time
-    linarith only [htxlo, hr2, htlo]
+  · change -(m + 5) < P.time + r ^ 2 * Y.time
+    linarith only [(mul_lt_mul_of_pos_left hytlo (sq_pos_of_pos hr)), hr2, htlo]
   · change P.time + r ^ 2 * Y.time < 0
-    linarith only [htup, htxup, htm]
+    linarith only [htup, (mul_le_mul_of_nonneg_left hytup.le (sq_nonneg r)), (mul_le_mul_of_nonneg_right hr2 (show 0 ≤ (m : ℝ) + 1 by positivity))]
   · change PDE.vecEuclideanNorm
         (P.position + r ^ 3 • Y.position + (r ^ 2 * Y.time) • P.velocity) < referenceBound m
     have he := PDE.vecEuclideanNorm_add_le

@@ -22,17 +22,17 @@ theorem velocitySecondBarrier_raw_smooth (Lam v0 tau : ℝ) :
 theorem positionSecondBarrier_raw_smooth (Lam X0 tau : ℝ) :
     ContDiff ℝ (⊤ : ℕ∞) (rawLift (positionSecondBarrier Lam X0 tau ∘ terminalPhysicalPoint)) := by
   change ContDiff ℝ (⊤ : ℕ∞) (fun q : ℝ × (PDE.Vec 1 × PDE.Vec 1) =>
-    (q.2.2 0-X0+(tau-q.1)*q.2.1 0)^2+(2/3:ℝ)*Lam*(tau-q.1)^3)
+    (q.2.2 0-X0+(tau-q.1)*q.2.1 0)^2+(2/3)*Lam*(tau-q.1)^3)
   fun_prop
 
+variable (W : Point → ℝ) (hW : ContDiff ℝ (⊤ : ℕ∞) (rawLift W))
+include hW
+
 /-- Raw smoothness supplies global continuity on the native point carrier. -/
-theorem terminal_raw_continuous (W : Point → ℝ)
-    (hW : ContDiff ℝ (⊤ : ℕ∞) (rawLift W)) : Continuous W := by
-  exact hW.continuous.comp (KineticPoint.homeomorphProd 1).continuous_toFun
+theorem terminal_raw_continuous : Continuous W := hW.continuous.comp (KineticPoint.homeomorphProd 1).continuous_toFun
 
 /-- Raw smoothness supplies all comparison slices. -/
-theorem terminal_raw_regular (W : Point → ℝ)
-    (hW : ContDiff ℝ (⊤ : ℕ∞) (rawLift W)) (p : Point) : IsSliceRegularAt W p := by
+theorem terminal_raw_regular (p : Point) : IsSliceRegularAt W p := by
   apply IsSliceRegularAt.of_contDiffAt
   exact (hW.of_le (by norm_num)).contDiffAt
 

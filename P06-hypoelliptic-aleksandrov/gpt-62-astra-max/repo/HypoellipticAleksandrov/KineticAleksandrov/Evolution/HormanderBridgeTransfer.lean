@@ -49,14 +49,10 @@ theorem locallyIntegrableOn_comp_evolutionHomeomorph_iff {f : KineticPoint n →
     {Ω : Set (KineticPoint n)} :
     LocallyIntegrableOn (f ∘ evolutionHomeomorph n) (evolutionHomeomorph n ⁻¹' Ω) volume ↔
       LocallyIntegrableOn f Ω volume := by
-  have hmp := measurePreserving_evolutionHomeomorph (n := n)
-  have hem := measurableEmbedding_evolutionHomeomorph (n := n)
   have hI : ∀ t : Set (KineticPoint n), IntegrableOn (f ∘ evolutionHomeomorph n)
       (evolutionHomeomorph n ⁻¹' t) volume ↔ IntegrableOn f t volume := fun t =>
-    hmp.integrableOn_comp_preimage hem
-  have hmap : ∀ x : EvolutionVec n, Filter.map (evolutionHomeomorph n)
-      (nhdsWithin x (evolutionHomeomorph n ⁻¹' Ω)) =
-        nhdsWithin (evolutionHomeomorph n x) Ω := fun x =>
+    (measurePreserving_evolutionHomeomorph (n := n)).integrableOn_comp_preimage (measurableEmbedding_evolutionHomeomorph (n := n))
+  have hmap := fun x =>
     (evolutionHomeomorph n).isOpenEmbedding.map_nhdsWithin_preimage_eq Ω x
   constructor
   · intro h z hz
@@ -80,9 +76,7 @@ theorem ae_eq_comp_evolutionHomeomorph_iff {f g : KineticPoint n → ℝ}
     {Ω : Set (KineticPoint n)} :
     (f ∘ evolutionHomeomorph n) =ᵐ[volume.restrict (evolutionHomeomorph n ⁻¹' Ω)]
         (g ∘ evolutionHomeomorph n) ↔ f =ᵐ[volume.restrict Ω] g := by
-  have hmp := (measurePreserving_evolutionHomeomorph (n := n)).restrict_preimage_emb
-    measurableEmbedding_evolutionHomeomorph Ω
-  rw [← hmp.map_eq, Filter.EventuallyEq, Filter.EventuallyEq,
+  rw [← ((measurePreserving_evolutionHomeomorph (n := n)).restrict_preimage_emb measurableEmbedding_evolutionHomeomorph Ω).map_eq, Filter.EventuallyEq, Filter.EventuallyEq,
     measurableEmbedding_evolutionHomeomorph.ae_map_iff]
   rfl
 
@@ -111,13 +105,15 @@ theorem contDiffOn_comp_evolutionHomeomorph_iff {f : KineticPoint n → ℝ}
 
 /-! ### Weak equations -/
 
+section
+variable (B : FullKineticCoefficient n) (Ladj : (EvolutionVec n → ℝ) → EvolutionVec n → ℝ)
+    (b : PDE.Vec n → PDE.Vec n) (ε : ℝ) (Ω : Set (KineticPoint n)) (u g : KineticPoint n → ℝ)
+
 /-- **Weak equations transfer.**  `u ∘ e` is a distributional solution of `L v = g ∘ e` on
 `e ⁻¹' Ω` (packed coordinates, test functions on `ℝ^{1+2d}`) iff `u` is locally integrable on
 `Ω` for the `KineticPoint` volume and the weak identity holds with the integrals over `Ω` taken
 for the `KineticPoint` volume. -/
-theorem isDistributionalSolution_comp_iff
-    (Ladj : (EvolutionVec n → ℝ) → EvolutionVec n → ℝ) (Ω : Set (KineticPoint n))
-    (u g : KineticPoint n → ℝ) :
+theorem isDistributionalSolution_comp_iff :
     IsDistributionalSolution Ladj (evolutionHomeomorph n ⁻¹' Ω) (u ∘ evolutionHomeomorph n)
         (g ∘ evolutionHomeomorph n) ↔
       LocallyIntegrableOn u Ω volume ∧
@@ -136,20 +132,20 @@ theorem isDistributionalSolution_comp_iff
   simp only [Homeomorph.symm_apply_apply] at h1 h2
   rw [Function.comp_def, Function.comp_def, h1, h2]
 
+include B b Ω u g in
 /-- The kinetic-side weak equation for `Lop`: `u` is locally integrable on `Ω ⊆ KineticPoint n` and
 `∫_Ω u(z) · Lop^*ψ(e⁻¹ z) dz = ∫_Ω g(z) ψ(e⁻¹ z) dz` for every smooth `ψ` on `ℝ^{1+2d}`
 with compact support inside `e ⁻¹' Ω`. -/
-def IsKineticWeakTransportedSolution (B : FullKineticCoefficient n)
-    (b : PDE.Vec n → PDE.Vec n) (Ω : Set (KineticPoint n)) (u g : KineticPoint n → ℝ) : Prop :=
+def IsKineticWeakTransportedSolution : Prop :=
   LocallyIntegrableOn u Ω volume ∧
     ∀ ψ : EvolutionVec n → ℝ, ContDiff ℝ (⊤ : ℕ∞) ψ → HasCompactSupport ψ →
       tsupport ψ ⊆ evolutionHomeomorph n ⁻¹' Ω →
       (∫ z in Ω, u z * transportedAdjoint B b ψ ((evolutionHomeomorph n).symm z)) =
         ∫ z in Ω, g z * ψ ((evolutionHomeomorph n).symm z)
 
+include B b ε Ω u g in
 /-- The kinetic-side weak equation for `L_ε = Lop + ε Δ_z`. -/
-def IsKineticWeakRegularizedSolution (B : FullKineticCoefficient n)
-    (b : PDE.Vec n → PDE.Vec n) (ε : ℝ) (Ω : Set (KineticPoint n)) (u g : KineticPoint n → ℝ) :
+def IsKineticWeakRegularizedSolution :
     Prop :=
   LocallyIntegrableOn u Ω volume ∧
     ∀ ψ : EvolutionVec n → ℝ, ContDiff ℝ (⊤ : ℕ∞) ψ → HasCompactSupport ψ →
@@ -157,17 +153,17 @@ def IsKineticWeakRegularizedSolution (B : FullKineticCoefficient n)
       (∫ z in Ω, u z * regularizedAdjoint B b ε ψ ((evolutionHomeomorph n).symm z)) =
         ∫ z in Ω, g z * ψ ((evolutionHomeomorph n).symm z)
 
-theorem isWeakTransportedSolution_comp_iff (B : FullKineticCoefficient n)
-    (b : PDE.Vec n → PDE.Vec n) (Ω : Set (KineticPoint n)) (u g : KineticPoint n → ℝ) :
+theorem isWeakTransportedSolution_comp_iff :
     IsWeakTransportedSolution B b (evolutionHomeomorph n ⁻¹' Ω) (u ∘ evolutionHomeomorph n)
         (g ∘ evolutionHomeomorph n) ↔ IsKineticWeakTransportedSolution B b Ω u g :=
   isDistributionalSolution_comp_iff (transportedAdjoint B b) Ω u g
 
-theorem isWeakRegularizedSolution_comp_iff (B : FullKineticCoefficient n)
-    (b : PDE.Vec n → PDE.Vec n) (ε : ℝ) (Ω : Set (KineticPoint n)) (u g : KineticPoint n → ℝ) :
+theorem isWeakRegularizedSolution_comp_iff :
     IsWeakRegularizedSolution B b ε (evolutionHomeomorph n ⁻¹' Ω) (u ∘ evolutionHomeomorph n)
         (g ∘ evolutionHomeomorph n) ↔ IsKineticWeakRegularizedSolution B b ε Ω u g :=
   isDistributionalSolution_comp_iff (regularizedAdjoint B b ε) Ω u g
+
+end
 
 /-- **Kinetic weak equation ⇒ Hörmander weak equation (`ε = 0`).**  A kinetic distributional
 solution of `Lop u = g` on `Ω ⊆ KineticPoint n`, with `g ∘ e` smooth on `e ⁻¹' Ω`, gives the

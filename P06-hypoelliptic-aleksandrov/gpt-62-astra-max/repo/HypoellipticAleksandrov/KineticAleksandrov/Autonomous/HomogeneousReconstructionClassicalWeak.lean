@@ -23,7 +23,6 @@ theorem reconstruction_test_isWeakTransportedSolution {lam Lam : ℝ}
       (reconstructionPhysicalPoint ⁻¹' D) (phi ∘ reconstructionPhysicalPoint)
       (forwardScalarOperator A.a phi ∘ reconstructionPhysicalPoint) := by
   let U := reconstructionPhysicalPoint ⁻¹' D
-  have hU : IsOpen U := hD.preimage continuous_reconstructionPhysicalPoint
   have hc {f : Point → ℝ} (hf : ContinuousOn f D) :
       ContinuousOn (f ∘ reconstructionPhysicalPoint) U :=
     hf.comp continuous_reconstructionPhysicalPoint.continuousOn (fun _ hx => hx)
@@ -37,7 +36,7 @@ theorem reconstruction_test_isWeakTransportedSolution {lam Lam : ℝ}
       (fun x => kineticVelocityHessian phi (reconstructionPhysicalPoint x) j i) U :=
     hc ((continuous_apply i).comp_continuousOn
       ((continuous_apply j).comp_continuousOn hphi.continuousOn_kineticVelocityHessian))
-  refine ⟨(hc hphi.continuousOn).locallyIntegrableOn hU.measurableSet, ?_⟩
+  refine ⟨(hc hphi.continuousOn).locallyIntegrableOn (hD.preimage continuous_reconstructionPhysicalPoint).measurableSet, ?_⟩
   intro ψ hψ hcompact hs
   have h := integral_transportedAdjoint_of_anisotropic_jets
     (evolutionCoefficient A.a) (identityDrift 1) (evolutionCoefficient_smooth A)

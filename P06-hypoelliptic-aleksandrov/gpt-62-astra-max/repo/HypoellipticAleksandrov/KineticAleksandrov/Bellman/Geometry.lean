@@ -10,21 +10,26 @@ import Mathlib.Tactic
 noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
+section
+variable (r : ℝ) (hr : 0 < r) (q : ℝ × ℝ)
+
+include r q in
 /-- The anisotropic position-velocity dilation on the ambient plane. -/
-def bellmanPlaneDilation (r : ℝ) (q : ℝ × ℝ) : ℝ × ℝ := (r ^ 3 * q.1, r * q.2)
+def bellmanPlaneDilation : ℝ × ℝ := (r ^ 3 * q.1, r * q.2)
 
+include q in
 /-- The polynomial whose sixth root is the source gauge. -/
-def bellmanGaugePower (q : ℝ × ℝ) : ℝ := q.1 ^ 2 + q.2 ^ 6
+def bellmanGaugePower : ℝ := q.1 ^ 2 + q.2 ^ 6
 
+include q in
 /-- The source gauge, with homogeneous dimension four. -/
-def bellmanGauge (q : ℝ × ℝ) : ℝ := bellmanGaugePower q ^ (1 / 6 : ℝ)
+def bellmanGauge : ℝ := bellmanGaugePower q ^ (1 / 6 : ℝ)
 
 /-- The gauge polynomial is nonnegative. -/
-theorem bellmanGaugePower_nonneg (q : ℝ × ℝ) : 0 ≤ bellmanGaugePower q := by
-  exact add_nonneg (sq_nonneg q.1) (Even.pow_nonneg (by decide : Even 6) q.2)
+theorem bellmanGaugePower_nonneg : 0 ≤ bellmanGaugePower q := add_nonneg (sq_nonneg q.1) (Even.pow_nonneg (by decide : Even 6) q.2)
 
 /-- The gauge polynomial vanishes precisely at the origin. -/
-theorem bellmanGaugePower_eq_zero_iff (q : ℝ × ℝ) :
+theorem bellmanGaugePower_eq_zero_iff :
     bellmanGaugePower q = 0 ↔ q = (0, 0) := by
   constructor
   · intro h
@@ -35,19 +40,20 @@ theorem bellmanGaugePower_eq_zero_iff (q : ℝ × ℝ) :
       change q.1 ^ 2 + q.2 ^ 6 = 0 at h
       rw [hx, zero_add] at h
       exact h
-    exact Prod.ext ((pow_eq_zero_iff (by decide : (2 : ℕ) ≠ 0)).mp hx)
-      ((pow_eq_zero_iff (by decide : (6 : ℕ) ≠ 0)).mp hv)
+    exact Prod.ext ((pow_eq_zero_iff (by decide)).mp hx)
+      ((pow_eq_zero_iff (by decide)).mp hv)
   · rintro rfl
     norm_num [bellmanGaugePower]
 
 /-- The gauge polynomial scales with degree six. -/
-theorem bellmanGaugePower_dilation (r : ℝ) (q : ℝ × ℝ) :
+theorem bellmanGaugePower_dilation :
     bellmanGaugePower (bellmanPlaneDilation r q) = r ^ 6 * bellmanGaugePower q := by
   dsimp [bellmanGaugePower, bellmanPlaneDilation]
   ring
 
+include hr in
 /-- The gauge has degree one under positive kinetic dilation. -/
-theorem bellmanGauge_dilation (r : ℝ) (hr : 0 < r) (q : ℝ × ℝ) :
+theorem bellmanGauge_dilation :
     bellmanGauge (bellmanPlaneDilation r q) = r * bellmanGauge q := by
   rw [bellmanGauge, bellmanGaugePower_dilation,
     Real.mul_rpow (pow_nonneg hr.le 6) (bellmanGaugePower_nonneg q)]
@@ -57,8 +63,9 @@ theorem bellmanGauge_dilation (r : ℝ) (hr : 0 < r) (q : ℝ × ℝ) :
   rw [h]
   rfl
 
+include hr in
 /-- Positive dilation preserves the punctured plane. -/
-theorem bellmanPlaneDilation_ne_zero (r : ℝ) (hr : 0 < r) (q : ℝ × ℝ)
+theorem bellmanPlaneDilation_ne_zero
     (hq : q ≠ (0, 0)) : bellmanPlaneDilation r q ≠ (0, 0) := by
   intro h
   apply hq
@@ -68,8 +75,10 @@ theorem bellmanPlaneDilation_ne_zero (r : ℝ) (hr : 0 < r) (q : ℝ × ℝ)
     ((mul_eq_zero.mp hv).resolve_left hr.ne')
 
 /-- Ambient and punctured dilation are the same literal map. -/
-theorem bellmanDilation_val (r : ℝ) (hr : 0 < r) (q : BellmanPuncturedPlane) :
+theorem bellmanDilation_val (q : BellmanPuncturedPlane) :
     (bellmanDilation r hr q).val = bellmanPlaneDilation r q.val := rfl
+
+end
 
 /-- Kinetic dilations compose multiplicatively. -/
 theorem bellmanPlaneDilation_comp (r s : ℝ) (q : ℝ × ℝ) :

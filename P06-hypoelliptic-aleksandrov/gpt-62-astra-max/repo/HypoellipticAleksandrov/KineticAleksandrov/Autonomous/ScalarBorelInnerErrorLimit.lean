@@ -51,27 +51,23 @@ theorem scalar_borel_smooth_inner_limit (lam Lam : ℝ) (hlam : 0 < lam) (_hLam 
   classical
   let Q := backwardCylinder P₁ r
   let K := closure Q
-  let H : Point → ℝ := fun P => kineticVelocityHessian u P 0 0
-  have hH : ContinuousOn H K :=
+  let H := fun P => kineticVelocityHessian u P 0 0
+  have hH :=
     (continuous_apply 0).comp_continuousOn
       ((continuous_apply 0).comp_continuousOn
         (hreg.continuousOn_kineticVelocityHessian.mono hKD))
   let Hext := K.indicator H
   let e := fun j => scalarBorelError (C j) a Hext
   have he0 j P : 0 ≤ e j P := abs_nonneg _
-  have hQ : IsOpen Q := isOpen_backwardCylinder P₁ r hr
+  have hQ := isOpen_backwardCylinder P₁ r hr
   have hQK : Q ⊆ K := subset_closure
   have hregQ := comparison_regular_mono hreg (hQK.trans hKD)
-  have hcontK := hreg.continuousOn.mono hKD
-  have hHext : Measurable Hext :=
-    hH.measurable_piecewise continuousOn_const hK.measurableSet
   have hproj : Measurable (fun P : Point => (P.position 0, P.velocity 0)) :=
     (((continuous_apply 0).comp continuous_position).prodMk
       ((continuous_apply 0).comp continuous_velocity)).measurable
-  have hAm : Measurable (fun P : Point => a (P.position 0) (P.velocity 0)) := ha.comp hproj
   have hem j : Measurable (e j) :=
     continuous_abs.measurable.comp
-      ((((hC j).1.continuous.measurable.comp hproj).sub hAm).mul hHext)
+      ((((hC j).1.continuous.measurable.comp hproj).sub (ha.comp hproj)).mul (hH.measurable_piecewise continuousOn_const hK.measurableSet))
   have heq j : e j =ᵐ[volume.restrict K] scalarBorelError (C j) a H := by
     filter_upwards [ae_restrict_mem hK.measurableSet] with P hP
     simp only [e,scalarBorelError,Hext,indicator_of_mem hP]
@@ -79,19 +75,17 @@ theorem scalar_borel_smooth_inner_limit (lam Lam : ℝ) (hlam : 0 < lam) (_hLam 
     (lt_of_lt_of_le zero_lt_one hp)
   have hmK j : MemLp (e j) (ENNReal.ofReal p) (volume.restrict K) :=
     (hmraw j).ae_eq (heq j).symm
-  have hμ : volume.restrict Q ≤ volume.restrict K := Measure.restrict_mono_set volume hQK
+  have hμ := Measure.restrict_mono_set volume hQK
   have hme j : MemLp (e j) (ENNReal.ofReal p) (volume.restrict Q) := (hmK j).mono_measure hμ
   have hte : Tendsto (fun j => (eLpNorm (e j) (ENNReal.ofReal p)
       (volume.restrict Q)).toReal) atTop (𝓝 0) := by
     have htK : Tendsto (fun j => (eLpNorm (e j) (ENNReal.ofReal p)
         (volume.restrict K)).toReal) atTop (𝓝 0) := by
-      simpa only [eLpNorm_congr_ae (heq _)] using htraw
+      simpa [eLpNorm_congr_ae (heq _)] using htraw
     apply squeeze_zero (fun j => ENNReal.toReal_nonneg) _ htK
     intro j
     exact ENNReal.toReal_mono (hmK j).eLpNorm_ne_top (eLpNorm_mono_measure _ hμ)
-  let F := borelSource localised u f
   let G := fun j => borelSource localised u (f + e j)
-  have hFp := borelSource_memLp hQ localised u f hregQ.continuousOn hLp
   have hpert j : MemLp (fun P => max ((f + e j) P) 0) (ENNReal.ofReal p)
       (volume.restrict Q) := by
     apply (hLp.add (hme j)).of_le ((hf.add (hem j)).sup measurable_const).aestronglyMeasurable
@@ -102,7 +96,7 @@ theorem scalar_borel_smooth_inner_limit (lam Lam : ℝ) (hlam : 0 < lam) (_hLam 
     exact max_le (by linarith only [le_max_left (f P) 0])
       (add_nonneg (le_max_right (f P) 0) (he0 j P))
   have hGp j := borelSource_memLp hQ localised u (f + e j) hregQ.continuousOn (hpert j)
-  have htG := borel_source_norm_tendsto hp F G e hFp hme
+  have htG := borel_source_norm_tendsto hp (borelSource localised u f) G e (borelSource_memLp hQ localised u f hregQ.continuousOn hLp) hme
     (fun j => (hGp j).aestronglyMeasurable)
     (Filter.Eventually.of_forall (borelSource_nonneg localised u f))
     (fun j => Filter.Eventually.of_forall (borelSource_nonneg localised u (f + e j)))
@@ -112,7 +106,7 @@ theorem scalar_borel_smooth_inner_limit (lam Lam : ℝ) (hlam : 0 < lam) (_hLam 
   have hineq j : ∀ P ∈ K, u P ≤ sSup ((fun P => max (u P) 0) '' kineticBoundary P₁ r) +
       C₀ * r ^ alpha * (eLpNorm (G j) (ENNReal.ofReal p) (volume.restrict Q)).toReal := by
     apply hsmooth (C j) (hC j).1 (hC j).2
-      P₁ r hr u (f + e j) hcontK hregQ (hf.add (hem j)) (hpert j)
+      P₁ r hr u (f + e j) (hreg.continuousOn.mono hKD) hregQ (hf.add (hem j)) (hpert j)
     filter_upwards [hsub,ae_restrict_mem hQ.measurableSet] with P hsubP hP
     have heP : e j P = scalarBorelError (C j) a H P := by
       simp only [e,scalarBorelError,Hext,indicator_of_mem (hQK hP)]
@@ -121,8 +115,7 @@ theorem scalar_borel_smooth_inner_limit (lam Lam : ℝ) (hlam : 0 < lam) (_hLam 
       a (P.position 0) (P.velocity 0)) * H P)
     dsimp only [scalarBorelError, H] at heP
     change autonomousScalarOperator (C j) u P ≤ f P + e j P
-    rw [heP]
-    linarith only [hdiff, hsubP, hab]
+    linarith
   intro P hP
   exact ge_of_tendsto
     (tendsto_const_nhds.add (tendsto_const_nhds.mul htG))

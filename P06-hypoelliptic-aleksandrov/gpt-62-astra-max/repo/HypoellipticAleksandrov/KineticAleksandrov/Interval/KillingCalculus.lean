@@ -28,9 +28,9 @@ theorem tendsto_intervalHeat_time_zero {lam x : ℝ} (hlam : 0 < lam) (hx : 0 < 
     have ht : Tendsto (fun θ : ℝ => θ) (nhdsWithin 0 (Ioi 0)) (𝓝 0) :=
       tendsto_id.mono_left nhdsWithin_le_nhds
     have hm : Tendsto (fun θ : ℝ => lam * θ) (nhdsWithin 0 (Ioi 0)) (𝓝 0) := by
-      simpa only [mul_zero] using (tendsto_const_nhds.mul ht)
+      simpa using (tendsto_const_nhds.mul ht)
     have hq := Real.continuous_sqrt.continuousAt.tendsto.comp hm
-    simpa only [Real.sqrt_zero, mul_zero] using
+    simpa using
       (tendsto_const_nhds.mul hq : Tendsto (fun θ : ℝ => 2 * Real.sqrt (lam * θ))
         (nhdsWithin 0 (Ioi 0)) (𝓝 (2 * Real.sqrt 0)))
   have hsg : Tendsto (fun θ : ℝ => 2 * Real.sqrt (lam * θ))
@@ -38,9 +38,8 @@ theorem tendsto_intervalHeat_time_zero {lam x : ℝ} (hlam : 0 < lam) (hx : 0 < 
     refine tendsto_nhdsWithin_iff.mpr ⟨hs, ?_⟩
     filter_upwards [self_mem_nhdsWithin] with θ hθ
     exact mul_pos (by norm_num) (Real.sqrt_pos.2 (mul_pos hlam hθ))
-  have hr := hsg.inv_tendsto_nhdsGT_zero.const_mul_atTop hx
-  have he := tendsto_intervalErf_atTop.comp hr
-  simpa only [intervalHeat, div_eq_mul_inv, Pi.inv_apply, Function.comp_def] using he
+  have he := tendsto_intervalErf_atTop.comp (hsg.inv_tendsto_nhdsGT_zero.const_mul_atTop hx)
+  exact he
 
 /-- Fixed positive-time heat barriers are increasing with spatial distance. -/
 theorem intervalHeat_mono_distance {lam θ : ℝ} (hlam : 0 < lam) (hθ : 0 < θ) :

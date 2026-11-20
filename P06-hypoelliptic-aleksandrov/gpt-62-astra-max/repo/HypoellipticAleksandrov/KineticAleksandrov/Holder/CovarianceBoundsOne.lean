@@ -18,7 +18,7 @@ theorem ghat_one_lower {lam : ℝ} (hlam : 0 < lam) :
   have hunit : (1 / 16 : ℝ) • (1 : Matrix (Fin 2) (Fin 2) ℝ) ≤ ghat 1 1 := by
     apply Matrix.le_iff.mpr
     have hp := posDef_two_of_det
-      (a := (29 / 96 : ℝ)) (b := (61 / 64 : ℝ)) (c := (33 / 64 : ℝ))
+      (a := (29 / 96)) (b := (61 / 64)) (c := (33 / 64))
       (by norm_num) (by norm_num)
     convert hp.posSemidef using 1
     ext i j

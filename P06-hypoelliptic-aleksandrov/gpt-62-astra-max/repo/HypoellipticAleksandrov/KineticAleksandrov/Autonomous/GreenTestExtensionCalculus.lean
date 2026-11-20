@@ -16,10 +16,9 @@ theorem reconstruction_position_cutoff_fderiv (chi : ℝ → ℝ)
     (hchi : Differentiable ℝ chi) (x w : EvolutionVec 1) :
     fderiv ℝ (fun y => chi (transportedCoord 1 y 0)) x w =
       deriv chi (transportedCoord 1 x 0) * transportedCoord 1 w 0 := by
-  let c : EvolutionVec 1 →L[ℝ] ℝ :=
+  let c :=
     (ContinuousLinearMap.proj (R := ℝ) (φ := fun _ : Fin 1 => ℝ) 0).comp (transportedCoord 1)
-  have hc := (hchi (c x)).hasDerivAt.comp_hasFDerivAt x c.hasFDerivAt
-  have hh := congrArg (fun L : EvolutionVec 1 →L[ℝ] ℝ => L w) hc.fderiv
+  have hh := congrArg (fun L : EvolutionVec 1 →L[ℝ] ℝ => L w) ((hchi (c x)).hasDerivAt.comp_hasFDerivAt x c.hasFDerivAt).fderiv
   simpa only [c, ContinuousLinearMap.comp_apply, ContinuousLinearMap.proj_apply,
     smul_apply, smul_eq_mul] using! hh
 
@@ -73,7 +72,6 @@ theorem reconstruction_physical_operator_packed {lam Lam : ℝ}
   have heq : (phi ∘ sectionTwoPoint) ∘ evolutionHomeomorph 1 =
       phi ∘ reconstructionPhysicalHomeomorph := rfl
   have hs : ContDiffAt ℝ 2 ((phi ∘ sectionTwoPoint) ∘ evolutionHomeomorph 1) x := by
-    rw [heq]
     exact (hphi.of_le (by simp)).contDiffAt
   have hop := transportedOperator_comp (B := evolutionCoefficient A.a) (b := identityDrift 1) hs
   rw [heq, reconstruction_scalar_operator_swap] at hop

@@ -29,10 +29,13 @@ theorem nestedSwapPacked_physical (x : EvolutionVec 1) :
     KineticPoint.isometryEquivProd, KineticPoint.equivProd]
   rfl
 
-/-- Native smoothness transfers to physical smoothness on the exchanged open set. -/
-theorem nested_physical_contDiffOn {u : Point → ℝ} {D : Set Point}
+variable {u : Point → ℝ} {D : Set Point} (hD : IsOpen D)
     (hu : ContDiffOn ℝ (⊤ : ℕ∞) (u ∘ evolutionHomeomorph 1)
-      (evolutionHomeomorph 1 ⁻¹' D)) :
+      (evolutionHomeomorph 1 ⁻¹' D))
+
+include hu in
+/-- Native smoothness transfers to physical smoothness on the exchanged open set. -/
+theorem nested_physical_contDiffOn :
     ContDiffOn ℝ (⊤ : ℕ∞) ((u ∘ sectionTwoPoint) ∘ evolutionHomeomorph 1)
       (evolutionHomeomorph 1 ⁻¹' (sectionTwoPoint ⁻¹' D)) := by
   have hm : MapsTo nestedSwapPacked
@@ -51,18 +54,16 @@ theorem nested_physical_contDiffOn {u : Point → ℝ} {D : Set Point}
     rfl
   rwa [heq] at hs
 
+include hD hu in
 /-- The same physical smoothness supplies the literal anisotropic C112 interface. -/
-theorem nested_physical_isKineticC112On {u : Point → ℝ} {D : Set Point}
-    (hD : IsOpen D)
-    (hu : ContDiffOn ℝ (⊤ : ℕ∞) (u ∘ evolutionHomeomorph 1)
-      (evolutionHomeomorph 1 ⁻¹' D)) :
+theorem nested_physical_isKineticC112On :
     IsKineticC112On (u ∘ sectionTwoPoint) (sectionTwoPoint ⁻¹' D) :=
   isKineticC112On_of_contDiffOn (hD.preimage (continuous_sectionTwoPoint 1))
     (nested_physical_contDiffOn hu)
 
+include hD in
 /-- Raw physical smoothness on an open set supplies the literal C112 interface. -/
-theorem nested_raw_isKineticC112On {u : Point → ℝ} {D : Set Point}
-    (hD : IsOpen D)
+theorem nested_raw_isKineticC112On
     (hu : ContDiffOn ℝ (⊤ : ℕ∞) (u ∘ (KineticPoint.equivProd 1).symm)
       (KineticPoint.equivProd 1 '' D)) : IsKineticC112On u D := by
   apply isKineticC112On_of_contDiffOn hD

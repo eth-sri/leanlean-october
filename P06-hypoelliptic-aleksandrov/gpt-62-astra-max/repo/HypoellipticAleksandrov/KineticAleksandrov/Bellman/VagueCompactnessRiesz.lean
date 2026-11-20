@@ -32,7 +32,7 @@ theorem bellman_riesz_of_test_limits (mu : ℕ → Measure X)
         apply tendsto_nhds_unique (hL (f + g))
         convert! (hL f).add (hL g) using 1
         ext n
-        exact integral_add (hi n f) (hi n g)
+        apply_rules [integral_add]
       map_smul' := fun c f => by
         apply tendsto_nhds_unique (hL (c • f))
         convert! (hL f).const_smul c using 1
@@ -40,11 +40,8 @@ theorem bellman_riesz_of_test_limits (mu : ℕ → Measure X)
         exact integral_smul c f
       monotone' := fun f g hfg =>
         le_of_tendsto_of_tendsto' (hL f) (hL g) (fun n => integral_mono (hi n f) (hi n g) hfg) }
-  let nu := RealRMK.rieszMeasure ell
-  refine ⟨nu, inferInstance, ?_, ?_⟩
+  refine ⟨(RealRMK.rieszMeasure ell), inferInstance, ?_, ?_⟩
   · infer_instance
-  · intro f
-    rw [RealRMK.integral_rieszMeasure ell f]
-    exact hL f
+  aesop
 
 end HypoellipticAleksandrov.KineticAleksandrov

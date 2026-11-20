@@ -34,19 +34,27 @@ def ghat (lam theta : ℝ) : Matrix (Fin 2) (Fin 2) ℝ :=
 def covarianceDilation (h : ℝ) : Matrix (Fin 2) (Fin 2) ℝ :=
   !![h ^ (3 / 2 : ℝ), 0; 0, h ^ (1 / 2 : ℝ)]
 
+section
+variable {d : ℕ} (lam h sigma : ℝ) (y V : PDE.Vec d)
+include lam h sigma
+
 /-- Physical covariance, as the exact rescaling of the dimensionless covariance. -/
-def gramian (lam h sigma : ℝ) : Matrix (Fin 2) (Fin 2) ℝ :=
+def gramian : Matrix (Fin 2) (Fin 2) ℝ :=
   covarianceDilation h * ghat lam (sigma / h) * covarianceDilation h
 
+include y V in
 /-- Covariance quadratic form in native position–velocity coordinates. -/
-def qform {d : ℕ} (lam h sigma : ℝ) (y V : PDE.Vec d) : ℝ :=
+def qform : ℝ :=
   (gramian lam h sigma)⁻¹ 0 0 * PDE.vecDot y y +
     2 * (gramian lam h sigma)⁻¹ 0 1 * PDE.vecDot y V +
     (gramian lam h sigma)⁻¹ 1 1 * PDE.vecDot V V
 
+include y V in
 /-- Velocity component of the inverse covariance applied to the native vector pair. -/
-def pform {d : ℕ} (lam h sigma : ℝ) (y V : PDE.Vec d) : PDE.Vec d :=
+def pform : PDE.Vec d :=
   (gramian lam h sigma)⁻¹ 1 0 • y + (gramian lam h sigma)⁻¹ 1 1 • V
+
+end
 
 /-- Determinant of the dimensionless covariance. -/
 theorem det_ghat (lam theta : ℝ) :

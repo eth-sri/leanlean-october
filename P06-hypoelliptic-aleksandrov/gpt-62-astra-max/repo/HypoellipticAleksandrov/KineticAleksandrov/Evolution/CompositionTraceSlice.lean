@@ -20,46 +20,44 @@ namespace HypoellipticAleksandrov.KineticAleksandrov
 open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic Set Function
 open scoped Topology
 
+section
+variable {n : ℕ} {Ω : Set (PDE.Vec n)} {γ : ℝ → PDE.Vec n} {B : FullKineticCoefficient n}
+    {b : PDE.Vec n → PDE.Vec n} {τ r : ℝ} {F : BoundedBorel (EvolutionAmbientState n)}
+    {u : KineticPoint n → ℝ} (hu : IsClassicalTerminalSolution Ω γ B b τ F u) (hrτ : r ≤ τ)
+include hu
+
+include hrτ in
 /-- A classical solution restricted to any earlier state slice is continuous on the
 closed state fiber. -/
-theorem IsClassicalTerminalSolution.continuousOn_slice
-    {n : ℕ} {Ω : Set (PDE.Vec n)} {γ : ℝ → PDE.Vec n}
-    {B : FullKineticCoefficient n} {b : PDE.Vec n → PDE.Vec n}
-    {τ r : ℝ} {F : BoundedBorel (EvolutionAmbientState n)} {u : KineticPoint n → ℝ}
-    (hu : IsClassicalTerminalSolution Ω γ B b τ F u) (hrτ : r ≤ τ) :
+theorem IsClassicalTerminalSolution.continuousOn_slice :
     ContinuousOn (fun x : EvolutionAmbientState n => u ⟨r, x.1, x.2⟩)
       (closure (evolutionStateSet Ω γ r)) := by
   refine hu.2.1.comp
     (KineticPoint.continuous_mk continuous_const continuous_fst continuous_snd).continuousOn ?_
   intro x hx
-  have hx' : x ∈ closure (movingDomain Ω γ r) ×ˢ (univ : Set (PDE.Vec n)) := by
+  have hx' : x ∈ closure (movingDomain Ω γ r) ×ˢ univ := by
     simpa only [evolutionStateSet, closure_prod_eq, closure_univ] using hx
   exact ⟨hrτ, hx'.1⟩
 
+include hrτ in
 /-- Extending an intermediate slice by zero outside its state fiber is continuous. -/
-theorem IsClassicalTerminalSolution.continuous_zeroExtended_slice
-    {n : ℕ} {Ω : Set (PDE.Vec n)} {γ : ℝ → PDE.Vec n}
-    {B : FullKineticCoefficient n} {b : PDE.Vec n → PDE.Vec n}
-    {τ r : ℝ} {F : BoundedBorel (EvolutionAmbientState n)} {u : KineticPoint n → ℝ}
-    (hu : IsClassicalTerminalSolution Ω γ B b τ F u) (hrτ : r ≤ τ) :
+theorem IsClassicalTerminalSolution.continuous_zeroExtended_slice :
     Continuous ((evolutionStateSet Ω γ r).indicator
       (fun x : EvolutionAmbientState n => u ⟨r, x.1, x.2⟩)) := by
   apply continuous_indicator ?_ (hu.continuousOn_slice hrτ)
   intro x hx
-  have hx' : x ∈ frontier (movingDomain Ω γ r) ×ˢ (univ : Set (PDE.Vec n)) := by
-    simpa only [evolutionStateSet, frontier_prod_univ_eq] using hx
+  have hx' : x ∈ frontier (movingDomain Ω γ r) ×ˢ univ := by
+    simpa [evolutionStateSet] using hx
   exact hu.2.2.2.2.2 ⟨r, x.1, x.2⟩ ⟨hrτ, hx'.1⟩
 
 /-- A strictly earlier slice is smooth on the open state fiber. -/
-theorem IsClassicalTerminalSolution.contDiffOn_slice
-    {n : ℕ} {Ω : Set (PDE.Vec n)} {γ : ℝ → PDE.Vec n}
-    {B : FullKineticCoefficient n} {b : PDE.Vec n → PDE.Vec n}
-    {τ r : ℝ} {F : BoundedBorel (EvolutionAmbientState n)} {u : KineticPoint n → ℝ}
-    (hu : IsClassicalTerminalSolution Ω γ B b τ F u) (hrτ : r < τ) :
+theorem IsClassicalTerminalSolution.contDiffOn_slice (hrτ : r < τ) :
     ContDiffOn ℝ (⊤ : ℕ∞) (fun x : EvolutionAmbientState n => u ⟨r, x.1, x.2⟩)
       (evolutionStateSet Ω γ r) := by
   exact hu.2.2.1.comp ((contDiff_const.prodMk contDiff_id).contDiffOn)
     (fun x hx => ⟨hrτ, hx.1⟩)
+
+end
 
 /-- Multiplying an interior-smooth function by an interior-supported smooth cutoff gives
 an ambient smooth function, irrespective of the original function outside the open set. -/
@@ -76,6 +74,6 @@ theorem contDiff_mul_of_tsupport_subset
     have hz : ContDiffAt ℝ (⊤ : ℕ∞) (fun _ : E => (0 : ℝ)) x := contDiffAt_const
     apply hz.congr_of_eventuallyEq
     filter_upwards [he] with y hy
-    simp only [hy, Pi.zero_apply, zero_mul]
+    simp [hy]
 
 end HypoellipticAleksandrov.KineticAleksandrov

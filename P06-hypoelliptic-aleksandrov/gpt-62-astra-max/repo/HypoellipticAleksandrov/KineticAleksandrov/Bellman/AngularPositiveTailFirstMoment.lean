@@ -22,9 +22,9 @@ theorem bellmanAngularFirstMoment_integrable (β : ℝ) (f h J : ℝ → ℝ)
   apply integrableOn_Ioi_of_intervalIntegral_norm_bounded (3 * (h 0 + J 0)) 0
     (b := fun y : ℝ => y) (l := atTop)
   · intro y
-    simpa only [pow_one] using (bellmanAngularMoment_intervalIntegrable hi 0 y 1).1
+    simpa using (bellmanAngularMoment_intervalIntegrable hi 0 y 1).1
   · exact tendsto_id
-  · filter_upwards [eventually_ge_atTop (1 : ℝ)] with y hy
+  · filter_upwards [eventually_ge_atTop 1] with y hy
     have hyp : 0 < y := by linarith
     have hb := bellmanAngularFirstMoment_bound β f h J hβ hi hf hh he hyp
     have hh0 := hh 0

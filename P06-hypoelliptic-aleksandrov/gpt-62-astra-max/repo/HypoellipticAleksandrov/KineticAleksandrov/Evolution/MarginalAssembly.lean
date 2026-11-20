@@ -72,8 +72,7 @@ theorem hasEndpoint_of_master_eq (K : MovingFiberKernel Ω γ) (hK : ∀ q, K.ma
     K.HasEndpoint (measurableSet_of_isAdmissibleEvolutionDomain hΩ) := fun σ => by
   rw [fiberKernel_eq_terminalFiberKernel_of_master_eq n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ
     B b hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx K hK]
-  exact terminalFiberKernel_self n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
-    hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx σ
+  apply terminalFiberKernel_self
 
 /-- Endpoint identity of the scalar marginal kernel (clause 8). -/
 theorem parabolicMarginalKernel_self_of_master_eq
@@ -82,13 +81,10 @@ theorem parabolicMarginalKernel_self_of_master_eq
       (ProbabilityTheory.Kernel.id :
         ProbabilityTheory.Kernel (EvolutionPosition Ω γ σ) (EvolutionPosition Ω γ σ)) := by
   refine ProbabilityTheory.Kernel.ext fun y => ?_
-  have hE := hasEndpoint_of_master_eq n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
-    hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx K hK σ
   rw [parabolicMarginalKernel_apply, MovingFiberKernel.fiberFirstMarginal,
-    ProbabilityTheory.Kernel.map_apply _ (MovingFiberKernel.measurable_firstPosition Ω γ σ), hE,
+    ProbabilityTheory.Kernel.map_apply _ (MovingFiberKernel.measurable_firstPosition Ω γ σ), (hasEndpoint_of_master_eq n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx K hK σ),
     ProbabilityTheory.Kernel.id_apply, ProbabilityTheory.Kernel.id_apply]
-  exact Measure.map_dirac' (MovingFiberKernel.measurable_firstPosition Ω γ σ)
-    (positionStateZero Ω γ σ y)
+  aesop
 
 /-- Chapman-Kolmogorov for the scalar marginal kernels (clause 9), from the Chapman-Kolmogorov
 identity `hComp` of the fiber kernel and the marginal independence. -/
@@ -102,7 +98,7 @@ theorem parabolicMarginalKernel_comp_of_master_eq
       parabolicMarginalKernel K (measurableSet_of_isAdmissibleEvolutionDomain hΩ) r τ hrτ ∘ₖ
         parabolicMarginalKernel K (measurableSet_of_isAdmissibleEvolutionDomain hΩ) σ r hσr := by
   refine ProbabilityTheory.Kernel.ext fun y => Measure.ext fun s hs => ?_
-  have hfirst : ∀ ρ : ℝ, Measurable (MovingFiberKernel.firstPosition Ω γ ρ) :=
+  have hfirst :=
     MovingFiberKernel.measurable_firstPosition Ω γ
   have hind : ∀ x : EvolutionState Ω γ r,
       parabolicMarginalKernel K (measurableSet_of_isAdmissibleEvolutionDomain hΩ) r τ hrτ
@@ -117,10 +113,6 @@ theorem parabolicMarginalKernel_comp_of_master_eq
   rw [parabolicMarginalKernel_apply, MovingFiberKernel.fiberFirstMarginal,
     ProbabilityTheory.Kernel.map_apply _ (hfirst τ), Measure.map_apply (hfirst τ) hs,
     hComp σ r τ hσr hrτ, ProbabilityTheory.Kernel.comp_apply' _ _ _ (hfirst τ hs)]
-  have hmeas : Measurable fun y' : EvolutionPosition Ω γ r =>
-      parabolicMarginalKernel K (measurableSet_of_isAdmissibleEvolutionDomain hΩ) r τ hrτ y' s :=
-    (parabolicMarginalKernel K (measurableSet_of_isAdmissibleEvolutionDomain hΩ)
-      r τ hrτ).measurable_coe hs
   have hmarg : parabolicMarginalKernel K (measurableSet_of_isAdmissibleEvolutionDomain hΩ)
       σ r hσr y =
       Measure.map (MovingFiberKernel.firstPosition Ω γ r)
@@ -128,7 +120,7 @@ theorem parabolicMarginalKernel_comp_of_master_eq
           (positionStateZero Ω γ σ y)) := by
     rw [parabolicMarginalKernel_apply, MovingFiberKernel.fiberFirstMarginal,
       ProbabilityTheory.Kernel.map_apply _ (hfirst r)]
-  rw [hmarg, lintegral_map hmeas (hfirst r)]
+  rw [hmarg, lintegral_map ((parabolicMarginalKernel K (measurableSet_of_isAdmissibleEvolutionDomain hΩ) r τ hrτ).measurable_coe hs) (hfirst r)]
   refine lintegral_congr fun x => ?_
   rw [hind x, MovingFiberKernel.fiberFirstMarginal,
     ProbabilityTheory.Kernel.map_apply _ (hfirst τ), Measure.map_apply (hfirst τ) hs]
@@ -137,9 +129,8 @@ theorem parabolicMarginalKernel_comp_of_master_eq
 Proposition 2.1), for every moving fiber kernel `K` whose master measures are the terminal
 measures `μ q`, with ONE shared operator family `Q₀ = marginalOperators K`.  The
 Chapman-Kolmogorov identity `hComp` of the fiber kernel (Proposition 2.1, composition) is
-used for the two Chapman-Kolmogorov clauses; Hörmander enters only through `hH`. -/
+used for the two Chapman-Kolmogorov clauses; Hörmander enters only through ``. -/
 theorem terminalMarginal_properties_of_master_eq
-    (hH : HormanderHypoellipticityStatement)
     (K : MovingFiberKernel Ω γ) (hK : ∀ q, K.master q = μ q)
     (hComp : K.HasComposition (measurableSet_of_isAdmissibleEvolutionDomain hΩ)) :
     SectionTwo.HasParabolicMarginalBundle Ω γ
@@ -151,10 +142,7 @@ theorem terminalMarginal_properties_of_master_eq
   have hQ := marginalOperators_apply K (measurableSet_of_isAdmissibleEvolutionDomain hΩ)
   refine ⟨marginalOperators K (measurableSet_of_isAdmissibleEvolutionDomain hΩ), ?_, ?_, ?_, ?_,
     ?_, ?_, ?_, ?_, ?_, ?_⟩
-  · exact fun σ τ hστ y z =>
-      parabolicMarginalKernel_eq_fiberFirstMarginal_of_master_eq n hn lam Lam m L_b hlam hlamLam
-        hm hmLb Ω γ B b hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx K
-        hK hBz σ τ hστ y z
+  · exact?
   · intro σ
     refine LinearMap.ext fun f => BoundedBorel.ext fun y => ?_
     rw [hQ, parabolicMarginalKernel_self_of_master_eq n hn lam Lam m L_b hlam hlamLam hm hmLb
@@ -173,18 +161,16 @@ theorem terminalMarginal_properties_of_master_eq
       (measurableSet_of_isAdmissibleEvolutionDomain hΩ) r τ hrτ
     rw [LinearMap.comp_apply, hQ, hQ, hCK σ r τ hσr hrτ,
       ProbabilityTheory.Kernel.integral_comp (integrable_boundedBorel f _)]
-    refine integral_congr_ae (Filter.Eventually.of_forall fun y' => ?_)
-    exact (hQ r τ hrτ f y').symm
-  · exact fun σ τ hστ y f => hQ σ τ hστ f y
+    grind
+  · grind
   · exact fun E hE => measurable_parabolicMarginalAmbientMeasure K
       (measurableSet_of_isAdmissibleEvolutionDomain hΩ) E hE
-  · exact fun σ => parabolicMarginalKernel_self_of_master_eq n hn lam Lam m L_b hlam hlamLam hm
-      hmLb Ω γ B b hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx K hK σ
+  · exact?
   · exact hCK
   · intro τ F hF
     obtain ⟨V, hV1, hV2, hV3⟩ := exists_classical_terminalMarginal_of_master_eq n hn lam Lam m L_b
       hlam hlamLam hm hmLb Ω γ B b hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz
-      hb_coercive hEx hH K hK hBz τ F hF
+      hb_coercive hEx K hK hBz τ F hF
     exact ⟨V, hV1, fun σ hστ y =>
       (hV2 σ hστ y).trans (hQ σ τ hστ (terminalPositionDatum F) y).symm, hV3⟩
 

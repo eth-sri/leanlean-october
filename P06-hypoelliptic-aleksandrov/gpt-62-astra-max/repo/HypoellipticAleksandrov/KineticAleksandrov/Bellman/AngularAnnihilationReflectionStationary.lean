@@ -17,15 +17,12 @@ theorem IsBellmanStationaryAdjointPair.reflect {μ η : Measure BellmanPunctured
       (Measure.map bellmanReflection η) := by
   intro φ hφ hc hs
   let ψ := fun q : ℝ × ℝ => φ (-q)
-  have hψ : ContDiff ℝ (⊤ : ℕ∞) ψ := hφ.comp contDiff_neg
-  have hcψ : HasCompactSupport ψ := hc.comp_homeomorph (Homeomorph.neg (ℝ × ℝ))
   have hsψ : tsupport ψ ⊆ {q : ℝ × ℝ | q ≠ (0, 0)} := by
     intro q hq hzero
-    have hn := hs ((tsupport_comp_subset_preimage φ continuous_neg) hq)
-    apply hn
+    apply (hs ((tsupport_comp_subset_preimage φ continuous_neg) hq))
     rw [hzero]
-    simp only [Prod.neg_mk, neg_zero]
-  have he := hpair ψ hψ hcψ hsψ
+    simp
+  have he := hpair ψ (hφ.comp contDiff_neg) (hc.comp_homeomorph (Homeomorph.neg (ℝ × ℝ))) hsψ
   rw [bellmanReflection.measurableEmbedding.integral_map,
     bellmanReflection.measurableEmbedding.integral_map]
   have htransport : (fun q : BellmanPuncturedPlane =>
@@ -54,7 +51,7 @@ theorem IsBellmanAdjointPair.reflect {R β : ℝ} {μ η : Measure BellmanPunctu
   · intro he
     apply hp.left_ne_zero
     apply bellmanReflection.measurableEmbedding.map_injective
-    simpa only [Measure.map_zero] using he
+    simpa using he
   · have he := Measure.map_mono hp.2.2.2.1 bellmanReflection.measurable
     rwa [Measure.map_smul _ bellmanReflection.measurable.aemeasurable] at he
   · have he := Measure.map_mono hp.2.2.2.2.1 bellmanReflection.measurable

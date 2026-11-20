@@ -19,7 +19,6 @@ variable {d : ℕ}
 /-- The localized smooth estimate, with its constant fixed before all coefficient and PDE data. -/
 theorem smooth_estimate_of_slabFourierBounds (hd : 1 ≤ d) (lam Lam p : ℝ)
     (hlam : 0 < lam) (hLam : lam ≤ Lam) (hp : 2 * (d : ℝ) + 1 < p)
-    (hH : HormanderHypoellipticityStatement)
     (hbounds : ∃ (C : ℝ → ℝ≥0) (c : ℝ), ∀ (B : CoefficientField d),
       IsSectionTwoCoefficient lam Lam B →
       ∀ (S : TerminalOperatorFamily (wholeSpace d) (fun _ => (0 : PDE.Vec d)))
@@ -52,15 +51,14 @@ theorem smooth_estimate_of_slabFourierBounds (hd : 1 ≤ d) (lam Lam p : ℝ)
             (ENNReal.ofReal p) (volume.restrict (backwardCylinder P₀ R))).toReal := by
   obtain ⟨C, hC, hgreen⟩ := green_density_bound_of_slabFourierBounds hd lam Lam p
     hlam hLam hp hbounds
-  have hdR : (1 : ℝ) ≤ d := by exact_mod_cast hd
   have hp1 : 1 < p := by linarith
   let q := p / (p - 1)
   have hq : 1 < q := by
     dsimp only [q]
-    rw [lt_div_iff₀ (by linarith : 0 < p - 1)]
+    rw [lt_div_iff₀ (by linarith)]
     linarith
   have hqp : q / (q - 1) = p := by
-    apply (div_eq_iff (by linarith : q - 1 ≠ 0)).mpr
+    apply (div_eq_iff (by linarith)).mpr
     dsimp only [q]
     field_simp [sub_ne_zero.mpr hp1.ne']
     ring
@@ -70,8 +68,8 @@ theorem smooth_estimate_of_slabFourierBounds (hd : 1 ≤ d) (lam Lam p : ℝ)
   let B := kineticReflectedCoefficient A
   have hBs := isSmoothCoefficient_kineticReflectedCoefficient A hAs
   have hBsym := isSymmetricCoefficient_kineticReflectedCoefficient A hsym
-  have hBlo : HasLowerEllipticity lam B := fun t v => hlo (-t) v
-  have hBhi : HasUpperEllipticity Lam B := fun t v => hhi (-t) v
+  have hBlo := fun t v => hlo (-t) v
+  have hBhi := fun t v => hhi (-t) v
   obtain ⟨S, K, hreal⟩ := hevolution B
     ⟨hlam, hLam, isSmoothFullKineticCoefficient_zIndependent hBs, hBsym, hBlo, hBhi⟩
   let Z₀ := kineticReflection P₀
@@ -79,30 +77,16 @@ theorem smooth_estimate_of_slabFourierBounds (hd : 1 ≤ d) (lam Lam p : ℝ)
   let Γ := cylinderGreenMeasure K Z₀ R hR
   let U := u ∘ kineticReflection
   let g₀ := (fun P => max (f P) 0) ∘ kineticReflection
-  let α := 2 - (4 * (d : ℝ) + 2) / p
+  let α := 2 - (4 * d + 2) / p
   have hRp : 0 < R ^ α := Real.rpow_pos_of_pos hR _
-  have hKpos : 0 < (C + 1) * R ^ α := mul_pos (by positivity) hRp
-  have hAc : ContinuousOn (fun P : KineticPoint d =>
-      (ofTimeVelocityCoefficient B) P.time P.position P.velocity) Q :=
-    (hBs.continuous.comp (continuous_time.prodMk continuous_velocity)).continuousOn
-  have hApos : ∀ P ∈ Q,
-      ((ofTimeVelocityCoefficient B) P.time P.position P.velocity).PosSemidef :=
-    fun P _ => (posDef_of_loewner_lower hlam (hBlo P.time P.velocity)).posSemidef
-  have hpotential := green_potentials hH hlam hLam B hBs hBsym hBlo hBhi S K hreal Z₀ R hR
   have hdensity : ∀ P ∈ Q, ∃ G : KineticPoint d → ℝ, Measurable G ∧
       (∀ z, 0 ≤ G z) ∧ Γ P = (volume.restrict Q).withDensity (fun z => ENNReal.ofReal (G z)) ∧
       (eLpNorm G (ENNReal.ofReal q) (volume.restrict Q)).toReal ≤ (C + 1) * R ^ α ∧
       MemLp G (ENNReal.ofReal q) (volume.restrict Q) := by
     intro P hP
     have ht := ((mem_forwardCylinder_iff Z₀ P R hR).1 hP).2.1
-    let GP := greenMeasure K P.time (ENNReal.ofReal (remainingTime Z₀ P R))
-      (ENNReal.ofReal_pos.mpr (sub_pos.mpr ht)) (Measure.dirac (kineticStartState d P))
-    have hGP := greenMeasure_spec K P.time _
-      (ENNReal.ofReal_pos.mpr (sub_pos.mpr ht)) (Measure.dirac (kineticStartState d P))
     obtain ⟨G, hG, hden, hnorm, hscale⟩ := hgreen P₀ R hR A hAs hsym hlo hhi S K hreal P hP
-      GP hGP
-    have hnorm' : eLpNorm G (ENNReal.ofReal q) (volume.restrict Q) ≤
-        ENNReal.ofReal (C * R ^ α) := hnorm.trans (ENNReal.ofReal_le_ofReal hscale)
+      (greenMeasure K P.time (ENNReal.ofReal (remainingTime Z₀ P R)) (ENNReal.ofReal_pos.mpr (sub_pos.mpr ht)) (Measure.dirac (kineticStartState d P))) (greenMeasure_spec K P.time _ (ENNReal.ofReal_pos.mpr (sub_pos.mpr ht)) (Measure.dirac (kineticStartState d P)))
     have hden' : Γ P = (volume.restrict Q).withDensity G := by
       dsimp only [Γ, cylinderGreenMeasure]
       rw [dite_eq_left ht]
@@ -110,17 +94,14 @@ theorem smooth_estimate_of_slabFourierBounds (hd : 1 ≤ d) (lam Lam p : ℝ)
       rfl
     obtain ⟨F, hFm, hFn, hFd, hFN, hFLp⟩ := real_density_of_eLpNorm_bound
       (volume.restrict Q) (Γ P) G hG hden' q (C * R ^ α) (lt_trans zero_lt_one hq)
-      (mul_nonneg hC hRp.le) hnorm'
+      (mul_nonneg hC hRp.le) (hnorm.trans (ENNReal.ofReal_le_ofReal hscale))
     refine ⟨F, hFm, hFn, hFd, hFN.trans ?_, hFLp⟩
     exact mul_le_mul_of_nonneg_right (by linarith) hRp.le
   have hmp := measurePreserving_reflection_forward P₀ R hR
   have hUc : ContinuousOn U (closure Q) := by
-    have hc := hcont.comp (continuous_kineticReflection d).continuousOn
-      (fun x hx => hx : MapsTo kineticReflection
-        (kineticReflection ⁻¹' closure (backwardCylinder P₀ R)) _)
-    simpa only [preimage_closure_backwardCylinder_reflection P₀ R hR] using hc
+    simpa only [preimage_closure_backwardCylinder_reflection P₀ R hR] using (hcont.comp (continuous_kineticReflection d).continuousOn (fun x hx => hx : MapsTo kineticReflection (kineticReflection ⁻¹' closure (backwardCylinder P₀ R)) _))
   have hUr : IsKineticC112On U Q := by
-    simpa only [preimage_backwardCylinder_reflection P₀ R hR] using
+    simpa [preimage_backwardCylinder_reflection P₀ R hR] using
       isKineticC112On_kineticReflection u (backwardCylinder P₀ R) hreg
   have hgLp : MemLp g₀ (ENNReal.ofReal (q / (q - 1))) (volume.restrict Q) := by
     rw [hqp]
@@ -131,7 +112,7 @@ theorem smooth_estimate_of_slabFourierBounds (hd : 1 ≤ d) (lam Lam p : ℝ)
     rw [reflectedKineticOperator_reflection]
     exact neg_le_neg (hP.trans (le_max_left _ _))
   have hbound := kinetic_abp_abstract_of_continuous Z₀ R hR (ofTimeVelocityCoefficient B)
-    hAc hApos q hq ((C + 1) * R ^ α) hKpos Γ hpotential hdensity U g₀ hUc hUr
+    ((hBs.continuous.comp (continuous_time.prodMk continuous_velocity)).continuousOn) (fun P _ => (posDef_of_loewner_lower hlam (hBlo P.time P.velocity)).posSemidef) q hq ((C + 1) * R ^ α) (mul_pos (by positivity) hRp) Γ (green_potentials hlam hLam B hBs hBsym hBlo hBhi S K hreal Z₀ R hR) hdensity U g₀ hUc hUr
     (fun P _ => le_max_right _ _) hgLp hUs
   have hPr : kineticReflection P ∈ closure Q := by
     rw [← preimage_closure_backwardCylinder_reflection P₀ R hR]
@@ -143,21 +124,17 @@ theorem smooth_estimate_of_slabFourierBounds (hd : 1 ≤ d) (lam Lam p : ℝ)
       (volume.restrict Q) =
       eLpNorm ({P | 0 < u P}.indicator (fun P => max (f P) 0)) (ENNReal.ofReal p)
         (volume.restrict (backwardCylinder P₀ R)) := by
-    have hset : MeasurableSet (backwardCylinder P₀ R ∩ {P | 0 < u P}) :=
-      (hreg.continuousOn.isOpen_inter_preimage (isOpen_backwardCylinder P₀ R hR)
-        isOpen_Ioi).measurableSet
     have hEq : (backwardCylinder P₀ R ∩ {P | 0 < u P}).indicator
         (fun P => max (f P) 0) =ᵐ[volume.restrict (backwardCylinder P₀ R)]
         {P | 0 < u P}.indicator (fun P => max (f P) 0) := by
       filter_upwards [ae_restrict_mem (isOpen_backwardCylinder P₀ R hR).measurableSet]
         with P hP
-      simp only [indicator, mem_inter_iff, hP, true_and]
-    have hL := (hLp.indicator hset).ae_eq hEq
+      simp [indicator, mem_inter_iff, hP]
+    have hL := (hLp.indicator ((hreg.continuousOn.isOpen_inter_preimage (isOpen_backwardCylinder P₀ R hR) isOpen_Ioi).measurableSet)).ae_eq hEq
     have hfun : {P | 0 < U P}.indicator g₀ =
         ({P | 0 < u P}.indicator (fun P => max (f P) 0)) ∘ kineticReflection := rfl
-    rw [hfun]
     exact eLpNorm_comp_measurePreserving hL.aestronglyMeasurable hmp
   rw [hqp, hnorm, boundarySup_reflection P₀ R hR u] at hresult
-  simpa only [U, Function.comp_apply, kineticReflection_involutive P] using hresult
+  simpa [U, kineticReflection_involutive P] using hresult
 
 end HypoellipticAleksandrov.KineticAleksandrov.TheoremA

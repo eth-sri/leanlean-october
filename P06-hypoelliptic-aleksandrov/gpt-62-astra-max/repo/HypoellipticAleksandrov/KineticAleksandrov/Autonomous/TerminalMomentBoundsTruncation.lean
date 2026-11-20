@@ -18,9 +18,12 @@ open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic Set MeasureTheory
 open HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 open scoped ENNReal Topology
 
+section
+variable (g : EvolutionAmbientState 1 → ℝ) (hg : ContDiff ℝ (⊤ : ℕ∞) g) (N : ℕ)
+
+include hg N in
 /-- A smooth polynomial times the conservation cutoff is an actual bounded datum. -/
-def momentCutoff (g : EvolutionAmbientState 1 → ℝ)
-    (hg : ContDiff ℝ (⊤ : ℕ∞) g) (N : ℕ) : BoundedBorel (EvolutionAmbientState 1) := by
+def momentCutoff : BoundedBorel (EvolutionAmbientState 1) := by
   have hs := hg.mul (conservationDatum_smoothCompact N 0).1
   have hc : HasCompactSupport (fun x => g x * conservationDatum N x) :=
     (conservationDatum_smoothCompact N 0).2.1.mul_left
@@ -31,42 +34,45 @@ def momentCutoff (g : EvolutionAmbientState 1 → ℝ)
       by simpa only [Real.norm_eq_abs] using hC x).trans (le_max_left _ _)⟩
 
 /-- The compact polynomial truncation is admitted by the realization. -/
-theorem momentCutoff_smoothCompact (g : EvolutionAmbientState 1 → ℝ)
-    (hg : ContDiff ℝ (⊤ : ℕ∞) g) (N : ℕ) (tau : ℝ) :
+theorem momentCutoff_smoothCompact (tau : ℝ) :
     IsSmoothCompactTerminalDatum autonomousWholeDomain (fun _ => 0) tau
       (momentCutoff g hg N) := by
   refine ⟨hg.mul (conservationDatum_smoothCompact N tau).1,
     (conservationDatum_smoothCompact N tau).2.1.mul_left, ?_⟩
   exact tsupport_mul_subset_right.trans (conservationDatum_smoothCompact N tau).2.2
 
+end
+
 /-- Each fixed point eventually lies in the unit region of both coordinate cutoffs. -/
 theorem conservationDatum_eventually_one (x : EvolutionAmbientState 1) :
     ∀ᶠ N : ℕ in atTop, conservationDatum N x = 1 := by
-  have h1 : ∀ᶠ N : ℕ in atTop, ‖x.1‖ ≤ (N : ℝ) + 1 :=
+  have h1 : ∀ᶠ N : ℕ in atTop, ‖x.1‖ ≤ N + 1 :=
     (tendsto_natCast_atTop_atTop.eventually_ge_atTop ‖x.1‖).mono fun N h => by linarith
-  have h2 : ∀ᶠ N : ℕ in atTop, ‖x.2‖ ≤ (N : ℝ) + 1 :=
+  have h2 : ∀ᶠ N : ℕ in atTop, ‖x.2‖ ≤ N + 1 :=
     (tendsto_natCast_atTop_atTop.eventually_ge_atTop ‖x.2‖).mono fun N h => by linarith
   filter_upwards [h1, h2] with N hN1 hN2
   change zCutoffN 1 N x.1 * zCutoffN 1 N x.2 = 1
   rw [zCutoffN_eq_one hN1, zCutoffN_eq_one hN2, one_mul]
 
-/-- Comparison bounds the integral of every actual compact polynomial test. -/
-theorem momentCutoff_integral_le {lam Lam : ℝ} (hlam : 0 < lam)
-    (A : SmoothAutonomous lam Lam) (E : FullSpaceEvolution) (hE : IsFullSpaceEvolution A E)
-    (g : EvolutionAmbientState 1 → ℝ) (hg : ContDiff ℝ (⊤ : ℕ∞) g)
-    (W : Point → ℝ) (hc : Continuous W) (hr : ∀ p, IsSliceRegularAt W p)
+variable {lam Lam : ℝ} (hlam : 0 < lam) (A : SmoothAutonomous lam Lam) (E : FullSpaceEvolution)
+    (hE : IsFullSpaceEvolution A E) (g : EvolutionAmbientState 1 → ℝ) (hg : ContDiff ℝ (⊤ : ℕ∞) g)
+    (hg0 : ∀ x, 0 ≤ g x) (W : Point → ℝ) (hc : Continuous W) (hr : ∀ p, IsSliceRegularAt W p)
     (tau : ℝ) (hn : ∀ p, p.time ≤ tau → 0 ≤ W p)
     (hop : ∀ p, p.time ≤ tau →
       transportedForwardOperator (evolutionCoefficient A.a) (identityDrift 1) W p ≤ 0)
     (ht : ∀ p, p.time = tau → g (p.position, p.velocity) = W p)
-    (q : EvolutionQuery autonomousWholeDomain (fun _ => 0)) (hq : q.1.2.1 = tau) (N : ℕ) :
+    (q : EvolutionQuery autonomousWholeDomain (fun _ => 0)) (hq : q.1.2.1 = tau)
+include hlam hE hc hr hn hop ht hq
+
+/-- Comparison bounds the integral of every actual compact polynomial test. -/
+theorem momentCutoff_integral_le (N : ℕ) :
     ∫ x, momentCutoff g hg N x ∂E.2.master q ≤
       W ⟨q.1.1, q.1.2.2.1, q.1.2.2.2⟩ := by
   obtain ⟨u, hu, hrep, -⟩ := hE.1 tau (momentCutoff g hg N)
     (momentCutoff_smoothCompact g hg N tau)
   let state : EvolutionState autonomousWholeDomain (fun _ => 0) q.1.1 :=
     ⟨q.1.2.2, q.2.2⟩
-  have horder : q.1.1 ≤ tau := hq ▸ q.2.1
+  have horder := hq ▸ q.2.1
   have he := integral_master_eq_fiber E.2 autonomousWholeDomain_measurable
     q.1.1 tau horder state (momentCutoff g hg N) (momentCutoff g hg N).measurable
   have hi := hE.2.1 q.1.1 tau horder state (terminalStateDatum (momentCutoff g hg N))
@@ -87,16 +93,9 @@ theorem momentCutoff_integral_le {lam Lam : ℝ} (hlam : 0 < lam)
   exact (mul_le_mul_of_nonneg_left (conservationDatum_bounds N _).2 (hn p hp.le)).trans
     (by rw [mul_one])
 
+include hg hg0 in
 /-- Fatou transfers compact polynomial comparison to the unbounded terminal moment. -/
-theorem terminal_polynomial_lintegral_le {lam Lam : ℝ} (hlam : 0 < lam)
-    (A : SmoothAutonomous lam Lam) (E : FullSpaceEvolution) (hE : IsFullSpaceEvolution A E)
-    (g : EvolutionAmbientState 1 → ℝ) (hg : ContDiff ℝ (⊤ : ℕ∞) g) (hg0 : ∀ x, 0 ≤ g x)
-    (W : Point → ℝ) (hc : Continuous W) (hr : ∀ p, IsSliceRegularAt W p)
-    (tau : ℝ) (hn : ∀ p, p.time ≤ tau → 0 ≤ W p)
-    (hop : ∀ p, p.time ≤ tau →
-      transportedForwardOperator (evolutionCoefficient A.a) (identityDrift 1) W p ≤ 0)
-    (ht : ∀ p, p.time = tau → g (p.position, p.velocity) = W p)
-    (q : EvolutionQuery autonomousWholeDomain (fun _ => 0)) (hq : q.1.2.1 = tau) :
+theorem terminal_polynomial_lintegral_le :
     (∫⁻ x, ENNReal.ofReal (g x) ∂E.2.master q) ≤
       ENNReal.ofReal (W ⟨q.1.1, q.1.2.2.1, q.1.2.2.2⟩) := by
   let f := fun N x => ENNReal.ofReal (momentCutoff g hg N x)
@@ -116,7 +115,6 @@ theorem terminal_polynomial_lintegral_le {lam Lam : ℝ} (hlam : 0 < lam)
     boundedBorel_integrable (momentCutoff g hg N) _
   rw [← ofReal_integral_eq_lintegral_ofReal hfi (Filter.Eventually.of_forall
     (fun x => by
-      change 0 ≤ g x * conservationDatum N x
       exact mul_nonneg (hg0 x) (conservationDatum_bounds N x).1))]
   exact ENNReal.ofReal_le_ofReal (momentCutoff_integral_le hlam A E hE g hg W hc hr
     tau hn hop ht q hq N)

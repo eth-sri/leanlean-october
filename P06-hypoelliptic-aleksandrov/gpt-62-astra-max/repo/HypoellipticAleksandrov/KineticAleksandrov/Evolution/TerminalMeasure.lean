@@ -51,7 +51,6 @@ theorem map_subtype_val_restrict {α : Type*} [MeasurableSpace α] {U : Set α}
   rw [Measure.restrict_apply hA, Measure.map_apply measurable_subtype_coe (hA.inter hU),
     Measure.map_apply measurable_subtype_coe hA]
   congr 1
-  ext x
   simp
 
 end Outside
@@ -82,17 +81,20 @@ local notation "ℓ_" => terminalFunctional n hn lam Lam m L_b hlam hlamLam hm h
 local notation "ℓ_spec" => terminalFunctional_spec n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
   hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx
 
+section
+variable (σ τ : ℝ) (q : EvolutionQuery Ω γ) (hστ : σ ≤ τ) (p : EvolutionState Ω γ σ)
+
+include hστ p in
 /-- The Riesz measure on the open terminal fiber of the terminal functional of the source
 state `p` (the terminal functional and `RealRMK.rieszMeasure`). -/
-def terminalFiberRieszMeasure (σ τ : ℝ) (hστ : σ ≤ τ) (p : EvolutionState Ω γ σ) :
+def terminalFiberRieszMeasure :
     Measure (EvolutionState Ω γ τ) :=
   have := locallyCompactSpace_evolutionState (γ := γ) (τ := τ)
     (isOpen_of_isAdmissibleEvolutionDomain hΩ)
   RealRMK.rieszMeasure (ℓ_ σ τ hστ p)
 
 /-- The Riesz measure of the terminal functional has mass at most one. -/
-theorem terminalFiberRieszMeasure_univ_le_one
-    (σ τ : ℝ) (hστ : σ ≤ τ) (p : EvolutionState Ω γ σ) :
+theorem terminalFiberRieszMeasure_univ_le_one :
     terminalFiberRieszMeasure n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
       hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx σ τ hστ p univ ≤ 1 :=
   have := locallyCompactSpace_evolutionState (γ := γ) (τ := τ)
@@ -100,8 +102,7 @@ theorem terminalFiberRieszMeasure_univ_le_one
   rieszMeasure_univ_le_one (ℓ_ σ τ hστ p) (ℓ_spec σ τ hστ p).1
 
 /-- The Riesz measure of the terminal functional is finite. -/
-theorem isFiniteMeasure_terminalFiberRieszMeasure
-    (σ τ : ℝ) (hστ : σ ≤ τ) (p : EvolutionState Ω γ σ) :
+theorem isFiniteMeasure_terminalFiberRieszMeasure :
     IsFiniteMeasure (terminalFiberRieszMeasure n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
       hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx σ τ hστ p) :=
   ⟨(terminalFiberRieszMeasure_univ_le_one n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
@@ -109,8 +110,7 @@ theorem isFiniteMeasure_terminalFiberRieszMeasure
     ENNReal.one_lt_top⟩
 
 /-- The integral of a `C_c` test against the Riesz measure is the value of the functional. -/
-theorem integral_terminalFiberRieszMeasure
-    (σ τ : ℝ) (hστ : σ ≤ τ) (p : EvolutionState Ω γ σ) (f : C_c(EvolutionState Ω γ τ, ℝ)) :
+theorem integral_terminalFiberRieszMeasure (f : C_c(EvolutionState Ω γ τ, ℝ)) :
     ∫ x, f x ∂(terminalFiberRieszMeasure n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
       hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx σ τ hστ p) =
       ℓ_ σ τ hστ p f :=
@@ -119,7 +119,7 @@ theorem integral_terminalFiberRieszMeasure
   RealRMK.integral_rieszMeasure (ℓ_ σ τ hστ p) f
 
 /-- The pushed-forward Riesz measure satisfies the characterization of the terminal measure. -/
-theorem map_terminalFiberRieszMeasure_spec (q : EvolutionQuery Ω γ) :
+theorem map_terminalFiberRieszMeasure_spec :
     let ν := terminalFiberRieszMeasure n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
       hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx
       q.1.1 q.1.2.1 q.property.1 ⟨q.1.2.2, q.property.2⟩
@@ -135,7 +135,7 @@ theorem map_terminalFiberRieszMeasure_spec (q : EvolutionQuery Ω γ) :
     q.1.1 q.1.2.1 q.property.1 ⟨q.1.2.2, q.property.2⟩
   refine ⟨?_, ?_, ?_⟩
   · rw [Measure.map_apply measurable_subtype_coe MeasurableSet.univ]
-    simpa using hmass
+    exact hmass
   · exact map_subtype_val_restrict (measurableSet_evolutionStateSet_of_isOpen
       (isOpen_of_isAdmissibleEvolutionDomain hΩ)) ν
   · intro F hF
@@ -149,7 +149,7 @@ theorem map_terminalFiberRieszMeasure_spec (q : EvolutionQuery Ω γ) :
 
 /-- Uniqueness half of Every subprobability measure supported on the open fiber with the
 probe integrals `terminalValue` is the pushed-forward Riesz measure. -/
-theorem eq_map_terminalFiberRieszMeasure (q : EvolutionQuery Ω γ)
+theorem eq_map_terminalFiberRieszMeasure
     (μ' : Measure (EvolutionAmbientState n)) (hmass : μ' univ ≤ 1)
     (hres : μ'.restrict (evolutionStateSet Ω γ q.1.2.1) = μ')
     (hint : ∀ (F : BoundedBorel (EvolutionAmbientState n))
@@ -160,10 +160,9 @@ theorem eq_map_terminalFiberRieszMeasure (q : EvolutionQuery Ω γ)
       q.1.1 q.1.2.1 q.property.1 ⟨q.1.2.2, q.property.2⟩).map Subtype.val := by
   have hΩo := isOpen_of_isAdmissibleEvolutionDomain hΩ
   have := locallyCompactSpace_evolutionState (γ := γ) (τ := q.1.2.1) hΩo
-  have hU := measurableSet_evolutionStateSet_of_isOpen (γ := γ) (τ := q.1.2.1) hΩo
   set ν' : Measure (EvolutionState Ω γ q.1.2.1) := Measure.comap Subtype.val μ' with hν'
   have hmap : ν'.map Subtype.val = μ' := by
-    rw [hν', map_comap_subtype_coe hU, hres]
+    rw [hν', map_comap_subtype_coe (measurableSet_evolutionStateSet_of_isOpen (γ := γ) (τ := q.1.2.1) hΩo), hres]
   have hmassν : ν' univ = μ' univ := by
     conv_rhs => rw [← hmap]
     rw [Measure.map_apply measurable_subtype_coe MeasurableSet.univ]
@@ -178,8 +177,8 @@ theorem eq_map_terminalFiberRieszMeasure (q : EvolutionQuery Ω γ)
       |Λ f| ≤ c := by
     intro f c hc h
     have := norm_integral_le_of_norm_le_const (μ := ν') (f := fun x => f x) (C := c)
-      (Filter.Eventually.of_forall fun x => by simpa using h x)
-    calc |Λ f| = ‖∫ x, f x ∂ν'‖ := by simp [Λ, Real.norm_eq_abs]
+      (Filter.Eventually.of_forall fun x => by exact h x)
+    calc |Λ f| = ‖∫ x, f x ∂ν'‖ := by simp [Λ] <;> rfl
       _ ≤ c * ν'.real univ := this
       _ ≤ c * 1 := mul_le_mul_of_nonneg_left hreal hc
       _ = c := mul_one c
@@ -191,11 +190,8 @@ theorem eq_map_terminalFiberRieszMeasure (q : EvolutionQuery Ω γ)
     have h1 : Λ (terminalProbeCcLinear F) = ∫ x, (terminalProbeDatum F) x ∂μ' := by
       rw [← hmap, integral_map measurable_subtype_coe.aemeasurable
         (terminalProbeDatum F).measurable.aestronglyMeasurable]
-      simp [Λ]
-    have h2 := (ℓ_spec q.1.1 q.1.2.1 q.property.1 ⟨q.1.2.2, q.property.2⟩).2
-      (terminalProbeDatum F) (terminalProbeDatum_isSmoothCompact F)
-      (terminalProbeCcLinear F) fun x => rfl
-    exact h1.trans ((hint _ (terminalProbeDatum_isSmoothCompact F)).trans h2.symm)
+      simp [Λ] <;> rfl
+    exact h1.trans ((hint _ (terminalProbeDatum_isSmoothCompact F)).trans ((ℓ_spec q.1.1 q.1.2.1 q.property.1 ⟨q.1.2.2, q.property.2⟩).2 (terminalProbeDatum F) (terminalProbeDatum_isSmoothCompact F) (terminalProbeCcLinear F) fun x => rfl).symm)
   have hlin := eq_of_bounded_of_dense (terminalProbeCcLinear (Ω := Ω) (γ := γ) (τ := q.1.2.1))
     Λ.toLinearMap (ℓ_ q.1.1 q.1.2.1 q.property.1 ⟨q.1.2.2, q.property.2⟩).toLinearMap hΛbd
     (ℓ_spec q.1.1 q.1.2.1 q.property.1 ⟨q.1.2.2, q.property.2⟩).1 hagree
@@ -206,13 +202,13 @@ theorem eq_map_terminalFiberRieszMeasure (q : EvolutionQuery Ω γ)
     eq_rieszMeasure_of_integral_eq (ℓ_ q.1.1 q.1.2.1 q.property.1 ⟨q.1.2.2, q.property.2⟩) ν'
       fun f => by
         have := LinearMap.congr_fun hlin f
-        simpa [Λ] using this
+        exact this
   rw [← hmap, hν]
 
 /-- For every query there is exactly one subprobability measure on the ambient state,
 supported on the open terminal fiber, whose integrals against smooth compactly supported probes
 are the terminal point values. -/
-theorem exists_unique_terminalMeasure (q : EvolutionQuery Ω γ) :
+theorem exists_unique_terminalMeasure :
     ∃! μq : Measure (EvolutionAmbientState n),
       μq univ ≤ 1 ∧ (μq.restrict (evolutionStateSet Ω γ q.1.2.1) = μq) ∧
       ∀ (F : BoundedBorel (EvolutionAmbientState n))
@@ -224,17 +220,23 @@ theorem exists_unique_terminalMeasure (q : EvolutionQuery Ω γ) :
     fun μ' h => eq_map_terminalFiberRieszMeasure n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
       hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx q μ' h.1 h.2.1 h.2.2⟩
 
+include q in
 /-- The terminal measure `μ q` of the query `q`, chosen from the `∃!` statement
 `exists_unique_terminalMeasure`. -/
-def terminalMeasure (q : EvolutionQuery Ω γ) : Measure (EvolutionAmbientState n) :=
+def terminalMeasure : Measure (EvolutionAmbientState n) :=
   (exists_unique_terminalMeasure n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
     hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx q).choose
+
+end
 
 local notation "μ" => terminalMeasure n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
   hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx
 
+section
+variable (q : EvolutionQuery Ω γ)
+
 /-- The full characterization of `terminalMeasure`. -/
-theorem terminalMeasure_spec (q : EvolutionQuery Ω γ) :
+theorem terminalMeasure_spec :
     μ q univ ≤ 1 ∧ ((μ q).restrict (evolutionStateSet Ω γ q.1.2.1) = μ q) ∧
     ∀ (F : BoundedBorel (EvolutionAmbientState n))
       (hF : IsSmoothCompactTerminalDatum Ω γ q.1.2.1 F),
@@ -244,7 +246,7 @@ theorem terminalMeasure_spec (q : EvolutionQuery Ω γ) :
     hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx q).choose_spec.1
 
 /-- A measure with the characterization is the terminal measure. -/
-theorem terminalMeasure_eq_of_spec (q : EvolutionQuery Ω γ) (μ' : Measure (EvolutionAmbientState n))
+theorem terminalMeasure_eq_of_spec (μ' : Measure (EvolutionAmbientState n))
     (hmass : μ' univ ≤ 1) (hres : μ'.restrict (evolutionStateSet Ω γ q.1.2.1) = μ')
     (hint : ∀ (F : BoundedBorel (EvolutionAmbientState n))
       (hF : IsSmoothCompactTerminalDatum Ω γ q.1.2.1 F),
@@ -256,7 +258,7 @@ theorem terminalMeasure_eq_of_spec (q : EvolutionQuery Ω γ) (μ' : Measure (Ev
       hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx q)
 
 /-- The terminal measure is the push-forward of the Riesz measure of the terminal functional. -/
-theorem terminalMeasure_eq_map_rieszMeasure (q : EvolutionQuery Ω γ) :
+theorem terminalMeasure_eq_map_rieszMeasure :
     μ q = (terminalFiberRieszMeasure n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
       hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx
       q.1.1 q.1.2.1 q.property.1 ⟨q.1.2.2, q.property.2⟩).map Subtype.val :=
@@ -268,7 +270,7 @@ theorem terminalMeasure_eq_map_rieszMeasure (q : EvolutionQuery Ω γ) :
     h.1 h.2.1 h.2.2).symm
 
 /-- The fiber part of the terminal measure is the Riesz measure of the terminal functional. -/
-theorem comap_terminalMeasure_eq_rieszMeasure (q : EvolutionQuery Ω γ) :
+theorem comap_terminalMeasure_eq_rieszMeasure :
     Measure.comap ((↑) : EvolutionState Ω γ q.1.2.1 → EvolutionAmbientState n) (μ q) =
       terminalFiberRieszMeasure n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
         hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx
@@ -278,6 +280,8 @@ theorem comap_terminalMeasure_eq_rieszMeasure (q : EvolutionQuery Ω γ) :
   exact (MeasurableEmbedding.subtype_coe (measurableSet_evolutionStateSet_of_isOpen
     (isOpen_of_isAdmissibleEvolutionDomain hΩ))).comap_map _
 
+end
+
 /-- At equal times the terminal measure is the Dirac mass at the source. -/
 theorem terminalMeasure_eq_dirac (σ : ℝ) (p : EvolutionState Ω γ σ) :
     μ (evolutionQueryOfState Ω γ σ σ le_rfl p) = Measure.dirac p.1 := by
@@ -285,16 +289,13 @@ theorem terminalMeasure_eq_dirac (σ : ℝ) (p : EvolutionState Ω γ σ) :
     hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx
     (evolutionQueryOfState Ω γ σ σ le_rfl p) (Measure.dirac p.1) ?_ ?_ ?_).symm
   · simp
-  · have hU := measurableSet_evolutionStateSet_of_isOpen (γ := γ) (τ := σ)
-      (isOpen_of_isAdmissibleEvolutionDomain hΩ)
-    refine Measure.ext fun A hA => ?_
+  · refine Measure.ext fun A hA => ?_
     show (Measure.dirac p.1).restrict (evolutionStateSet Ω γ σ) A = Measure.dirac p.1 A
-    rw [Measure.restrict_apply hA, Measure.dirac_apply' _ (hA.inter hU),
+    rw [Measure.restrict_apply hA, Measure.dirac_apply' _ (hA.inter (measurableSet_evolutionStateSet_of_isOpen (γ := γ) (τ := σ) (isOpen_of_isAdmissibleEvolutionDomain hΩ))),
       Measure.dirac_apply' _ hA]
-    have hp : p.1 ∈ evolutionStateSet Ω γ σ := p.2
     by_cases h : p.1 ∈ A
-    · simp [Set.indicator, h, hp]
-    · simp [Set.indicator, h]
+    · simp [Set.indicator, h, (p.2)]
+    · simp [h]
   · intro F hF
     rw [integral_dirac]
     exact (terminalValue_self n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b

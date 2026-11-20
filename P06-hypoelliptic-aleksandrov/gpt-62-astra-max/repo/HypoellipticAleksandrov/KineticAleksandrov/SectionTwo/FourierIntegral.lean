@@ -20,16 +20,13 @@ theorem fourierProjection_integral_complex {d : ℕ} {Ω : Set (PDE.Vec d)}
       ∫ w, f w.1 * fourierPhase ξ q.1.2.2.2 w ∂K.master q := by
   rw [fourierProjection_eq_densityMap K q ξ ν hν]
   let g := fourierPhase ξ q.1.2.2.2
-  have hv : ((K.master q).withDensityᵥ g).variation = K.master q :=
-    variation_density_one _ g (continuous_fourierPhase ξ _).measurable
-      (norm_fourierPhase ξ _)
   have hi : Integrable (fun w : EvolutionAmbientState d => f w.1) (K.master q) := by
     obtain ⟨C, hC⟩ := hbounded
     exact Integrable.mono' (integrable_const C)
       (hf.comp measurable_fst).aestronglyMeasurable
       (Filter.Eventually.of_forall (fun w => hC w.1))
   have hiv : ((K.master q).withDensityᵥ g).Integrable (f ∘ Prod.fst) := by
-    simpa only [VectorMeasure.Integrable, hv, Function.comp_def] using hi
+    simpa only [VectorMeasure.Integrable, (variation_density_one _ g (continuous_fourierPhase ξ _).measurable (norm_fourierPhase ξ _)), Function.comp_def] using hi
   rw [VectorMeasure.integral_map measurable_fst hf.aestronglyMeasurable hiv]
   exact integral_density_one _ g (continuous_fourierPhase ξ _).measurable
     (norm_fourierPhase ξ _) _ hi

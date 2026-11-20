@@ -31,7 +31,7 @@ theorem exists_compact_continuous_scalar_jet
       EqOn w.velocityHessian (scalarSpatialHessian q) K := by
   obtain ⟨U, hU, hKU, hUV, hcU⟩ :=
     exists_open_between_and_isCompact_closure hK hV hKV
-  have hsub : U ⊆ V := subset_closure.trans hUV
+  have hsub := subset_closure.trans hUV
   have hlocal : IsScalarC12On q U :=
     ⟨hq.continuousOn.mono hsub, fun z hz => hq.timeSlice_differentiableAt (hsub hz),
       fun z hz => hq.spatialSlice_contDiffAt (hsub hz),
@@ -61,28 +61,22 @@ theorem exists_compact_continuous_scalar_jet
     exists_smooth_compact_cutoff_mul_eventuallyEq_jet hK hU hcU hKU w le_rfl
   let W := w.mulContDiffHasCompactSupport_univ le_rfl hb hc hU hbU
   have hb2 : ContDiff ℝ 2 b := hb.of_le (by simp)
-  have hdb : Continuous (timeDerivative b) := by
-    exact ((hb2.fderiv_right (m := 1) (by norm_num)).continuous.clm_apply continuous_const)
   have hgb (i : Fin N) : Continuous (fun z => velocityGradient b z i) :=
     (continuous_apply i).comp (contDiff_velocityGradient hb2).continuous
-  have hhb (i j : Fin N) : Continuous (fun z => velocityHessian b z i j) := by
-    exact (((hb2.fderiv_right (m := 1) (by norm_num)).fderiv_right
+  have hhb (i j : Fin N) : Continuous (fun z => velocityHessian b z i j) := (((hb2.fderiv_right (m := 1) (by norm_num)).fderiv_right
       (m := 0) (by norm_num)).continuous.clm_apply continuous_const).clm_apply
       continuous_const
   have hvs : tsupport W.toFun ⊆ tsupport b := tsupport_mul_subset_left
-  have hts : tsupport W.timeDeriv ⊆ tsupport b :=
+  have hts :=
     tsupport_mul_timeDeriv_subset b q (scalarTimeDerivative q)
   have hgs (i : Fin N) : tsupport (fun z => W.velocityGrad z i) ⊆ tsupport b :=
     tsupport_mul_velocityGrad_subset b q (fun z => scalarSpatialGradient q z i)
   have hhs (i j : Fin N) : tsupport (fun z => W.velocityHessian z i j) ⊆ tsupport b :=
     tsupport_mul_velocityHessian_subset b q (fun z => scalarSpatialGradient q z i)
       (fun z => scalarSpatialGradient q z j) (fun z => scalarSpatialHessian q z i j)
-  have hvc : Continuous W.toFun :=
-    (hb.continuous.continuousOn.mul hlocal.continuousOn).continuous_of_tsupport_subset
-      hU (hvs.trans hbU)
-  have htc : Continuous W.timeDeriv :=
+  have htc :=
     ((hb.continuous.continuousOn.mul hlocal.continuousOn_scalarTimeDerivative).add
-      (hlocal.continuousOn.mul hdb.continuousOn)).continuous_of_tsupport_subset
+      (hlocal.continuousOn.mul (((hb2.fderiv_right (m := 1) (by norm_num)).continuous.clm_apply continuous_const)).continuousOn)).continuous_of_tsupport_subset
       hU (hts.trans hbU)
   have hgc (i : Fin N) : Continuous (fun z => W.velocityGrad z i) :=
     ((hb.continuous.continuousOn.mul
@@ -102,7 +96,7 @@ theorem exists_compact_continuous_scalar_jet
   have eqon {E : Type} {f g : TimeVelocity N → E} (he : f =ᶠ[𝓝ˢ K] g) : EqOn f g K := by
     obtain ⟨O, _, hKO, hO⟩ := eventually_nhdsSet_iff_exists.mp he
     exact fun z hz => hO z (hKO hz)
-  exact ⟨W, hvc, compact _ hvs, htc, compact _ hts,
+  exact ⟨W, ((hb.continuous.continuousOn.mul hlocal.continuousOn).continuous_of_tsupport_subset hU (hvs.trans hbU)), compact _ hvs, htc, compact _ hts,
     fun i => ⟨hgc i, compact _ (hgs i)⟩,
     fun i j => ⟨hhc i j, compact _ (hhs i j)⟩, eqon (E := ℝ) hv, eqon (E := ℝ) ht,
     eqon (E := PDE.Vec N) hg, eqon (E := PDE.Mat N) hh⟩

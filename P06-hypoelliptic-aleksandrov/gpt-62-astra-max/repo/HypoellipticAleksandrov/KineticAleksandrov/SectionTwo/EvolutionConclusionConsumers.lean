@@ -17,16 +17,19 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 open Set MeasureTheory HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic
 open scoped ProbabilityTheory MatrixOrder
 
+variable (h : TerminalEvolutionConclusion)
+include h
+
 /-- The iteration input is exactly the shared terminal evolution statement. -/
-theorem iterationEvolutionStatement_of_conclusion (h : TerminalEvolutionConclusion) :
+theorem iterationEvolutionStatement_of_conclusion :
     Decay.IterationEvolutionStatement := h
 
 /-- The occupation input is exactly the shared terminal evolution statement. -/
-theorem occupationEvolutionStatement_of_conclusion (h : TerminalEvolutionConclusion) :
+theorem occupationEvolutionStatement_of_conclusion :
     Occupation.TerminalEvolutionStatement := h
 
 /-- The premise of Theorem A follows by whole-space identity-drift specialization. -/
-theorem taAssemblyEvolution_of_conclusion (h : TerminalEvolutionConclusion)
+theorem taAssemblyEvolution_of_conclusion
     (d : ℕ) (hd : 1 ≤ d) (lam Lam : ℝ) (hlam : 0 < lam) (hlamLam : lam ≤ Lam) :
     ∀ B : CoefficientField d, IsSectionTwoCoefficient lam Lam B →
       ∃ (S : TerminalOperatorFamily (wholeSpace d) (fun _ => (0 : PDE.Vec d)))

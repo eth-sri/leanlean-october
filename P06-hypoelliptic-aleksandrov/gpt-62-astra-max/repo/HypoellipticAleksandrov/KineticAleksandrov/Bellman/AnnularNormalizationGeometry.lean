@@ -12,8 +12,7 @@ open Set
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
 /-- A positive gauge is equivalent to being off the origin. -/
-theorem bellmanGauge_pos (q : ℝ × ℝ) (hq : q ≠ (0, 0)) : 0 < bellmanGauge q := by
-  exact Real.rpow_pos_of_pos
+theorem bellmanGauge_pos (q : ℝ × ℝ) (hq : q ≠ (0, 0)) : 0 < bellmanGauge q := Real.rpow_pos_of_pos
     (lt_of_le_of_ne (bellmanGaugePower_nonneg q)
       (Ne.symm ((bellmanGaugePower_eq_zero_iff q).not.mpr hq))) _
 
@@ -44,27 +43,21 @@ theorem bellmanGaugePower_sublevel_isCompact (C : ℝ) (hC : 0 ≤ C) :
   have hv : q.2 ^ 6 ≤ C := by
     change q.1 ^ 2 + q.2 ^ 6 ≤ C at hq
     linarith only [hq, sq_nonneg q.1]
-  have hx' := abs_le_of_even_pow_bound q.1 C hC 2 (by decide) (by decide) hx
-  have hv' := abs_le_of_even_pow_bound q.2 C hC 6 (by decide) (by decide) hv
-  rcases abs_le.mp hx' with ⟨hxl, hxu⟩
-  rcases abs_le.mp hv' with ⟨hvl, hvu⟩
+  rcases abs_le.mp (abs_le_of_even_pow_bound q.1 C hC 2 (by decide) (by decide) hx) with ⟨hxl, hxu⟩
+  rcases abs_le.mp (abs_le_of_even_pow_bound q.2 C hC 6 (by decide) (by decide) hv) with ⟨hvl, hvu⟩
   exact ⟨⟨by linarith only [hxl], hxu⟩, ⟨by linarith only [hvl], hvu⟩⟩
 
 /-- The closed anisotropic shell is compact in the ambient plane. -/
 theorem bellmanGauge_shell_isCompact (a b : ℝ) :
     IsCompact {q : ℝ × ℝ | a ≤ bellmanGauge q ∧ bellmanGauge q ≤ b} := by
-  have hc : IsClosed {q : ℝ × ℝ | a ≤ bellmanGauge q ∧ bellmanGauge q ≤ b} :=
-    (isClosed_le continuous_const bellmanGauge_continuous).inter
-      (isClosed_le bellmanGauge_continuous continuous_const)
   apply IsCompact.of_isClosed_subset
-    (bellmanGaugePower_sublevel_isCompact (max 0 (b ^ 6)) (le_max_left _ _)) hc
+    (bellmanGaugePower_sublevel_isCompact (max 0 (b ^ 6)) (le_max_left _ _)) ((isClosed_le continuous_const bellmanGauge_continuous).inter (isClosed_le bellmanGauge_continuous continuous_const))
   intro q hq
   change bellmanGaugePower q ≤ max 0 (b ^ 6)
   rw [← bellmanGauge_pow_six]
   exact (pow_le_pow_left₀ (bellmanGauge_nonneg q) hq.2 6).trans (le_max_right _ _)
 
 /-- The polynomial gauge is smooth on the whole ambient plane. -/
-theorem bellmanGaugePower_contDiff : ContDiff ℝ (⊤ : ℕ∞) bellmanGaugePower := by
-  exact (contDiff_fst.pow 2).add (contDiff_snd.pow 6)
+theorem bellmanGaugePower_contDiff : ContDiff ℝ (⊤ : ℕ∞) bellmanGaugePower := (contDiff_fst.pow 2).add (contDiff_snd.pow 6)
 
 end HypoellipticAleksandrov.KineticAleksandrov

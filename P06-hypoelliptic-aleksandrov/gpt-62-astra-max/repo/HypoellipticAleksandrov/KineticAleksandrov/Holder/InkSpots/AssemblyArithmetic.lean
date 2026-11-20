@@ -13,39 +13,46 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Holder.InkSpots
 
 open Set MeasureTheory Covering
 
-/-- Proportional gain from factor-eight kinetic selection. -/
-def coveringGain (d : ℕ) : ℝ := ((8 : ℝ)^(4*d+2))⁻¹
+section
+variable (d : ℕ)
 
+include d in
+/-- Proportional gain from factor-eight kinetic selection. -/
+def coveringGain : ℝ := ((8 : ℝ)^(4*d+2))⁻¹
+
+include d in
 /-- A single dimension-only constant absorbs both spatial and delayed leakage shells. -/
-def coveringLeakage (d : ℕ) : ℝ :=
+def coveringLeakage : ℝ :=
   (32+4*(5 : ℝ)^d+4*(d : ℝ))*(volume (unitCylinder d)).toReal
 
 /-- The gain is positive and no larger than one half. -/
-theorem coveringGain_bounds (d : ℕ) : 0 < coveringGain d ∧ coveringGain d ≤ 1/2 := by
+theorem coveringGain_bounds : 0 < coveringGain d ∧ coveringGain d ≤ 1/2 := by
   have hB : 2 ≤ (8 : ℝ)^(4*d+2) := by
     rw [pow_add]
     have h := one_le_pow₀ (by norm_num : (1 : ℝ) ≤ 8) (n := 4*d)
     norm_num
     nlinarith
   have hpos : 0 < coveringGain d := inv_pos.mpr (by positivity)
-  have heq : coveringGain d*(8 : ℝ)^(4*d+2) = 1 := inv_mul_cancel₀ (by positivity)
+  have heq : coveringGain d*8^(4*d+2) = 1 := inv_mul_cancel₀ (by positivity)
   exact ⟨hpos, by nlinarith⟩
 
 /-- The leakage constant is positive and at least 32 times unit volume. -/
-theorem coveringLeakage_bounds (d : ℕ) : 0 < coveringLeakage d ∧
+theorem coveringLeakage_bounds : 0 < coveringLeakage d ∧
     32*(volume (unitCylinder d)).toReal ≤ coveringLeakage d := by
   have hV : 0 < (volume (unitCylinder d)).toReal := ENNReal.toReal_pos
     (volume_cylinder_pos_ne_top _ zero_lt_one).1.ne'
     (volume_cylinder_pos_ne_top _ zero_lt_one).2
-  have hn : 0 ≤ (d : ℝ) := Nat.cast_nonneg d
+  have hn : 0 ≤ d := Nat.cast_nonneg d
   have hk : 0 ≤ (5 : ℝ)^d := by positivity
   dsimp [coveringLeakage]
   constructor <;> nlinarith
 
+end
+
 /-- The delayed multiplier is at least one for every positive natural height. -/
 theorem delay_multiplier_ge_one {m : ℕ} (hm : 0 < m) :
     1 ≤ ((m : ℝ)+1)/(m : ℝ) := by
-  apply (le_div_iff₀ (by exact_mod_cast hm : (0 : ℝ) < m)).mpr
+  apply (le_div_iff₀ (by exact_mod_cast hm)).mpr
   linarith
 
 /-- A positive threshold leaves at least half of the multiplicative density factor. -/
@@ -77,11 +84,7 @@ theorem trivial_large_height {V f C q a h : ℝ} (hV : 0 ≤ V) (hf : 0 ≤ f)
     V ≤ q*a*(f+C*h) := by
   have hqa : 1/2 ≤ q*a := by nlinarith
   have hC0 : 0 ≤ C := by linarith
-  have hCh : 2*V ≤ C*h := by
-    have h := mul_le_mul_of_nonneg_left hh hC0
-    nlinarith
   have hnon : 0 ≤ f+C*h := by nlinarith
-  have h := mul_le_mul_of_nonneg_right hqa hnon
   nlinarith
 
 end HypoellipticAleksandrov.KineticAleksandrov.Holder.InkSpots

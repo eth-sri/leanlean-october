@@ -22,8 +22,11 @@ theorem entrance_time_young (w a : ℤ → ℝ≥0∞) (q : ℝ) (hq : 1 < q) :
   simp_rw [he]
   exact position_two_index_young w a q hq
 
+variable (c₀ : ℝ) (hc₀ : 0 < c₀)
+include hc₀
+
 /-- Exponential time-bin weights have a summable integer majorant. -/
-theorem entranceBinWeight_le (c₀ : ℝ) (hc₀ : 0 < c₀) (j k : ℤ) :
+theorem entranceBinWeight_le (j k : ℤ) :
     entranceBinWeight c₀ j k ≤ ENNReal.ofReal (Real.exp c₀) *
       ENNReal.ofReal (Real.exp (-c₀ * |((j - k : ℤ) : ℝ)|)) := by
   unfold entranceBinWeight
@@ -40,7 +43,7 @@ theorem entranceBinWeight_le (c₀ : ℝ) (hc₀ : 0 < c₀) (j k : ℤ) :
   · exact zero_le
 
 /-- The actual causal time convolution has its q-power sum bounded by the input mass sum. -/
-theorem entrance_convolution_power_sum (c₀ : ℝ) (hc₀ : 0 < c₀)
+theorem entrance_convolution_power_sum
     (a : ℤ → ℝ≥0∞) (q : ℝ) (hq : 1 < q) :
     (∑' j : ℤ, (∑' k : ℤ, entranceBinWeight c₀ j k * a k) ^ q) ≤
       (ENNReal.ofReal (Real.exp c₀) *

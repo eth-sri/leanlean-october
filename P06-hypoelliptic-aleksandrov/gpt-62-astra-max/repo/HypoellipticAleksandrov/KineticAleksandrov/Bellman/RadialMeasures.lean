@@ -12,38 +12,46 @@ noncomputable section
 open MeasureTheory Set
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
+section
+variable {lam Lam : ℝ} (alpha : ℝ)
+    (w : BellmanPositiveTime × (BellmanSphere × BellmanCoefficient lam Lam))
+    (pi : Measure (BellmanSphere × BellmanCoefficient lam Lam))
+
 /-- Positive radial dilation of a unit-gauge point stays away from the origin. -/
-theorem sphereRadialPoint_ne_zero {lam Lam : ℝ}
-    (w : BellmanPositiveTime × (BellmanSphere × BellmanCoefficient lam Lam)) :
+theorem sphereRadialPoint_ne_zero :
     bellmanPlaneDilation w.1.val w.2.1.val ≠ (0, 0) :=
   bellmanPlaneDilation_ne_zero w.1.val w.1.property w.2.1.val w.2.1.ne_zero
 
+include w in
 /-- The radial projection uses the source's anisotropic dilation. -/
-def sphereRadialPoint {lam Lam : ℝ}
-    (w : BellmanPositiveTime × (BellmanSphere × BellmanCoefficient lam Lam)) :
+def sphereRadialPoint :
     BellmanPuncturedPlane :=
   ⟨bellmanPlaneDilation w.1.val w.2.1.val, sphereRadialPoint_ne_zero w⟩
 
+include alpha in
 /-- The radial weight has exponent one minus the homogeneous function degree. -/
-def bellmanRadiusWeight (alpha : ℝ) : BellmanPositiveTime → ENNReal :=
+def bellmanRadiusWeight : BellmanPositiveTime → ENNReal :=
   fun r => ENNReal.ofReal (r.val ^ (1 - alpha))
 
+include alpha in
 /-- The source's weighted positive radial volume. -/
-def bellmanRadiusMeasure (alpha : ℝ) : Measure BellmanPositiveTime :=
+def bellmanRadiusMeasure : Measure BellmanPositiveTime :=
   bellmanPositiveTimeVolume.withDensity (bellmanRadiusWeight alpha)
 
+include alpha pi in
 /-- The first radial adjoint measure is the actual radial pushforward. -/
-def radialMu {lam Lam : ℝ} (alpha : ℝ)
-    (pi : Measure (BellmanSphere × BellmanCoefficient lam Lam)) :
+def radialMu :
     Measure BellmanPuncturedPlane :=
   Measure.map sphereRadialPoint ((bellmanRadiusMeasure alpha).prod pi)
 
+include alpha pi in
 /-- The second radial adjoint measure includes the actual diffusion coefficient density. -/
-def radialEta {lam Lam : ℝ} (alpha : ℝ)
-    (pi : Measure (BellmanSphere × BellmanCoefficient lam Lam)) :
+def radialEta :
     Measure BellmanPuncturedPlane :=
   Measure.map sphereRadialPoint (((bellmanRadiusMeasure alpha).prod pi).withDensity
     (fun w => ENNReal.ofReal w.2.2.val))
+
+end
 
 /-- The radial projection is continuous on its actual product carrier. -/
 theorem continuous_sphereRadialPoint (lam Lam : ℝ) :
@@ -62,8 +70,7 @@ theorem sphereRadialPoint_gauge {lam Lam : ℝ}
 theorem measurable_bellmanRadiusWeight (alpha : ℝ) :
     Measurable (bellmanRadiusWeight alpha) := by
   unfold bellmanRadiusWeight
-  exact (ENNReal.continuous_ofReal.comp
-    (continuous_subtype_val.rpow_const (fun r => Or.inl r.property.ne'))).measurable
+  fun_prop
 
 /-- Continuous radial weights are finite on every compact subset of positive radii. -/
 instance bellmanRadiusMeasure_finiteOnCompacts (alpha : ℝ) :

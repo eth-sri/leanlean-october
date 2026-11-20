@@ -25,33 +25,39 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Holder
 open Set MeasureTheory
 open scoped ENNReal
 
+variable {d : ℕ} (A : FullKineticCoefficient d) (psi : KineticPoint d → ℝ)
+    (O : Set (KineticPoint d)) (p C_A : ℝ) (u : KineticPoint d → ℝ) (E : Set (KineticPoint d))
+
+include psi E in
 /-- Smooth on an open neighbourhood of the specified set, in (t,x,v) coordinates. -/
-def IsSmoothNear {d : ℕ} (psi : KineticPoint d → ℝ) (E : Set (KineticPoint d)) : Prop :=
+def IsSmoothNear : Prop :=
   ∃ U : Set (KineticPoint d), IsOpen U ∧ E ⊆ U ∧
     ContDiffOn ℝ (⊤ : ℕ∞) (psi ∘ (KineticPoint.equivProd d).symm)
       ((KineticPoint.equivProd d) '' U)
 
 /-- The local neighbourhood Ω_{R₀,𝒞} in the source Hölder estimate. -/
-def holderNeighbourhood {d : ℕ} (R₀ : ℝ) (K : Set (KineticPoint d)) :
+def holderNeighbourhood (R₀ : ℝ) (K : Set (KineticPoint d)) :
     Set (KineticPoint d) :=
   ⋃ P ∈ K, backwardCylinder P (2 * R₀)
 
+include u E in
 /-- Literal oscillation: supremum of values minus infimum of values. -/
-def oscillationOn {d : ℕ} (u : KineticPoint d → ℝ) (E : Set (KineticPoint d)) : ℝ :=
+def oscillationOn : ℝ :=
   sSup (u '' E) - sInf (u '' E)
 
+include A in
 /-- The localised positive source in e:amp, including its superlevel indicator. -/
-def localizedSource {d : ℕ} (A : FullKineticCoefficient d)
+def localizedSource
     (psi u : KineticPoint d → ℝ) : KineticPoint d → ℝ :=
   {P | u P < psi P}.indicator (fun P => max (backwardOperator A psi P) 0)
 
+include A O p C_A u in
 /-- Source-defined admissible supersolution with Aleksandrov data (p,C_A).
 The coefficient is an explicit parameter because the predicate contains P_A.
 Under the standing bounded elliptic Borel coefficient assumptions, the local
 source norm is finite for every smooth-near-closure barrier; `toReal` is then
 its ordinary real Lp norm, as in the Aleksandrov estimate. -/
-def IsAdmissibleSupersolution {d : ℕ} (A : FullKineticCoefficient d)
-    (O : Set (KineticPoint d)) (p C_A : ℝ) (u : KineticPoint d → ℝ) : Prop :=
+def IsAdmissibleSupersolution : Prop :=
   ContinuousOn u O ∧
     ∀ (P₀ : KineticPoint d) (R : ℝ), 0 < R →
       closure (backwardCylinder P₀ R) ⊆ O →
@@ -63,9 +69,9 @@ def IsAdmissibleSupersolution {d : ℕ} (A : FullKineticCoefficient d)
               (eLpNorm (localizedSource A psi u) (ENNReal.ofReal p)
                 (volume.restrict (backwardCylinder P₀ R))).toReal
 
+include A O p C_A u in
 /-- A source-defined admissible solution: both u and -u are admissible supersolutions. -/
-def IsAdmissibleSolution {d : ℕ} (A : FullKineticCoefficient d)
-    (O : Set (KineticPoint d)) (p C_A : ℝ) (u : KineticPoint d → ℝ) : Prop :=
+def IsAdmissibleSolution : Prop :=
   IsAdmissibleSupersolution A O p C_A u ∧
     IsAdmissibleSupersolution A O p C_A (fun P => -u P)
 

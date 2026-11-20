@@ -11,34 +11,34 @@ open Set MeasureTheory HypoellipticAleksandrov Filter
 open HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 open scoped ENNReal
 
+variable (H : Interval) (K : MovingFiberKernel (intervalDomain H) (fun _ => 0)) (T : ℝ)
+    (e : StripPole H (T : WithTop ℝ))
+
+include H T in
 /-- The physical open past strip, without an artificial lower time endpoint. -/
-def stripPast (H : Interval) (T : ℝ) : Set Point :=
+def stripPast : Set Point :=
   {p | p.time < T ∧ p.velocity 0 ∈ H.carrier}
 
 /-- The physical past strip is open in the native topology. -/
-theorem isOpen_stripPast (H : Interval) (T : ℝ) : IsOpen (stripPast H T) :=
+theorem isOpen_stripPast : IsOpen (stripPast H T) :=
   (isOpen_Iio.preimage continuous_time).inter
     (isOpen_Ioo.preimage ((continuous_apply 0).comp continuous_velocity))
 
-private theorem elapsedPhysicalPoint_mem_stripPast (H : Interval) (T : ℝ)
-    (e : StripPole H (T : WithTop ℝ)) (τ : ElapsedTime (stripHorizon T e.1.time))
+private theorem elapsedPhysicalPoint_mem_stripPast (τ : ElapsedTime (stripHorizon T e.1.time))
     (w : EvolutionAmbientState 1)
     (hw : w ∈ evolutionStateSet (intervalDomain H) (fun _ => 0) (e.1.time + τ.1)) :
     elapsedPhysicalPoint e.1.time (τ, w) ∈ stripPast H T := by
   refine ⟨?_, ?_⟩
-  · have hR : 0 < T - e.1.time := sub_pos.mpr (WithTop.coe_lt_coe.mp e.2.1)
-    have hτ : τ.1 < T - e.1.time := (ENNReal.ofReal_lt_ofReal_iff hR).mp τ.2.2
+  · have hR := sub_pos.mpr (WithTop.coe_lt_coe.mp e.2.1)
+    have hτ := (ENNReal.ofReal_lt_ofReal_iff hR).mp τ.2.2
     change e.1.time + τ.1 < T
     linarith
   · have hv : w.1 ∈ intervalDomain H := by
-      simpa only [movingDomain, PDE.mem_translateSet_iff_sub_mem, sub_zero] using hw.1
-    simpa only [stripPast, elapsedPhysicalPoint, Interval.carrier, PDE.vecOneCoordinate] using
-      PDE.mem_oneDimensionalAxisBox_iff.mp hv
+      simpa [movingDomain] using hw.1
+    exact PDE.mem_oneDimensionalAxisBox_iff.mp hv
 
 /-- Killing and elapsed-time truncation support the actual measure on the open past strip. -/
-theorem stripGreenOfKernel_compl_stripPast (H : Interval)
-    (K : MovingFiberKernel (intervalDomain H) (fun _ => 0)) (T : ℝ)
-    (e : StripPole H (T : WithTop ℝ)) :
+theorem stripGreenOfKernel_compl_stripPast :
     stripGreenOfKernel H K T e (stripPast H T)ᶜ = 0 := by
   have hD := (isOpen_stripPast H T).measurableSet
   rw [← lintegral_indicator_one hD.compl]
@@ -52,16 +52,11 @@ theorem stripGreenOfKernel_compl_stripPast (H : Interval)
   filter_upwards [ae_restrict_mem
     (measurableSet_evolutionStateSet (intervalDomain_measurable H) (e.1.time + τ.1))]
     with w hw
-  have hn : elapsedPhysicalPoint e.1.time (τ, w) ∉ (stripPast H T)ᶜ := by
-    exact not_not.mpr (elapsedPhysicalPoint_mem_stripPast H T e τ w hw)
-  exact indicator_of_notMem hn _
+  exact indicator_of_notMem (not_not.mpr (elapsedPhysicalPoint_mem_stripPast H T e τ w hw)) _
 
 /-- Green almost every physical point lies in the open past strip. -/
-theorem stripGreenOfKernel_ae_mem_stripPast (H : Interval)
-    (K : MovingFiberKernel (intervalDomain H) (fun _ => 0)) (T : ℝ)
-    (e : StripPole H (T : WithTop ℝ)) :
+theorem stripGreenOfKernel_ae_mem_stripPast :
     ∀ᵐ p ∂stripGreenOfKernel H K T e, p ∈ stripPast H T := by
-  rw [ae_iff]
-  exact stripGreenOfKernel_compl_stripPast H K T e
+  apply stripGreenOfKernel_compl_stripPast
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

@@ -33,10 +33,10 @@ theorem borelSmoothCoefficient_spec {d : ℕ} {lam Lam : ℝ}
     IsSymmetricCoefficient (borelSmoothCoefficient φ A) ∧
     HasLowerEllipticity lam (borelSmoothCoefficient φ A) ∧
     HasUpperEllipticity Lam (borelSmoothCoefficient φ A) := by
-  let : TopologicalSpace (PDE.Mat d) :=
+  let :=
     let M := Matrix.normedAddCommGroup (m := Fin d) (n := Fin d) (α := ℝ)
     M.toMetricSpace.toUniformSpace.toTopologicalSpace
-  let : ContinuousENorm (PDE.Mat d) :=
+  let :=
     let M := Matrix.normedAddCommGroup (m := Fin d) (n := Fin d) (α := ℝ)
     M.toSeminormedAddCommGroup.toSeminormedAddGroup.toContinuousENorm
   have : (volume : Measure (ℝ × PDE.Vec d)).IsAddHaarMeasure :=
@@ -48,18 +48,14 @@ theorem borelSmoothCoefficient_spec {d : ℕ} {lam Lam : ℝ}
     Matrix.posSemidef_is_closed.preimage (continuous_id.sub continuous_const)⟩
   have hloc := borel_coefficient_locallyIntegrable hlam hLam A hBorel hlo hhi
   have hbounds (z : ℝ × PDE.Vec d) :
-      lam • (1 : PDE.Mat d) ≤ coefficientAt (borelSmoothCoefficient φ A) z ∧
-      coefficientAt (borelSmoothCoefficient φ A) z ≤ Lam • (1 : PDE.Mat d) := by
+      lam • 1 ≤ coefficientAt (borelSmoothCoefficient φ A) z ∧
+      coefficientAt (borelSmoothCoefficient φ A) z ≤ Lam • 1 := by
     have hgi := φ.hasCompactSupport_normed.convolutionExists_left
       (μ := volume) (lsmul ℝ ℝ) (φ.continuous_normed (μ := volume)) hloc z
     have hli := (φ.integrable_normed (μ := volume)).smul_const (lam • (1 : PDE.Mat d))
     have hui := (φ.integrable_normed (μ := volume)).smul_const (Lam • (1 : PDE.Mat d))
-    have hl := integral_mono (E := PDE.Mat d) hli hgi fun y =>
-      smul_le_smul_of_nonneg_left (hlo (z - y).1 (z - y).2) (φ.nonneg_normed y)
-    have hh := integral_mono (E := PDE.Mat d) hgi hui fun y =>
-      smul_le_smul_of_nonneg_left (hhi (z - y).1 (z - y).2) (φ.nonneg_normed y)
     simpa only [integral_smul_const,φ.integral_normed,one_smul,
-      coefficientAt,borelSmoothCoefficient,convolution,lsmul_apply] using And.intro hl hh
+      coefficientAt,borelSmoothCoefficient,convolution,lsmul_apply] using And.intro (integral_mono (E := PDE.Mat d) hli hgi fun y => smul_le_smul_of_nonneg_left (hlo (z - y).1 (z - y).2) (φ.nonneg_normed y)) (integral_mono (E := PDE.Mat d) hgi hui fun y => smul_le_smul_of_nonneg_left (hhi (z - y).1 (z - y).2) (φ.nonneg_normed y))
   refine ⟨?_,?_,fun t v => (hbounds (t,v)).1,fun t v => (hbounds (t,v)).2⟩
   · exact φ.hasCompactSupport_normed.contDiff_convolution_left (lsmul ℝ ℝ)
       φ.contDiff_normed hloc

@@ -24,7 +24,7 @@ theorem bellman_map_withDensity (T : A ≃ₜ B) (μ : Measure A)
     withDensity_apply _ hS]
   rw [setLIntegral_map hS (show Measurable (fun q => f (T.symm q)) from
     hf.comp T.symm.measurable) T.measurable]
-  simp only [T.symm_apply_apply]
+  simp
 
 /-- A continuous real weight preserves finiteness on compact sets. -/
 theorem bellman_withDensity_finiteOnCompacts [T2Space A] (μ : Measure A)
@@ -40,7 +40,7 @@ theorem bellman_withDensity_finiteOnCompacts [T2Space A] (μ : Measure A)
         filter_upwards [ae_restrict_mem hK.measurableSet] with q hq
         exact ENNReal.ofReal_le_ofReal (hM ⟨q, hq, rfl⟩)
       _ = ENNReal.ofReal M * μ K := by
-        rw [lintegral_const, Measure.restrict_apply_univ]
+        simp
       _ < ⊤ := ENNReal.mul_lt_top ENNReal.ofReal_ne_top.lt_top hK.measure_lt_top
 
 /-- A homeomorphism preserves finiteness on compact sets. -/
@@ -61,8 +61,11 @@ theorem bellman_map_homeomorph_finiteOnCompacts [T2Space A] [T2Space B]
     rw [he]
     exact (hK.image T.symm.continuous).measure_lt_top
 
+variable (r : ℝ) (hr : 0 < r)
+
+include hr in
 /-- A positive position scale acts as an actual homeomorphism of the positive radial carrier. -/
-def bellmanRadialScale (r : ℝ) (hr : 0 < r) :
+def bellmanRadialScale :
     BellmanPositiveTime ≃ₜ BellmanPositiveTime where
   toFun s := ⟨r * s.val, mul_pos hr s.property⟩
   invFun s := ⟨r⁻¹ * s.val, mul_pos (inv_pos.mpr hr) s.property⟩
@@ -76,7 +79,7 @@ def bellmanRadialScale (r : ℝ) (hr : 0 < r) :
   continuous_invFun := by fun_prop
 
 /-- Positive radial volume transforms by the inverse radial factor. -/
-theorem map_bellmanPositiveTimeVolume_radialScale (r : ℝ) (hr : 0 < r) :
+theorem map_bellmanPositiveTimeVolume_radialScale :
     Measure.map (bellmanRadialScale r hr) bellmanPositiveTimeVolume =
       ENNReal.ofReal r⁻¹ • bellmanPositiveTimeVolume := by
   have he : MeasurableEmbedding (Subtype.val : BellmanPositiveTime → ℝ) :=
@@ -84,7 +87,7 @@ theorem map_bellmanPositiveTimeVolume_radialScale (r : ℝ) (hr : 0 < r) :
   apply he.map_injective
   rw [Measure.map_map he.measurable (bellmanRadialScale r hr).measurable]
   change Measure.map ((fun t : ℝ => r * t) ∘
-    (Subtype.val : BellmanPositiveTime → ℝ)) bellmanPositiveTimeVolume = _
+    Subtype.val) bellmanPositiveTimeVolume = _
   rw [← Measure.map_map (by fun_prop) he.measurable,
     map_bellmanPositiveTimeVolume_coe, map_positiveVolume_mul r hr,
     Measure.map_smul _ he.measurable.aemeasurable, map_bellmanPositiveTimeVolume_coe]

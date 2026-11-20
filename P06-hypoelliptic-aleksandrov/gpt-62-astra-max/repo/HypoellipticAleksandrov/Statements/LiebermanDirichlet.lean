@@ -53,8 +53,7 @@ theorem exists_isClassicalBackwardDirichletSolution_openEllipsoid_uniqueOn_of_li
           r₀ r₁ (openEllipsoid Q) a b
           (fun _ _ => 0) (fun _ _ => 0) φ (fun _ => 0) v →
           Set.EqOn v u
-            (scalarParabolicClosedCylinder r₀ r₁ (openEllipsoid Q)) := by
-  exact HypoellipticAleksandrov.KineticAleksandrov.ellipsoidDirichlet_aux
+            (scalarParabolicClosedCylinder r₀ r₁ (openEllipsoid Q)) := HypoellipticAleksandrov.KineticAleksandrov.ellipsoidDirichlet_aux
     hQ hr lam Lam hlam hlamLam a b haSymm haSmooth haLower haUpper
     hbSmooth φ hφSmooth hφCompact hφSupport
 

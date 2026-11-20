@@ -15,9 +15,12 @@ open Set MeasureTheory HypoellipticAleksandrov
 def capacityCylinderInterval (Z0 : Point) (R : ℝ) (hR : 0 < R) : Interval :=
   ⟨Z0.velocity 0 - R, Z0.velocity 0 + R, by linarith⟩
 
+variable {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam) (A : SmoothAutonomous lam Lam)
+    (Z0 P : Point) (R : ℝ) (hR : 0 < R) (hP : P ∈ forwardCylinder Z0 R hR)
+
+include hP in
 /-- Every forward-cylinder point is an interior pole of its velocity strip. -/
-def capacityCylinderPole (Z0 P : Point) (R : ℝ) (hR : 0 < R)
-    (hP : P ∈ forwardCylinder Z0 R hR) :
+def capacityCylinderPole :
     StripPole (capacityCylinderInterval Z0 R hR) (↑(Z0.time + R ^ 2) : WithTop ℝ) := by
   refine ⟨P, WithTop.coe_lt_coe.mpr hP.2.1, ?_⟩
   have hn := (PDE.mem_euclideanBall_iff_vecEuclideanNorm_lt hR).mp hP.2.2.1
@@ -28,14 +31,9 @@ def capacityCylinderPole (Z0 P : Point) (R : ℝ) (hR : 0 < R)
   constructor <;> linarith
 
 /-- Exact velocity slices have zero mass in the forward-cylinder velocity strip. -/
-theorem cylinder_strip_velocity_slice_zero
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (Z0 P : Point) (R : ℝ) (hR : 0 < R)
-    (hP : P ∈ forwardCylinder Z0 R hR) (v : ℝ) :
-    stripGreen hH hLE hlam hLam A (capacityCylinderInterval Z0 R hR)
+theorem cylinder_strip_velocity_slice_zero (v : ℝ) :
+    stripGreen hlam hLam A (capacityCylinderInterval Z0 R hR)
       (Z0.time + R ^ 2) (capacityCylinderPole Z0 P R hR hP) {p | p.velocity 0 = v} = 0 :=
-  stripGreen_velocity_slice_zero hH hLE hlam hLam A (capacityCylinderInterval Z0 R hR)
-    (Z0.time + R ^ 2) (capacityCylinderPole Z0 P R hR hP) v
+  by apply stripGreen_velocity_slice_zero <;> assumption
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

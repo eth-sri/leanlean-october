@@ -16,13 +16,16 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Decay
 open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic
 
+section
+variable {d : ℕ} (u : KineticPoint d → ℝ) (ε T : ℝ) (p : KineticPoint d)
+
+include u ε T in
 /-- Subtract a positive affine function of remaining time. -/
-def maximumTerminalTilt {d : ℕ} (u : KineticPoint d → ℝ) (ε T : ℝ) :
+def maximumTerminalTilt :
     KineticPoint d → ℝ := fun p => u p - ε * (T - p.time)
 
 /-- The diffused Hessian is unchanged by the terminal perturbation. -/
-theorem diffusedHessian_maximumTerminalTilt {d : ℕ} (u : KineticPoint d → ℝ)
-    (ε T : ℝ) (p : KineticPoint d) :
+theorem diffusedHessian_maximumTerminalTilt :
     diffusedHessian (maximumTerminalTilt u ε T) p = diffusedHessian u p := by
   have heq : (fun y : PDE.Vec d => kineticPositionGradient
       (maximumTerminalTilt u ε T) ⟨p.time, y, p.velocity⟩) =
@@ -36,19 +39,22 @@ theorem diffusedHessian_maximumTerminalTilt {d : ℕ} (u : KineticPoint d → �
   rw [heq]
 
 /-- The transported gradient is unchanged by the terminal perturbation. -/
-theorem kineticVelocityGradient_maximumTerminalTilt {d : ℕ} (u : KineticPoint d → ℝ)
-    (ε T : ℝ) (p : KineticPoint d) :
+theorem kineticVelocityGradient_maximumTerminalTilt :
     kineticVelocityGradient (maximumTerminalTilt u ε T) p = kineticVelocityGradient u p := by
   ext i
   exact congrArg (fun L : PDE.Vec d →L[ℝ] ℝ => L (PDE.basisVec i))
     (fderiv_sub_const (𝕜 := ℝ) (f := fun z => u ⟨p.time, p.position, z⟩)
       (x := p.velocity) (ε * (T - p.time)))
 
+end
+
+variable {d : ℕ} (B : FullKineticCoefficient d) (b : PDE.Vec d → PDE.Vec d)
+    {u : KineticPoint d → ℝ} {p : KineticPoint d}
+    (hu : DifferentiableAt ℝ (fun t => u ⟨t, p.position, p.velocity⟩) p.time) (ε T : ℝ)
+include hu
+
 /-- The first time derivative gains ε under the terminal perturbation. -/
-theorem kineticTimeDerivative_maximumTerminalTilt {d : ℕ} {u : KineticPoint d → ℝ}
-    {p : KineticPoint d}
-    (hu : DifferentiableAt ℝ (fun t => u ⟨t, p.position, p.velocity⟩) p.time)
-    (ε T : ℝ) :
+theorem kineticTimeDerivative_maximumTerminalTilt :
     kineticTimeDerivative (maximumTerminalTilt u ε T) p = kineticTimeDerivative u p + ε := by
   have hd : HasDerivAt (fun t => maximumTerminalTilt u ε T ⟨t, p.position, p.velocity⟩)
       (kineticTimeDerivative u p + ε) p.time := by
@@ -60,11 +66,7 @@ theorem kineticTimeDerivative_maximumTerminalTilt {d : ℕ} {u : KineticPoint d 
   exact hd.deriv
 
 /-- The terminal perturbation strictly increases the transported operator by ε. -/
-theorem transportedForwardOperator_maximumTerminalTilt {d : ℕ}
-    (B : FullKineticCoefficient d) (b : PDE.Vec d → PDE.Vec d)
-    {u : KineticPoint d → ℝ} {p : KineticPoint d}
-    (hu : DifferentiableAt ℝ (fun t => u ⟨t, p.position, p.velocity⟩) p.time)
-    (ε T : ℝ) :
+theorem transportedForwardOperator_maximumTerminalTilt :
     transportedForwardOperator B b (maximumTerminalTilt u ε T) p =
       transportedForwardOperator B b u p + ε := by
   rw [transportedForwardOperator_apply, transportedForwardOperator_apply,

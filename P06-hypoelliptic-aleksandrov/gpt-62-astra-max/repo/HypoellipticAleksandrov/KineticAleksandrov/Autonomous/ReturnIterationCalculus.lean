@@ -23,14 +23,10 @@ theorem return_recurrence_substitution (f : ℕ → ℝ) (q r B : ℝ)
   induction N generalizing n with
   | zero => simp
   | succ N ih =>
-    have htail := mul_le_mul_of_nonneg_left (ih (n + 1)) hq
     apply (hstep n).trans
-    apply (add_le_add htail (le_refl (B * r ^ n))).trans_eq
+    apply (add_le_add (mul_le_mul_of_nonneg_left (ih (n + 1)) hq) (le_refl (B * r ^ n))).trans_eq
     rw [geom_sum_succ, pow_succ]
-    simp only [pow_succ]
-    have hindex : n + 1 + N = n + (N + 1) := by omega
-    rw [hindex]
-    ring
+    grind
 
 /-- A bounded sequence loses the terminal supremum when the absorption ratio is small. -/
 theorem return_recurrence_bound (f : ℕ → ℝ) (q r B M : ℝ)
@@ -39,7 +35,7 @@ theorem return_recurrence_bound (f : ℕ → ℝ) (q r B M : ℝ)
     (hstep : ∀ n, f n ≤ q * f (n + 1) + B * r ^ n) :
     f 0 ≤ B / (1 - q * r) := by
   have hsum (N : ℕ) : (∑ j ∈ range N, (q * r) ^ j) ≤ 1 / (1 - q * r) := by
-    simpa only [Nat.Ico_zero_eq_range, pow_zero] using
+    simpa using
       (geom_sum_Ico_le_of_lt_one (m := 0) (n := N) (mul_nonneg hq hr) hqr)
   have hN (N : ℕ) : f 0 ≤ q ^ N * M + B / (1 - q * r) := by
     have h := return_recurrence_substitution f q r B hq hstep 0 N
@@ -50,7 +46,7 @@ theorem return_recurrence_bound (f : ℕ → ℝ) (q r B M : ℝ)
       (mul_le_mul_of_nonneg_left (hsum N) hB)).trans_eq (by ring)
   have ht : Tendsto (fun N : ℕ => q ^ N * M + B / (1 - q * r)) atTop
       (𝓝 (B / (1 - q * r))) := by
-    simpa only [zero_mul, zero_add] using
+    simpa using
       ((tendsto_pow_atTop_nhds_zero_of_lt_one hq hq1).mul_const M).add_const
         (B / (1 - q * r))
   exact ge_of_tendsto ht (Eventually.of_forall hN)

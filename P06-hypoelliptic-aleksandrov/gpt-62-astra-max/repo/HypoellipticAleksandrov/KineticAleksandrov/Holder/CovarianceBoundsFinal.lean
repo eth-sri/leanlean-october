@@ -29,28 +29,32 @@ theorem covariance_smul_le {A B : Matrix (Fin 2) (Fin 2) ℝ} {c : ℝ}
   rw [← smul_sub]
   exact (Matrix.le_iff.mp h).smul hc
 
+section
+variable {lam theta : ℝ} (hlam : 0 < lam)
+include hlam
+
 /-- Upper covariance bound uniform in the ellipticity parameter. -/
-theorem ghat_upper {lam theta : ℝ} (hlam : 0 < lam) (ht : |theta| ≤ 1) :
+theorem ghat_upper (ht : |theta| ≤ 1) :
     ghat lam theta ≤ (2 * lam) • (1 : Matrix (Fin 2) (Fin 2) ℝ) := by
-  have h := covariance_smul_le (ghat_unit_upper ht) hlam.le
-  simpa only [← ghat_smul, smul_smul, mul_comm lam 2] using h
+  simpa only [← ghat_smul, smul_smul, mul_comm lam 2] using (covariance_smul_le (ghat_unit_upper ht) hlam.le)
 
 /-- The next-block overlap factor is the source's exact dimensionless factor. -/
-theorem ghat_overlap {lam theta : ℝ} (hlam : 0 < lam)
+theorem ghat_overlap
     (ht0 : -(1 / 128 : ℝ) ≤ theta) (ht1 : theta ≤ 0) :
     ghat lam theta ≤ (13 / 50 : ℝ) • ghat lam (theta + 1) := by
   have hupper := ghat_unit_cutoff_upper ht0 ht1
   have hlower := covariance_smul_le (ghat_unit_next_lower ht0)
     (by norm_num : (0 : ℝ) ≤ 13 / 50)
   have heq : (13 / 50 : ℝ) • ((125 / 2048 : ℝ) •
-      (1 : Matrix (Fin 2) (Fin 2) ℝ)) =
+      1) =
       (65 / 4096 : ℝ) • (1 : Matrix (Fin 2) (Fin 2) ℝ) := by
     rw [smul_smul]
     norm_num
   rw [heq] at hlower
-  have h := covariance_smul_le (hupper.trans hlower) hlam.le
   rw [ghat_smul lam theta, ghat_smul lam (theta + 1)]
-  simpa only [smul_smul, mul_comm] using h
+  simpa only [smul_smul, mul_comm] using (covariance_smul_le (hupper.trans hlower) hlam.le)
+
+end
 
 /-- Exact velocity diagonal entry of the inverse dimensionless covariance. -/
 theorem ghat_inv_velocity (lam theta : ℝ) :
@@ -62,17 +66,12 @@ theorem ghat_inv_velocity (lam theta : ℝ) :
 /-- Inverse velocity bound, with exactly the source's constant. -/
 theorem ghat_inv_velocity_le {lam theta : ℝ} (hlam : 0 < lam)
     (ht0 : 0 ≤ theta) (ht1 : theta ≤ 1) : (ghat lam theta)⁻¹ 1 1 ≤ 128 / lam := by
-  have hstrip : -(1 / 128 : ℝ) ≤ theta := by linarith
-  have hdet := (posDef_ghat hlam hstrip).det_pos
-  have hsq : theta ^ 2 ≤ theta := by nlinarith
-  have hcube : 0 ≤ theta ^ 3 := pow_nonneg ht0 3
-  have hfour : 0 ≤ theta ^ 4 := pow_nonneg ht0 4
+  have hstrip : -(1 / 128) ≤ theta := by linarith
   have hscalar : (1 + theta ^ 2) / 64 + theta ^ 3 / 3 ≤
       128 * (1 / 4096 + theta / 64 + theta ^ 3 / 192 + theta ^ 4 / 12) := by
     nlinarith
-  rw [ghat_inv_velocity, div_le_div_iff₀ hdet hlam]
+  rw [ghat_inv_velocity, div_le_div_iff₀ ((posDef_ghat hlam hstrip).det_pos) hlam]
   rw [det_ghat]
-  have h := mul_le_mul_of_nonneg_left hscalar (sq_nonneg lam)
   nlinarith
 
 end HypoellipticAleksandrov.KineticAleksandrov.Holder

@@ -28,7 +28,7 @@ theorem isAddHaarMeasure_volume_coordinates (d : ℕ) :
     (volume : Measure (ℝ × (PDE.Vec d × PDE.Vec d))).IsAddHaarMeasure := by
   have h1 : (volume : Measure (PDE.Vec d × PDE.Vec d)).IsAddHaarMeasure :=
     Measure.prod.instIsAddHaarMeasure volume volume
-  exact Measure.prod.instIsAddHaarMeasure volume volume
+  apply Measure.prod.instIsAddHaarMeasure
 
 /-- Kinetic form of the majorant lemma. -/
 theorem exists_smooth_majorant_kinetic {d : ℕ} {U K : Set (KineticPoint d)}
@@ -42,27 +42,18 @@ theorem exists_smooth_majorant_kinetic {d : ℕ} {U K : Set (KineticPoint d)}
       eLpNorm g p (volume.restrict U) ≤ eLpNorm F p (volume.restrict U) + ENNReal.ofReal ε := by
   have := isAddHaarMeasure_volume_coordinates d
   let e := KineticPoint.homeomorphProd d
-  have hmp : MeasurePreserving e volume volume := KineticPoint.measurePreserving_equivProd d
-  have hemb : MeasurableEmbedding e := e.measurableEmbedding
+  have hmp := KineticPoint.measurePreserving_equivProd d
+  have hemb := e.measurableEmbedding
   have hpre : ∀ s : Set (KineticPoint d), e ⁻¹' (e.symm ⁻¹' s) = s := fun s => by
     ext z
     simp
   have hmpU : MeasurePreserving e (volume.restrict U) (volume.restrict (e.symm ⁻¹' U)) := by
-    simpa only [hpre] using hmp.restrict_preimage_emb hemb (e.symm ⁻¹' U)
-  have hU' : IsOpen (e.symm ⁻¹' U) := hU.preimage e.symm.continuous
-  have hK' : IsCompact (e.symm ⁻¹' K) := e.symm.isCompact_preimage.2 hK
-  have hKU' : e.symm ⁻¹' K ⊆ e.symm ⁻¹' U := preimage_mono hKU
-  have hcont' : ContinuousOn (h ∘ e.symm) (e.symm ⁻¹' U) :=
-    hcont.comp e.symm.continuous.continuousOn (fun x hx => hx)
-  have hnn' : ∀ x ∈ e.symm ⁻¹' U, 0 ≤ (h ∘ e.symm) x := fun x hx => hnn _ hx
+    exact hmp.restrict_preimage_emb hemb (e.symm ⁻¹' U)
   have hF' : ∀ᵐ x ∂(volume.restrict (e.symm ⁻¹' U)), (h ∘ e.symm) x ≤ (F ∘ e.symm) x := by
-    have hsymm : MeasurePreserving e.symm (volume.restrict (e.symm ⁻¹' U))
-        (volume.restrict U) := by
-      exact MeasurePreserving.symm e.toMeasurableEquiv hmpU
-    exact hsymm.quasiMeasurePreserving.ae hF
+    exact (MeasurePreserving.symm e.toMeasurableEquiv hmpU).quasiMeasurePreserving.ae hF
   obtain ⟨g₀, hg1, hg2, hg3, hg4, hg5, hg6⟩ := exists_smooth_majorant_eLpNorm_le
-    (E := ℝ × (PDE.Vec d × PDE.Vec d)) volume hU' hK'
-    hKU' hcont' hnn' hF' hp hpt hε
+    (E := ℝ × (PDE.Vec d × PDE.Vec d)) volume (hU.preimage e.symm.continuous) (e.symm.isCompact_preimage.2 hK)
+    (preimage_mono hKU) (hcont.comp e.symm.continuous.continuousOn (fun x hx => hx)) (fun x hx => hnn _ hx) hF' hp hpt hε
   have hnormEq' : ∀ f : ℝ × (PDE.Vec d × PDE.Vec d) → ℝ,
       eLpNorm f p (volume.restrict (e.symm ⁻¹' U)) = eLpNorm (f ∘ e) p (volume.restrict U) := by
     intro f
@@ -73,17 +64,15 @@ theorem exists_smooth_majorant_kinetic {d : ℕ} {U K : Set (KineticPoint d)}
     congr 1
   refine ⟨g₀ ∘ e, ?_, ?_, ?_, ?_, ?_, ?_⟩
   · have : (fun x => (g₀ ∘ e) ((KineticPoint.equivProd d).symm x)) = g₀ := by
-      funext x
-      exact congrArg g₀ (e.apply_symm_apply x)
-    rw [this]
+      apply_rules [congrArg]
     exact hg1
   · exact hg2.comp_homeomorph e
   · rw [tsupport_comp_eq_preimage g₀ e]
     exact fun z hz => hg3 hz
   · exact fun z => hg4 _
   · intro z hz
-    have := hg5 (e z) (by simpa using hz)
-    simpa using this
+    have := hg5 (e z) (by exact hz)
+    exact this
   · rw [← hnormEq, ← hnormEq']
     exact hg6
 

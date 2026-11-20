@@ -22,11 +22,10 @@ theorem duhamelPotential_eq_green {d : ℕ} {Ω : Set (PDE.Vec d)}
     (hΓ : IsGreenMeasure K s (ENNReal.ofReal (T - s)) (Measure.dirac p) Γ) :
     duhamelPotential K T g ⟨s, p.1.1, p.1.2⟩ =
       ∫ q, g ⟨s + q.1.1, q.2.1, q.2.2⟩ ∂Γ := by
-  have hgm : Measurable g := hgcont.measurable
+  have hgm := hgcont.measurable
   obtain ⟨C, hC⟩ := hgcont.bounded_above_of_compact_support hgc
-  have hgb : ∀ p, g p ≤ C := fun p => (le_abs_self _).trans (by simpa using hC p)
-  have hLpos : 0 < T - s := sub_pos.2 hs
-  have hC0 : 0 ≤ C := (hg0 ⟨0, 0, 0⟩).trans (hgb _)
+  have hgb := fun p => (le_abs_self _).trans (by exact hC p)
+  have hLpos := sub_pos.2 hs
   let p0 := p
   let F : ElapsedTime (ENNReal.ofReal (T - s)) × EvolutionAmbientState d → ℝ≥0∞ := fun q =>
     ENNReal.ofReal (g ⟨s + q.1.1, q.2.1, q.2.2⟩)
@@ -36,8 +35,7 @@ theorem duhamelPotential_eq_green {d : ℕ} {Ω : Set (PDE.Vec d)}
     exact (KineticPoint.measurable_equivProd_symm d).comp
       ((measurable_const.add (measurable_subtype_coe.comp measurable_fst)).prodMk
         measurable_snd)
-  have hF : Measurable F := ENNReal.measurable_ofReal.comp hFm
-  have hΓF := hΓ F hF
+  have hΓF := hΓ F (ENNReal.measurable_ofReal.comp hFm)
   rw [lintegral_dirac] at hΓF
   have hin : ∀ τ : ElapsedTime (ENNReal.ofReal (T - s)),
       ∫⁻ w, F (τ, w) ∂K.master (elapsedQuery s p0 τ) =
@@ -52,17 +50,14 @@ theorem duhamelPotential_eq_green {d : ℕ} {Ω : Set (PDE.Vec d)}
         (Eventually.of_forall fun w => ?_)
       rw [Real.norm_eq_abs, abs_of_nonneg (hg0 _)]
       exact (hgb _).trans (le_max_left _ _)
-    have h2 : ∫⁻ w, F (τ, w) ∂K.master (elapsedQuery s p0 τ) =
-        ENNReal.ofReal (∫ w, g ⟨s + τ.1, w.1, w.2⟩ ∂K.master (elapsedQuery s p0 τ)) :=
-      (ofReal_integral_eq_lintegral_ofReal hint (Eventually.of_forall fun w => hg0 _)).symm
-    rw [h2]
+    rw [((ofReal_integral_eq_lintegral_ofReal hint (Eventually.of_forall fun w => hg0 _)).symm)]
     congr 1
     unfold duhamelIntegrand
-    rw [dite_eq_left (show s ≤ s + τ.1 ∧ p.1.1 ∈ movingDomain Ω γ s from ⟨hsr, p.2.1⟩)]
+    rw [dite_eq_left (⟨hsr, p.2.1⟩)]
     rfl
   have hfm : Measurable (fun x : ℝ => duhamelIntegrand K g ⟨s, p.1.1, p.1.2⟩ (s + x)) := by
     have := measurable_duhamelIntegrand K hΩ hγ g hgm
-    exact this.comp (measurable_const.prodMk (measurable_const.add measurable_id))
+    fun_prop
   have hfin : IsFiniteMeasure (elapsedVolume (ENNReal.ofReal (T - s))) :=
     ⟨by rw [elapsedVolume_univ _ hLpos]; exact ENNReal.ofReal_lt_top⟩
   have hnn : ∀ x, 0 ≤ duhamelIntegrand K g ⟨s, p.1.1, p.1.2⟩ (s + x) := fun x =>
@@ -73,7 +68,7 @@ theorem duhamelPotential_eq_green {d : ℕ} {Ω : Set (PDE.Vec d)}
     refine Integrable.mono' (integrable_const (max C 0))
       (hfm.comp measurable_subtype_coe).aestronglyMeasurable (Eventually.of_forall fun τ => ?_)
     rw [Real.norm_eq_abs, abs_of_nonneg (hnn _)]
-    exact (duhamelIntegrand_le K g hg0 C hC0 hgb _ _).trans (le_max_left _ _)
+    exact (duhamelIntegrand_le K g hg0 C ((hg0 ⟨0, 0, 0⟩).trans (hgb _)) hgb _ _).trans (le_max_left _ _)
   have hlint : ∫⁻ q, F q ∂Γ = ENNReal.ofReal
       (duhamelPotential K T g ⟨s, p.1.1, p.1.2⟩) := by
     rw [hΓF, lintegral_congr hin]

@@ -57,7 +57,7 @@ theorem measurable_integral_terminal_smooth
   have hbound (j : ℕ) (z : ℝ × EvolutionAmbientState n) : |χ j z * F z.2| ≤ C := by
     rw [abs_mul, abs_of_nonneg (hb j z).1]
     exact (mul_le_mul_of_nonneg_right (hb j z).2 (abs_nonneg _)).trans
-      (by simpa only [one_mul] using hC z.2)
+      (by simpa using hC z.2)
   let Φ (j : ℕ) : BoundedBorel (ℝ × EvolutionAmbientState n) :=
     ⟨fun z => χ j z * F z.2,
       ((hχ j).1.continuous.measurable.mul (F.measurable.comp measurable_snd)),
@@ -78,20 +78,17 @@ theorem measurable_integral_terminal_smooth
     hlam hlamLam hm hmLb Ω γ B b hΩ hγ hB_smooth hB_symm hB_ell
     hb_smooth hb_lipschitz hb_coercive hEx q
   have : IsFiniteMeasure (μT q) := ⟨hspec.1.trans_lt ENNReal.one_lt_top⟩
-  have hU : MeasurableSet (evolutionStateSet Ω γ q.1.2.1) :=
-    measurableSet_evolutionStateSet_of_isOpen (isOpen_of_isAdmissibleEvolutionDomain hΩ)
   have ha : ∀ᵐ x ∂(μT q), x ∈ evolutionStateSet Ω γ q.1.2.1 := by
     apply ae_iff.mpr
     change (μT q) (evolutionStateSet Ω γ q.1.2.1)ᶜ = 0
-    rw [← hspec.2.1, Measure.restrict_apply hU.compl]
-    simp only [Set.compl_inter_self, measure_empty]
+    rw [← hspec.2.1, Measure.restrict_apply (measurableSet_evolutionStateSet_of_isOpen (isOpen_of_isAdmissibleEvolutionDomain hΩ)).compl]
+    simp
   apply tendsto_integral_of_dominated_convergence
     (F := fun j x => Φ j (q.1.2.1, x)) (f := fun x => F x) (fun _ => C)
     (fun j => ((Φ j).measurable.comp (measurable_const.prodMk measurable_id)).aestronglyMeasurable)
     (integrable_const C)
     (fun j => Eventually.of_forall fun x => by
-      change |χ j (q.1.2.1, x) * F x| ≤ C
-      exact hbound j (q.1.2.1, x))
+      apply hbound)
   filter_upwards [ha] with x hx
   obtain ⟨N, hN⟩ := hcover (q.1.2.1, x) hx
   apply tendsto_const_nhds.congr'

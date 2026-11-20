@@ -34,44 +34,33 @@ open HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 open HypoellipticAleksandrov.KineticAleksandrov.Decay
 open scoped MatrixOrder ContDiff Matrix.Norms.Elementwise
 
+variable {d : ℕ} (B : CoefficientField d) (U : KineticPoint d → ℝ) (P : KineticPoint d)
+
+include P in
 /-- A kinetic point `(s,X,v)` read as the Section 2 point `(σ,v,z) = (s,v,X)`. -/
-def sectionTwoPoint {d : ℕ} (P : KineticPoint d) : KineticPoint d :=
+def sectionTwoPoint : KineticPoint d :=
   ⟨P.time, P.velocity, P.position⟩
 
 /-- The coordinate swap is an involution. -/
-theorem sectionTwoPoint_involutive {d : ℕ} :
+theorem sectionTwoPoint_involutive :
     Function.Involutive (sectionTwoPoint (d := d)) := fun _ => rfl
 
 /-- (6.3) is (2.3) with `z = X`, `b(v) = v` and the same time-velocity coefficient. -/
-theorem forwardKineticOperator_eq_lop_identity {d : ℕ} (B : CoefficientField d)
-    (U : KineticPoint d → ℝ) (P : KineticPoint d) :
+theorem forwardKineticOperator_eq_lop_identity :
     forwardKineticOperator (ofTimeVelocityCoefficient B) U P =
       lop B (identityDrift d) (U ∘ sectionTwoPoint) (sectionTwoPoint P) := by
-  rw [forwardKineticOperator_apply, lop,
-    transportedForwardOperatorOfTimeDiffusedCoefficient_apply]
-  have h1 : kineticTimeDerivative (U ∘ sectionTwoPoint) (sectionTwoPoint P) =
-      kineticTimeDerivative U P := rfl
-  have h2 : diffusedHessian (U ∘ sectionTwoPoint) (sectionTwoPoint P) =
-      kineticVelocityHessian U P := rfl
-  have h3 : kineticVelocityGradient (U ∘ sectionTwoPoint) (sectionTwoPoint P) =
-      kineticPositionGradient U P := rfl
-  have h4 : identityDrift d (sectionTwoPoint P).position = P.velocity := rfl
-  rw [h1, h2, h3, h4]
-  exact add_right_comm _ _ _
+  apply add_right_comm
 
 /-- Entrywise smoothness of the `z`-independent lift of a smooth time-velocity coefficient. -/
-theorem isSmoothFullKineticCoefficient_zIndependent {d : ℕ} {B : CoefficientField d}
+theorem isSmoothFullKineticCoefficient_zIndependent {B : CoefficientField d}
     (hB : IsSmoothCoefficient B) :
     IsSmoothFullKineticCoefficient (zIndependentCoefficient B) := by
   intro i j
-  have hcomp : ContDiff ℝ (⊤ : ℕ∞) (fun q : ℝ × (PDE.Vec d × PDE.Vec d) =>
-      coefficientAt B (q.1, q.2.1)) :=
-    hB.comp (contDiff_fst.prodMk (contDiff_fst.comp contDiff_snd))
-  exact (contDiff_pi.1 ((contDiff_pi.1 hcomp) i)) j
+  exact (contDiff_pi.1 ((contDiff_pi.1 (hB.comp (contDiff_fst.prodMk (contDiff_fst.comp contDiff_snd)))) i)) j
 
 /-- The reflected coefficient and the identity drift satisfy the setting (W) premises,
 with `m = L_b = 1` and `D = ℝ^d`. -/
-theorem caseW_sourceSetting {d : ℕ} {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+theorem caseW_sourceSetting {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
     {A : CoefficientField d} (hsm : IsSmoothCoefficient A) (hsymm : IsSymmetricCoefficient A)
     (hlo : HasLowerEllipticity lam A) (hhi : HasUpperEllipticity Lam A) :
     SourceSetting lam Lam 1 1 (wholeSpace d) (kineticReflectedCoefficient A)

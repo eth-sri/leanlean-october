@@ -28,8 +28,6 @@ theorem exists_smooth_scalar_jet_close
           scalarSpatialHessian q z i j| ≤ ε) := by
   obtain ⟨W, hv, hvc, ht, htc, hg, hh, ev, et, eg, eh⟩ :=
     exists_compact_continuous_scalar_jet hV hK hKV q hq
-  have av := eventually_uniform_parabolicConvolution_close W.toFun hv hvc hε
-  have atime := eventually_uniform_parabolicConvolution_close W.timeDeriv ht htc hε
   have ag : ∀ᶠ n in atTop, ∀ i : Fin N, ∀ z,
       |parabolicConvolution (fun y => W.velocityGrad y i) (parabolicMollifier N n) z -
         W.velocityGrad z i| ≤ ε := by
@@ -42,34 +40,22 @@ theorem exists_smooth_scalar_jet_close
     intro i
     rw [eventually_all]
     exact fun j => eventually_uniform_parabolicConvolution_close _ (hh i j).1 (hh i j).2 hε
-  obtain ⟨n, hn⟩ := (av.and (atime.and (ag.and ah))).exists
+  obtain ⟨n, hn⟩ := ((eventually_uniform_parabolicConvolution_close W.toFun hv hvc hε).and ((eventually_uniform_parabolicConvolution_close W.timeDeriv ht htc hε).and (ag.and ah))).exists
   let w := parabolicConvolution W.toFun (parabolicMollifier N n)
-  have hs := W.contDiff_convolution le_rfl _ (contDiff_parabolicMollifier N n)
-    (hasCompactSupport_parabolicMollifier N n)
-  have hw : ContDiff ℝ 2 w := hs.of_le (by simp)
-  have dt := W.timeDerivative_convolution le_rfl _ (contDiff_parabolicMollifier N n)
-    (hasCompactSupport_parabolicMollifier N n)
-  have dg := W.velocityGradient_convolution le_rfl _ (contDiff_parabolicMollifier N n)
-    (hasCompactSupport_parabolicMollifier N n)
-  have dh := W.velocityHessian_convolution le_rfl _ (contDiff_parabolicMollifier N n)
-    (hasCompactSupport_parabolicMollifier N n)
+  have hw : ContDiff ℝ 2 w := (W.contDiff_convolution le_rfl _ (contDiff_parabolicMollifier N n) (hasCompactSupport_parabolicMollifier N n)).of_le (by simp)
   refine ⟨w, hw, fun z hz => ⟨?_, ?_, ?_, ?_⟩⟩
   · rw [← ev hz]
-    exact hn.1 z
+    apply hn.1
   · rw [scalarTimeDerivative_eq_timeDerivative w hw z, ← et hz]
-    change |timeDerivative (parabolicConvolution W.toFun _) z - W.timeDeriv z| ≤ ε
-    rw [dt]
-    exact hn.2.1 z
+    rw [(W.timeDerivative_convolution le_rfl _ (contDiff_parabolicMollifier N n) (hasCompactSupport_parabolicMollifier N n))]
+    apply hn.2.1
   · intro i
     rw [scalarSpatialGradient_eq_velocityGradient w hw z, ← eg hz]
-    change |velocityGradient (parabolicConvolution W.toFun _) z i - W.velocityGrad z i| ≤ ε
-    rw [congrFun (dg i) z]
-    exact hn.2.2.1 i z
+    rw [congrFun ((W.velocityGradient_convolution le_rfl _ (contDiff_parabolicMollifier N n) (hasCompactSupport_parabolicMollifier N n)) i) z]
+    apply hn.2.2.1
   · intro i j
     rw [scalarSpatialHessian_eq_velocityHessian w hw z, ← eh hz]
-    change |velocityHessian (parabolicConvolution W.toFun _) z i j -
-      W.velocityHessian z i j| ≤ ε
-    rw [congrFun (dh i j) z]
-    exact hn.2.2.2 i j z
+    rw [congrFun ((W.velocityHessian_convolution le_rfl _ (contDiff_parabolicMollifier N n) (hasCompactSupport_parabolicMollifier N n)) i j) z]
+    apply hn.2.2.2
 
 end HypoellipticAleksandrov.Parabolic.KrylovEstimate

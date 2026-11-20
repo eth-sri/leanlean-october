@@ -10,16 +10,20 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic
 
-/-- Midpoint vector of the velocity interval. -/
-def intervalMidpoint (H : Interval) : PDE.Vec 1 := fun _ => (H.lo + H.hi) / 2
+variable (a : ℝ → ℝ → ℝ) (H : Interval) (lam : ℝ) (p : Point)
 
+include H in
+/-- Midpoint vector of the velocity interval. -/
+def intervalMidpoint : PDE.Vec 1 := fun _ => (H.lo + H.hi) / 2
+
+include H lam p in
 /-- The quadratic barrier, written as an affine function of squared midpoint distance. -/
-def stripQuadraticBarrier (H : Interval) (lam : ℝ) (p : Point) : ℝ :=
+def stripQuadraticBarrier : ℝ :=
   (-1 / (2 * lam)) *
     (-(H.hi - H.lo) ^ 2 / 4 + PDE.vecNormSq (p.position - intervalMidpoint H))
 
 /-- The midpoint expression is exactly `(v-lo)(hi-v)/(2 lambda)`. -/
-theorem stripQuadraticBarrier_eq (H : Interval) (lam : ℝ) (p : Point) :
+theorem stripQuadraticBarrier_eq :
     stripQuadraticBarrier H lam p =
       (p.position 0 - H.lo) * (H.hi - p.position 0) / (2 * lam) := by
   simp only [stripQuadraticBarrier, PDE.vecNormSq_eq_sum_sq, Fin.sum_univ_one,
@@ -27,7 +31,7 @@ theorem stripQuadraticBarrier_eq (H : Interval) (lam : ℝ) (p : Point) :
   ring
 
 /-- The interval barrier is nonnegative on the closed velocity interval. -/
-theorem stripQuadraticBarrier_nonneg (H : Interval) {lam : ℝ} (hlam : 0 < lam)
+theorem stripQuadraticBarrier_nonneg {lam : ℝ} (hlam : 0 < lam)
     (p : Point) (hp : H.lo ≤ p.position 0 ∧ p.position 0 ≤ H.hi) :
     0 ≤ stripQuadraticBarrier H lam p := by
   rw [stripQuadraticBarrier_eq]
@@ -35,14 +39,14 @@ theorem stripQuadraticBarrier_nonneg (H : Interval) {lam : ℝ} (hlam : 0 < lam)
     (by positivity)
 
 /-- The barrier has the regularity needed by the growth comparison theorem. -/
-theorem stripQuadraticBarrier_regular (H : Interval) (lam : ℝ) (p : Point) :
+theorem stripQuadraticBarrier_regular :
     IsSliceRegularAt (stripQuadraticBarrier H lam) p := by
   unfold stripQuadraticBarrier
   refine ⟨?_, ?_, ?_⟩
   · change DifferentiableAt ℝ (fun _ : ℝ =>
       (-1 / (2 * lam)) * (-(H.hi - H.lo) ^ 2 / 4 +
         PDE.vecNormSq (p.position - intervalMidpoint H))) p.time
-    exact differentiableAt_const _
+    fun_prop
   · exact (contDiff_const.mul
       (contDiff_const.add (contDiff_vecNormSq_sub (intervalMidpoint H)))).contDiffAt
   · change ContDiffAt ℝ 2 (fun _ : PDE.Vec 1 =>
@@ -51,8 +55,7 @@ theorem stripQuadraticBarrier_regular (H : Interval) (lam : ℝ) (p : Point) :
     exact contDiffAt_const
 
 /-- The transported forward operator of the barrier is exactly `-a/lambda`. -/
-theorem stripQuadraticBarrier_operator (a : ℝ → ℝ → ℝ) (H : Interval)
-    (lam : ℝ) (p : Point) :
+theorem stripQuadraticBarrier_operator :
     transportedForwardOperator (evolutionCoefficient a) (SectionTwo.identityDrift 1)
       (stripQuadraticBarrier H lam) p = -a (p.velocity 0) (p.position 0) / lam := by
   have hslice : (fun y : PDE.Vec 1 => stripQuadraticBarrier H lam
@@ -71,10 +74,7 @@ theorem stripQuadraticBarrier_operator (a : ℝ → ℝ → ℝ) (H : Interval)
     change fderiv ℝ (fun _ : PDE.Vec 1 =>
       (-1 / (2 * lam)) * (-(H.hi - H.lo) ^ 2 / 4 +
         PDE.vecNormSq (p.position - intervalMidpoint H))) p.velocity (PDE.basisVec i) = 0
-    rw [(hasFDerivAt_const
-      ((-1 / (2 * lam)) * (-(H.hi - H.lo) ^ 2 / 4 +
-        PDE.vecNormSq (p.position - intervalMidpoint H))) p.velocity).fderiv]
-    rfl
+    simp
   rw [hgrad]
   simp only [kineticTimeDerivative, stripQuadraticBarrier, deriv_const,
     deriv_affine_weight, zero_mul, zero_add, PDE.vecDot, Pi.zero_apply, mul_zero,

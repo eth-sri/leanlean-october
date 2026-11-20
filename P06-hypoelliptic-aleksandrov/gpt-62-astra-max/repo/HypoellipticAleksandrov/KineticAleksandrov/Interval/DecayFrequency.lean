@@ -14,8 +14,6 @@ open HypoellipticAleksandrov.KineticAleksandrov.Decay
 
 /-- The frequency decay constants depend only on the structural source bounds. -/
 theorem interval_frequency_decay
-    (hH : HormanderHypoellipticityStatement)
-    (hLE : LiebermanEllipsoidDirichletStatement)
     (lam Lam m Lb : ℝ) (hlam : 0 < lam) (hlamLam : lam ≤ Lam)
     (hm : 0 < m) (hmLb : m ≤ Lb) :
     ∃ C k : ℝ, 0 < C ∧ 0 < k ∧
@@ -31,8 +29,7 @@ theorem interval_frequency_decay
       TV (intervalFourierKernel K σ τ hστ ξ v) ≤
         C * Real.exp (-k * (τ - σ) * PDE.vecEuclideanNorm ξ ^ (2 / 3 : ℝ)) := by
   obtain ⟨L, δ, hL, hδ, hδ1, hsteps⟩ := interval_frequency_blocks
-    hH hLE lam Lam m Lb hlam hlamLam hm hmLb
-  have hq : 0 < 1 - δ := sub_pos.mpr hδ1
+    lam Lam m Lb hlam hlamLam hm hmLb
   obtain ⟨hC, hk⟩ := decay_constants hδ hδ1 hL
   refine ⟨(1 - δ)⁻¹, -Real.log (1 - δ) / L, zero_lt_one.trans_le hC, hk, ?_⟩
   intro a c hac B b hs hJ S K hr σ τ hστ ξ v
@@ -41,10 +38,7 @@ theorem interval_frequency_decay
     have htv := intervalFourierKernel_totalVariation_le_one K σ τ hστ 0 v
     have hr := ENNReal.toReal_mono ENNReal.one_ne_top htv
     simp only [ENNReal.toReal_one] at hr
-    simpa only [PDE.vecEuclideanNorm, PDE.vecNormSq, PDE.vecDot, Pi.zero_apply,
-      zero_mul, Finset.sum_const_zero, Real.sqrt_zero,
-      Real.zero_rpow (by norm_num : (2 / 3 : ℝ) ≠ 0), mul_zero,
-      Real.exp_zero, mul_one] using hr.trans hC
+    simpa [PDE.vecEuclideanNorm, PDE.vecNormSq, PDE.vecDot, Real.sqrt_zero, Real.zero_rpow (by norm_num : (2 / 3 : ℝ) ≠ 0), Real.exp_zero] using hr.trans hC
   · have hN := frequency_norm_pos hξ
     let N := PDE.vecEuclideanNorm ξ ^ (2 / 3 : ℝ)
     have hNp : 0 < N := Real.rpow_pos_of_pos hN _
@@ -53,17 +47,11 @@ theorem interval_frequency_decay
       dsimp [T, N]
       rw [Real.rpow_neg hN.le]
       rfl
-    have hT : 0 < T := by rw [hTdef]; exact div_pos hL hNp
-    have hc := (interval_evolution_clauses hH hLE hac B b hs hJ S K hr).2.2
-    have hb := interval_exponential_of_blocks K hJ hr.2.2.2 hc hT hq
+    have hT : 0 < T := by positivity
+    have hb := interval_exponential_of_blocks K hJ hr.2.2.2 ((interval_evolution_clauses hac B b hs hJ S K hr).2.2) hT (sub_pos.mpr hδ1)
       (by linarith only [hδ] : 1 - δ ≤ 1) ξ
       (fun s w => hsteps a c hac B b hs hJ S K hr ξ hξ s w
         (le_add_of_nonneg_right hT.le)) σ τ hστ v
-    have he : -(-Real.log (1 - δ) / T) * (τ - σ) =
-        -(-Real.log (1 - δ) / L) * (τ - σ) * N := by
-      rw [hTdef]
-      field_simp
-    rw [he] at hb
-    exact hb
+    grind
 
 end HypoellipticAleksandrov.KineticAleksandrov.Interval

@@ -11,12 +11,18 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open HypoellipticAleksandrov Parabolic Set MeasureTheory SectionTwo Evolution TheoremA
 
+variable {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam) (A : SmoothAutonomous lam Lam)
+    (F : BoundedBorel Z) (hF0 : ∀ z, 0 ≤ F z) (hF : ContDiff ℝ (⊤ : ℕ∞) F) (r : ℝ) (hr : 0 < r)
+    (X : ℝ)
+
+include hr X in
 /-- The kinetic scaling keeps physical position translations and does not shift velocity. -/
-def returnScaling (r : ℝ) (hr : 0 < r) (X : ℝ) : Scaling.KineticAffineScaling 1 :=
+def returnScaling : Scaling.KineticAffineScaling 1 :=
   ⟨r ^ 2, r, r ^ 3, 0, 0, fun _ => X, 0, by positivity, hr, by positivity⟩
 
+include A in
 /-- The scaled autonomous coefficient retains exactly the original ellipticity constants. -/
-def returnScaledCoefficient {lam Lam : ℝ} (A : SmoothAutonomous lam Lam) (r X : ℝ) :
+def returnScaledCoefficient (r X : ℝ) :
     SmoothAutonomous lam Lam where
   a x v := A.a (X + r ^ 3 * x) (r * v)
   smooth := by
@@ -26,8 +32,7 @@ def returnScaledCoefficient {lam Lam : ℝ} (A : SmoothAutonomous lam Lam) (r X 
   bounds x v := A.bounds _ _
 
 /-- The scaled full coefficient is the literal autonomous coefficient of the scaled scalar. -/
-theorem returnScaling_coefficient {lam Lam : ℝ} (A : SmoothAutonomous lam Lam)
-    (r : ℝ) (hr : 0 < r) (X : ℝ) :
+theorem returnScaling_coefficient :
     (returnScaling r hr X).coefficient (evolutionCoefficient A.a) =
       evolutionCoefficient (returnScaledCoefficient A r X).a := by
   ext s y z i j
@@ -36,7 +41,7 @@ theorem returnScaling_coefficient {lam Lam : ℝ} (A : SmoothAutonomous lam Lam)
     returnScaling, evolutionCoefficient, returnScaledCoefficient, hr.ne']
 
 /-- Kinetic scaling preserves the identity drift exactly. -/
-theorem returnScaling_drift (r : ℝ) (hr : 0 < r) (X : ℝ) :
+theorem returnScaling_drift :
     (returnScaling r hr X).drift (identityDrift 1) = identityDrift 1 := by
   funext y
   ext i
@@ -44,30 +49,26 @@ theorem returnScaling_drift (r : ℝ) (hr : 0 < r) (X : ℝ) :
     returnScaling, identityDrift]
   field_simp
 
+include hF0 hF hr in
 /-- A normalized classical homogeneous solution represents the original canonical action.
 The existence assertion is proved from the full-space producer; it is not a premise. -/
-theorem exists_return_scaled_solution
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (F : BoundedBorel Z)
-    (hF0 : ∀ z, 0 ≤ F z) (hF : ContDiff ℝ (⊤ : ℕ∞) F)
-    (r : ℝ) (hr : 0 < r) (X : ℝ) :
+theorem exists_return_scaled_solution :
     ∃ U : Point → ℝ, IsNonnegativeHomogeneousSolution
       (returnReflectedCoefficient (returnScaledCoefficient A r X)) U ∧
       ∀ p : Point, 0 < p.time →
-        U p = S hH hLE hlam hLam A (r ^ 2 * p.time) F
+        U p = S hlam hLam A (r ^ 2 * p.time) F
           (X - r ^ 3 * p.position 0, r * p.velocity 0) := by
-  let E := fullSpaceEvolution hH hLE hlam hLam A
+  let E := fullSpaceEvolution hlam hLam A
   let G := physicalTerminalDatum (scalarTerminalDatum F)
   have hG : ContDiff ℝ (⊤ : ℕ∞) G :=
     (scalarTerminalDatum_smooth F hF).comp (contDiff_snd.prodMk contDiff_fst)
-  obtain ⟨w, hw, hrep⟩ := fullspace_bounded_smooth_solution hH hlam hLam A E
-    (fullSpaceEvolution_spec hH hLE hlam hLam A) 0 G hG
+  obtain ⟨w, hw, hrep⟩ := fullspace_bounded_smooth_solution hlam hLam A E
+    (fullSpaceEvolution_spec hlam hLam A) 0 G hG
   let Φ := returnScaling r hr X
   let W : Point → ℝ := w ∘ Φ.point
   let U : Point → ℝ := W ∘ autonomousReversal ∘ autonomousPositionReflection
   have heq (p : Point) (hp : 0 < p.time) :
-      U p = S hH hLE hlam hLam A (r ^ 2 * p.time) F
+      U p = S hlam hLam A (r ^ 2 * p.time) F
         (X - r ^ 3 * p.position 0, r * p.velocity 0) := by
     have ht : 0 ≤ r ^ 2 * p.time := by positivity
     have hpoint : Φ.point (autonomousReversal (autonomousPositionReflection p)) =
@@ -131,11 +132,11 @@ theorem exists_return_scaled_solution
   obtain ⟨M, hM, hbound⟩ := F.exists_bound
   refine ⟨U, ⟨⟨M, ?_⟩, ?_, hreg, ?_⟩, heq⟩
   · intro p hp
-    rw [heq p hp, S_eq_integral hH hLE hlam hLam A _ (by positivity)]
+    rw [heq p hp, S_eq_integral hlam hLam A _ (by positivity)]
     exact abs_integral_boundedBorel_le F _
-      (Kphysical_mass_one hH hLE hlam hLam A _ (by positivity) _).le hM hbound
+      (Kphysical_mass_one hlam hLam A _ (by positivity) _).le hM hbound
   · intro p hp
-    rw [heq p hp, S_eq_integral hH hLE hlam hLam A _ (by positivity)]
+    rw [heq p hp, S_eq_integral hlam hLam A _ (by positivity)]
     exact integral_nonneg hF0
   · intro p hp
     change autonomousScalarOperator (reflectedAutonomous (returnScaledCoefficient A r X).a)

@@ -46,8 +46,7 @@ theorem position_two_index_young {ι : Type*} [AddCommGroup ι] [Countable ι]
       intro h
       exact ENNReal.tsum_mul_left
     _ = (∑' h, w h) ^ (q - 1) * ((∑' h, w h) * ∑' g, a g ^ q) := by
-      have hshift (h : ι) : (∑' g, a (g - h) ^ q) = ∑' g, a g ^ q := by
-        exact (Equiv.subRight h).tsum_eq (fun g => a g ^ q)
+      have hshift (h : ι) : (∑' g, a (g - h) ^ q) = ∑' g, a g ^ q := (Equiv.subRight h).tsum_eq (fun g => a g ^ q)
       simp_rw [hshift]
       rw [ENNReal.tsum_mul_right]
     _ = (∑' h, w h) ^ q * ∑' g, a g ^ q := by

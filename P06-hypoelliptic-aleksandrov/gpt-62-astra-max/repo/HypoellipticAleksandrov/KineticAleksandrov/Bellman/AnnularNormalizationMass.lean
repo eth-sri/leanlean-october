@@ -13,8 +13,11 @@ noncomputable section
 open Set MeasureTheory
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
+variable (beta : ℝ) (mu : Measure BellmanPuncturedPlane) (hmu : IsBellmanRadon mu) (hn : mu ≠ 0)
+    (hd : HasBellmanDensityDegree beta mu) (chi : (ℝ × ℝ) → ℝ)
+
 /-- A compact ambient cutoff away from the origin remains compact on the punctured carrier. -/
-theorem bellman_annular_test_compact (chi : (ℝ × ℝ) → ℝ) (hc : HasCompactSupport chi)
+theorem bellman_annular_test_compact (hc : HasCompactSupport chi)
     (hs : tsupport chi ⊆ {q | 1 / 2 < bellmanGauge q ∧ bellmanGauge q < 4}) :
     HasCompactSupport (fun q : BellmanPuncturedPlane => chi q.val) := by
   apply bellman_test_compact_subtype hc
@@ -23,30 +26,22 @@ theorem bellman_annular_test_compact (chi : (ℝ × ℝ) → ℝ) (hc : HasCompa
   rw [he] at h
   norm_num [bellmanGauge, bellmanGaugePower] at h
 
+include hmu hn hd in
 /-- The common cutoff has a finite strictly positive normalizing integral. -/
-theorem bellman_annular_integral_pos (beta : ℝ) (mu : Measure BellmanPuncturedPlane)
-    (hmu : IsBellmanRadon mu) (hn : mu ≠ 0) (hd : HasBellmanDensityDegree beta mu)
-    (chi : (ℝ × ℝ) → ℝ) (hc : Continuous chi) (hcompact : HasCompactSupport chi)
+theorem bellman_annular_integral_pos (hc : Continuous chi) (hcompact : HasCompactSupport chi)
     (hs : tsupport chi ⊆ {q | 1 / 2 < bellmanGauge q ∧ bellmanGauge q < 4})
     (hpos : ∀ q, 0 ≤ chi q) (hone : ∀ q, 1 ≤ bellmanGauge q →
       bellmanGauge q ≤ 2 → chi q = 1) :
     0 < ∫ q, chi q.val ∂mu := by
   let := hmu.1
-  have hi : Integrable (fun q : BellmanPuncturedPlane => chi q.val) mu :=
-    (hc.comp continuous_subtype_val).integrable_of_hasCompactSupport
-    (bellman_annular_test_compact chi hcompact hs)
   apply (integral_pos_iff_support_of_nonneg
-    (fun q : BellmanPuncturedPlane => hpos q.val) hi).mpr
-  have hm := bellmanUnitAnnulus_measure_ne_zero beta mu hn hd
+    (fun q : BellmanPuncturedPlane => hpos q.val) ((hc.comp continuous_subtype_val).integrable_of_hasCompactSupport (bellman_annular_test_compact chi hcompact hs))).mpr
   have hsupp : bellmanUnitAnnulus ⊆ Function.support
-      (fun q : BellmanPuncturedPlane => chi q.val) := by
-    intro q hq
-    exact Function.mem_support.mpr (by rw [hone _ hq.1 hq.2]; norm_num)
-  exact lt_of_lt_of_le (pos_iff_ne_zero.mpr hm) (measure_mono hsupp)
+      (fun q : BellmanPuncturedPlane => chi q.val) := fun q hq => Function.mem_support.mpr (by rw [hone _ hq.1 hq.2]; norm_num)
+  exact lt_of_lt_of_le (pos_iff_ne_zero.mpr (bellmanUnitAnnulus_measure_ne_zero beta mu hn hd)) (measure_mono hsupp)
 
 /-- Dividing by the proved positive annular mass gives integral one. -/
-theorem bellman_annular_normalize (mu : Measure BellmanPuncturedPlane)
-    (chi : (ℝ × ℝ) → ℝ) (hp : 0 < ∫ q, chi q.val ∂mu) :
+theorem bellman_annular_normalize (hp : 0 < ∫ q, chi q.val ∂mu) :
     ∃ c : ℝ, 0 < c ∧ ∫ q, chi q.val ∂(ENNReal.ofReal c • mu) = 1 := by
   refine ⟨(∫ q, chi q.val ∂mu)⁻¹, inv_pos.mpr hp, ?_⟩
   rw [integral_smul_measure, ENNReal.toReal_ofReal (inv_nonneg.mpr hp.le), smul_eq_mul,

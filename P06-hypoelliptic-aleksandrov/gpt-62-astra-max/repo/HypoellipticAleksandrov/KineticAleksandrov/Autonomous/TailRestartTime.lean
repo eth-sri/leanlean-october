@@ -12,17 +12,20 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory SectionTwo
 open scoped ENNReal
 
+variable (t : ℝ) (ht : 0 ≤ t)
+
+include ht in
 /-- Shift a positive elapsed time by a nonnegative restart delay. -/
-def tailElapsedShift (t : ℝ) (ht : 0 ≤ t) (tau : ElapsedTime ⊤) : ElapsedTime ⊤ :=
+def tailElapsedShift (tau : ElapsedTime ⊤) : ElapsedTime ⊤ :=
   ⟨t + tau.1, add_pos_of_nonneg_of_pos ht tau.2.1, ENNReal.ofReal_lt_top⟩
 
 /-- The restart translation is Borel. -/
-theorem measurable_tailElapsedShift (t : ℝ) (ht : 0 ≤ t) :
+theorem measurable_tailElapsedShift :
     Measurable (tailElapsedShift t ht) :=
   (measurable_const.add measurable_subtype_coe).subtype_mk
 
 /-- Translation gives precisely the strict later-time restriction of elapsed Lebesgue measure. -/
-theorem tailElapsedShift_map (t : ℝ) (ht : 0 ≤ t) :
+theorem tailElapsedShift_map :
     (elapsedVolume ⊤).map (tailElapsedShift t ht) =
       (elapsedVolume ⊤).restrict {tau | t < tau.1} := by
   ext B hB
@@ -31,9 +34,9 @@ theorem tailElapsedShift_map (t : ℝ) (ht : 0 ≤ t) :
   rw [Measure.map_apply (measurable_tailElapsedShift t ht) hB,
     elapsedVolume_apply _ _ ((measurable_tailElapsedShift t ht) hB),
     Measure.restrict_apply hB, elapsedVolume_apply _ _ (hB.inter hm)]
-  have he : (Subtype.val : ElapsedTime ⊤ → ℝ) '' (B ∩ {tau | t < tau.1}) =
+  have he : Subtype.val '' (B ∩ {tau | t < tau.1}) =
       (fun x : ℝ => t + x) ''
-        ((Subtype.val : ElapsedTime ⊤ → ℝ) '' ((tailElapsedShift t ht) ⁻¹' B)) := by
+        (Subtype.val '' ((tailElapsedShift t ht) ⁻¹' B)) := by
     ext x
     constructor
     · rintro ⟨tau, ⟨hBtau, httau⟩, rfl⟩
@@ -45,23 +48,11 @@ theorem tailElapsedShift_map (t : ℝ) (ht : 0 ≤ t) :
         change tailElapsedShift t ht a ∈ B
         rw [ha]
         exact hBtau
-      exact ⟨a.1, ⟨a, hb, rfl⟩, by dsimp [a]; ring⟩
+      exact ⟨a.1, ⟨a, hb, rfl⟩, by ring⟩
     · rintro ⟨x, ⟨tau, hBtau, rfl⟩, rfl⟩
       exact ⟨tailElapsedShift t ht tau, ⟨hBtau, by
         change t < t + tau.1; linarith [tau.2.1]⟩, rfl⟩
   rw [he]
-  have hi : (fun x : ℝ => t + x) ''
-      ((Subtype.val : ElapsedTime ⊤ → ℝ) '' ((tailElapsedShift t ht) ⁻¹' B)) =
-      (fun x : ℝ => -t + x) ⁻¹'
-        ((Subtype.val : ElapsedTime ⊤ → ℝ) '' ((tailElapsedShift t ht) ⁻¹' B)) := by
-    ext x
-    constructor
-    · rintro ⟨y, hy, rfl⟩
-      change -t + (t + y) ∈
-        ((Subtype.val : ElapsedTime ⊤ → ℝ) '' ((tailElapsedShift t ht) ⁻¹' B))
-      simpa only [neg_add_cancel_left] using hy
-    · intro hx
-      exact ⟨-t + x, hx, by ring⟩
-  rw [hi, measure_preimage_add volume (-t)]
+  simp
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

@@ -29,24 +29,21 @@ theorem borel_indicator_norm_tendsto {E : Type*} [MeasurableSpace E] {μ : Measu
   have hmeas j : AEStronglyMeasurable (fun z => ‖G j z‖ ^ p) μ :=
     (Real.continuous_rpow_const hp.le).comp_aestronglyMeasurable (hG j).aestronglyMeasurable.norm
   have hi : Integrable (fun z => ‖F z‖ ^ p) μ := by
-    have ht := hF.integrable_norm_rpow (ENNReal.ofReal_pos.mpr hp).ne' ENNReal.ofReal_ne_top
-    simpa only [ENNReal.toReal_ofReal hp.le] using ht
+    simpa only [ENNReal.toReal_ofReal hp.le] using (hF.integrable_norm_rpow (ENNReal.ofReal_pos.mpr hp).ne' ENNReal.ofReal_ne_top)
   have hb j : ∀ᵐ z ∂μ, ‖‖G j z‖ ^ p‖ ≤ ‖F z‖ ^ p := by
     filter_upwards with z
     rw [Real.norm_of_nonneg (Real.rpow_nonneg (norm_nonneg _) _)]
     apply Real.rpow_le_rpow (norm_nonneg _) _ hp.le
     by_cases hs : z ∈ S j
     · simp only [G,indicator_of_mem hs,le_refl]
-    · simp only [G,indicator_of_notMem hs,norm_zero,norm_nonneg]
+    · simp [G, indicator_of_notMem hs, norm_nonneg]
   have hc : ∀ᵐ z ∂μ, Tendsto (fun j => ‖G j z‖ ^ p) atTop (𝓝 (‖F z‖ ^ p)) := by
     filter_upwards [hcover] with z hz
     apply tendsto_const_nhds.congr'
     filter_upwards [hz] with j hj
     simp only [G,indicator_of_mem hj]
-  have ht := tendsto_integral_of_dominated_convergence (fun z => ‖F z‖ ^ p)
-    hmeas hi hb hc
   have hroot := (Real.continuous_rpow_const (by positivity : 0 ≤ 1 / p)).continuousAt.tendsto.comp
-    ht
+    (tendsto_integral_of_dominated_convergence (fun z => ‖F z‖ ^ p) hmeas hi hb hc)
   have heq j : (eLpNorm (G j) (ENNReal.ofReal p) μ).toReal =
       (∫ z, ‖G j z‖ ^ p ∂μ) ^ (1 / p) := by
     rw [abp_eLpNorm_toReal_nonneg hp (hG j) (hGn j)]

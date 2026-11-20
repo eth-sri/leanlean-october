@@ -17,17 +17,17 @@ noncomputable section
 
 namespace HypoellipticAleksandrov.Parabolic
 
+variable {d : ℕ} (a : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d) (c : ℝ → PDE.Vec d → ℝ)
+    (K epsilon : ℝ) (ell : TimeVelocity d → ℝ) (z : TimeVelocity d)
+
 /-- The scalar time derivative of a constant affine transformation. -/
-@[simp] theorem scalarTimeDerivative_const_mul_add_const
-    {d : ℕ} (K epsilon : ℝ) (ell : TimeVelocity d → ℝ) (z : TimeVelocity d) :
+@[simp] theorem scalarTimeDerivative_const_mul_add_const :
     scalarTimeDerivative (fun q => K * ell q + epsilon) z =
       K * scalarTimeDerivative ell z := by
-  unfold scalarTimeDerivative
-  rw [deriv_add_const, deriv_const_mul_field]
+  simp_all [scalarTimeDerivative]
 
 /-- The scalar spatial gradient of a constant affine transformation. -/
-@[simp] theorem scalarSpatialGradient_const_mul_add_const
-    {d : ℕ} (K epsilon : ℝ) (ell : TimeVelocity d → ℝ) (z : TimeVelocity d) :
+@[simp] theorem scalarSpatialGradient_const_mul_add_const :
     scalarSpatialGradient (fun q => K * ell q + epsilon) z =
       K • scalarSpatialGradient ell z := by
   unfold scalarSpatialGradient PDE.classicalGradient
@@ -38,8 +38,7 @@ namespace HypoellipticAleksandrov.Parabolic
   rfl
 
 /-- The scalar spatial Hessian of a constant affine transformation. -/
-@[simp] theorem scalarSpatialHessian_const_mul_add_const
-    {d : ℕ} (K epsilon : ℝ) (ell : TimeVelocity d → ℝ) (z : TimeVelocity d) :
+@[simp] theorem scalarSpatialHessian_const_mul_add_const :
     scalarSpatialHessian (fun q => K * ell q + epsilon) z =
       K • scalarSpatialHessian ell z := by
   unfold scalarSpatialHessian
@@ -59,8 +58,7 @@ namespace HypoellipticAleksandrov.Parabolic
   rfl
 
 /-- Scalar `C¹˒²` regularity is preserved by a constant affine transformation. -/
-theorem IsScalarC12On.const_mul_add_const
-    {d : ℕ} {ell : TimeVelocity d → ℝ} {Q : Set (TimeVelocity d)}
+theorem IsScalarC12On.const_mul_add_const {ell : TimeVelocity d → ℝ} {Q : Set (TimeVelocity d)}
     (hell : IsScalarC12On ell Q) (K epsilon : ℝ) :
     IsScalarC12On (fun z => K * ell z + epsilon) Q := by
   refine ⟨hell.continuousOn.const_smul K |>.add continuousOn_const, ?_, ?_, ?_, ?_, ?_⟩
@@ -70,25 +68,19 @@ theorem IsScalarC12On.const_mul_add_const
     exact (ContDiffAt.const_smul K (hell.spatialSlice_contDiffAt hz)).add contDiffAt_const
   · rw [show scalarTimeDerivative (fun z => K * ell z + epsilon) =
         fun z => K * scalarTimeDerivative ell z by
-      funext z
-      exact scalarTimeDerivative_const_mul_add_const K epsilon ell z]
+      aesop]
     exact hell.continuousOn_scalarTimeDerivative.const_smul K
   · rw [show scalarSpatialGradient (fun z => K * ell z + epsilon) =
         fun z => K • scalarSpatialGradient ell z by
-      funext z
-      exact scalarSpatialGradient_const_mul_add_const K epsilon ell z]
+      aesop]
     exact hell.continuousOn_scalarSpatialGradient.const_smul K
   · rw [show scalarSpatialHessian (fun z => K * ell z + epsilon) =
         fun z => K • scalarSpatialHessian ell z by
-      funext z
-      exact scalarSpatialHessian_const_mul_add_const K epsilon ell z]
+      aesop]
     exact hell.continuousOn_scalarSpatialHessian.const_smul K
 
 /-- The zero-order scalar parabolic operator under a constant affine transformation. -/
-@[simp] theorem scalarParabolicZeroOrderOperator_const_mul_add_const
-    {d : ℕ} (a : CoefficientField d)
-    (b : ℝ → PDE.Vec d → PDE.Vec d) (c : ℝ → PDE.Vec d → ℝ)
-    (K epsilon : ℝ) (ell : TimeVelocity d → ℝ) (z : TimeVelocity d) :
+@[simp] theorem scalarParabolicZeroOrderOperator_const_mul_add_const :
     scalarParabolicZeroOrderOperator a b c
         (fun q => K * ell q + epsilon) z =
       K * scalarParabolicZeroOrderOperator a b c ell z +
@@ -97,14 +89,7 @@ theorem IsScalarC12On.const_mul_add_const
     unfold PDE.vecDot
     rw [Finset.mul_sum]
     apply Finset.sum_congr rfl
-    intro i _hi
-    simp only [Pi.smul_apply, smul_eq_mul]
-    ring
-  simp only [scalarParabolicZeroOrderOperator_apply,
-    scalarTimeDerivative_const_mul_add_const,
-    scalarSpatialGradient_const_mul_add_const,
-    scalarSpatialHessian_const_mul_add_const,
-    HypoellipticAleksandrov.matrixContraction_smul_right, hdot]
-  ring
+    simp_all <;> grind
+  simp_all <;> grind
 
 end HypoellipticAleksandrov.Parabolic

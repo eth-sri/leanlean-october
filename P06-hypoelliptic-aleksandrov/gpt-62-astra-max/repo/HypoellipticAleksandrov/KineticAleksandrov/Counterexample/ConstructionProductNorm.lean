@@ -24,6 +24,6 @@ theorem construction_eLpNorm_snd {X Y : Type*} [MeasurableSpace X] [MeasurableSp
   simp only [lintegral_const]
   rw [ENNReal.mul_rpow_of_nonneg]
   · rw [mul_comm]
-  · exact (one_div_pos.mpr (ENNReal.toReal_pos hp0 hpTop)).le
+  positivity
 
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample

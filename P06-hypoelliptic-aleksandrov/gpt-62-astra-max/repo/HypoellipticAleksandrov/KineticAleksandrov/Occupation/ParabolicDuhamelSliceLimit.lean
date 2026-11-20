@@ -45,9 +45,6 @@ theorem packQ_eq_symm (q : ℝ × (PDE.Vec d × PDE.Vec d)) :
   simp [packQ]
 
 theorem continuous_packQ : Continuous (packQ d) := by
-  have : packQ d = (evolutionProdCLE d).symm := by
-    funext q; rfl
-  rw [this]
   exact (evolutionProdCLE d).symm.continuous
 
 /-- Integrals over the packed space are integrals over product coordinates. -/
@@ -57,14 +54,14 @@ theorem integral_evolution_eq_prod (F : EvolutionVec d → ℝ) :
     (fun q => F ((evolutionProdMeasurableEquiv d).symm q))
   simp only [MeasurableEquiv.symm_apply_apply] at h
   rw [h]
-  simp only [← packQ_eq_symm]
+  simp [← packQ_eq_symm]
 
 theorem hasCompactSupport_comp_packQ {f : EvolutionVec d → ℝ} (hf : HasCompactSupport f) :
     HasCompactSupport (fun q => f (packQ d q)) := by
   have : (fun q => f (packQ d q)) = f ∘ (evolutionProdCLE d).symm.toHomeomorph := by
     funext q; rfl
   rw [this]
-  exact hf.comp_homeomorph _
+  apply hf.comp_homeomorph
 
 /-- **The weak identity of one source slice.**  In product coordinates the integral of the bounded
 Borel extension `u` of the slice solution against `Lop^* ψ` over the slab `σ < r` equals minus the
@@ -87,7 +84,7 @@ theorem slice_weak_identity {B' : CoefficientField d}
         (fun q => u (q.1, q.2.1) *
           transportedAdjoint (zIndependentCoefficient B') b ψ (packQ d q)) q) +
       ∫ w : PDE.Vec d × PDE.Vec d, m₀ w = 0 := by
-  have hLc : Continuous (transportedAdjoint (zIndependentCoefficient B') b ψ) :=
+  have hLc :=
     (contDiff_transportedAdjoint hB hb hψ).continuous
   have hLcs := hasCompactSupport_transportedAdjoint (B := zIndependentCoefficient B') (b := b) hc
   refine layer_slice_identity (volume : Measure (PDE.Vec d × PDE.Vec d)) r
@@ -97,7 +94,7 @@ theorem slice_weak_identity {B' : CoefficientField d}
     (hψ.continuous.comp continuous_packQ) (hasCompactSupport_comp_packQ hc)
     (hLc.comp continuous_packQ) (hasCompactSupport_comp_packQ hLcs) ?_ m₀ hlim
   intro h hh
-  have h1 := slice_cutoff_identity hB hb hD hV hVeq huV hum C hub hψ hc r hψD h hh
+  have h1 := by apply slice_cutoff_identity <;> assumption
   rw [integral_evolution_eq_prod, integral_evolution_eq_prod] at h1
   simp only [evolutionToTimeVelocity_packQ, timeCoord_packQ] at h1
   rw [← h1]

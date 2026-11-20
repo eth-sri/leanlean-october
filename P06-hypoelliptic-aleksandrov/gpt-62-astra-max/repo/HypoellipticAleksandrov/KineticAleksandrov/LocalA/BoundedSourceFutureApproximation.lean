@@ -47,16 +47,10 @@ theorem exists_duhamelFuture_approximating_sequence
       (∀ᵐ p ∂ν, Tendsto (fun n => duhamelPotential K T (f n) p) atTop
         (𝓝 (duhamelPotential K T F p))) := by
   classical
-  let μ := boundedSourceActionMeasure K ν a T
   let G : ℝ × EvolutionAmbientState d → ℝ :=
     fun q => F ⟨q.1, q.2.1, q.2.2⟩
-  have hG : Measurable G := hF.comp (KineticPoint.measurable_equivProd_symm d)
-  have hU := isOpen_boundedSourceFutureSet (isOpen_of_isAdmissibleEvolutionDomain hΩa)
-    hγ s T
-  obtain ⟨φ, hφ, hφb, hφlim⟩ := exists_boundedSourceSmoothApproximation μ
-    (boundedSourceFutureSet Ω γ s T) hU G hG M hM (fun q => hFb _) (by
-      intro q hq
-      exact hFz _ hq)
+  obtain ⟨φ, hφ, hφb, hφlim⟩ := exists_boundedSourceSmoothApproximation (boundedSourceActionMeasure K ν a T)
+    (boundedSourceFutureSet Ω γ s T) (isOpen_boundedSourceFutureSet (isOpen_of_isAdmissibleEvolutionDomain hΩa) hγ s T) G (hF.comp (KineticPoint.measurable_equivProd_symm d)) M hM (fun q => hFb _) (fun q hq => hFz _ hq)
   let f (n : ℕ) := φ n ∘ KineticPoint.equivProd d
   have hfc (n : ℕ) : Continuous (f n) :=
     (hφ n).1.continuous.comp (KineticPoint.homeomorphProd d).continuous
@@ -68,17 +62,14 @@ theorem exists_duhamelFuture_approximating_sequence
     exact (hφb n _).2
   have hfsup (n : ℕ) : tsupport (f n) ⊆ evolutionPastOpenCylinder Ω γ T := by
     intro p hp
-    change p ∈ tsupport (φ n ∘ KineticPoint.equivProd d) at hp
     rw [boundedSourceTest_support] at hp
     exact ((hφ n).2.2 hp).2
   have hzero (n : ℕ) : ∀ p : KineticPoint d, p.time < s → f n p = 0 := by
     intro p hp
     apply image_eq_zero_of_notMem_tsupport
     intro hm
-    change p ∈ tsupport (φ n ∘ KineticPoint.equivProd d) at hm
     rw [boundedSourceTest_support] at hm
-    have hs := ((hφ n).2.2 hm).1
-    exact (not_lt_of_gt hp) hs
+    exact (not_lt_of_gt hp) (((hφ n).2.2 hm).1)
   refine ⟨f, fun n => (hfc n).measurable, fun n p => hφb n _, ?_, ?_, ?_⟩
   · intro n
     exact continuousOn_duhamelPotential hΩa hΩ hγ B b S K hreal (f n) (hfn n)

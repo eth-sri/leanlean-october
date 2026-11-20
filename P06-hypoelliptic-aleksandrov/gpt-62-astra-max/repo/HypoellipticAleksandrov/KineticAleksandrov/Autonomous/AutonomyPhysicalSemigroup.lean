@@ -35,7 +35,6 @@ theorem fullSpacePhysicalSemigroup_eq_action {lam Lam : ℝ} (A : SmoothAutonomo
     fullSpacePhysicalSemigroup E t F x = fullSpaceAction E F ⟨t, x.1, x.2⟩ := by
   rw [fullSpaceAction_eq_zeroTime A E hE F _ t.coe_nonneg]
   let p := fullspaceState 0 x.swap
-  change E.1 0 t t.coe_nonneg (terminalStateDatum (physicalTerminalDatum F)) p = _
   exact (hE.2.1 0 t t.coe_nonneg p (terminalStateDatum (physicalTerminalDatum F))).trans
     (integral_master_eq_fiber E.2 autonomousWholeDomain_measurable 0 t t.coe_nonneg p
       (physicalTerminalDatum F) (physicalTerminalDatum F).measurable).symm

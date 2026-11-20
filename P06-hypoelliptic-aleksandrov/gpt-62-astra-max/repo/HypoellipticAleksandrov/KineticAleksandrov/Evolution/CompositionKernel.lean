@@ -45,9 +45,10 @@ local notation "κ" => terminalFiberKernel n hn lam Lam m L_b hlam hlamLam hm hm
 local notation "P₀" => terminalOperators n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
   hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx
 
+variable (σ r τ : ℝ) (hσr : σ ≤ r) (hrτ : r ≤ τ)
+
 /-- The terminal fiber kernels satisfy pointwise composition. -/
-theorem terminalFiberKernel_comp
-    (σ r τ : ℝ) (hσr : σ ≤ r) (hrτ : r ≤ τ) :
+theorem terminalFiberKernel_comp :
     κ σ τ (hσr.trans hrτ) = κ r τ hrτ ∘ₖ κ σ r hσr := by
   have := isFiniteKernel_terminalFiberKernel n hn lam Lam m L_b
     hlam hlamLam hm hmLb Ω γ B b hΩ hγ hB_smooth hB_symm hB_ell
@@ -57,12 +58,10 @@ theorem terminalFiberKernel_comp
     hb_smooth hb_lipschitz hb_coercive hEx r τ hrτ
   apply ProbabilityTheory.Kernel.ext
   intro p
-  let q := evolutionQueryOfState Ω γ σ τ (hσr.trans hrτ) p
   let ν := (κ r τ hrτ ∘ₖ κ σ r hσr) p
   let νa := ν.map ((↑) : EvolutionState Ω γ τ → EvolutionAmbientState n)
   have hmass : νa univ ≤ 1 := by
     rw [Measure.map_apply measurable_subtype_coe MeasurableSet.univ, preimage_univ]
-    change (κ r τ hrτ ∘ₖ κ σ r hσr) p univ ≤ 1
     rw [ProbabilityTheory.Kernel.comp_apply' _ _ _ MeasurableSet.univ]
     calc
       (∫⁻ x, κ r τ hrτ x univ ∂(κ σ r hσr p)) ≤ ∫⁻ _x, 1 ∂(κ σ r hσr p) :=
@@ -73,9 +72,6 @@ theorem terminalFiberKernel_comp
       _ ≤ 1 := terminalFiberKernel_univ_le_one n hn lam Lam m L_b
         hlam hlamLam hm hmLb Ω γ B b hΩ hγ hB_smooth hB_symm hB_ell
         hb_smooth hb_lipschitz hb_coercive hEx σ r hσr p
-  have hsupp : νa.restrict (evolutionStateSet Ω γ τ) = νa :=
-    map_subtype_val_restrict (measurableSet_evolutionStateSet_of_isOpen
-      (isOpen_of_isAdmissibleEvolutionDomain hΩ)) ν
   have hint (F : BoundedBorel (EvolutionAmbientState n))
       (hF : IsSmoothCompactTerminalDatum Ω γ τ F) :
       (∫ x, F x ∂νa) = terminalValue n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
@@ -92,12 +88,10 @@ theorem terminalFiberKernel_comp
         hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx
         σ r τ hσr hrτ F hF)
     rw [← hc]
-    exact terminalOperators_apply_smooth n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
-      hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx
-      σ τ (hσr.trans hrτ) p F hF
+    apply terminalOperators_apply_smooth
   have heq := terminalMeasure_eq_of_spec n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
     hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx
-    q νa hmass hsupp hint
+    (evolutionQueryOfState Ω γ σ τ (hσr.trans hrτ) p) νa hmass (map_subtype_val_restrict (measurableSet_evolutionStateSet_of_isOpen (isOpen_of_isAdmissibleEvolutionDomain hΩ)) ν) hint
   have hm := congrArg (Measure.comap ((↑) : EvolutionState Ω γ τ → EvolutionAmbientState n)) heq
   rw [(MeasurableEmbedding.subtype_coe
     (measurableSet_evolutionStateSet_of_isOpen
@@ -105,8 +99,7 @@ theorem terminalFiberKernel_comp
   exact hm.symm
 
 /-- The terminal operators compose on every bounded Borel datum. -/
-theorem terminalOperators_comp
-    (σ r τ : ℝ) (hσr : σ ≤ r) (hrτ : r ≤ τ) :
+theorem terminalOperators_comp :
     P₀ σ τ (hσr.trans hrτ) = (P₀ σ r hσr).comp (P₀ r τ hrτ) := by
   have := isFiniteKernel_terminalFiberKernel n hn lam Lam m L_b
     hlam hlamLam hm hmLb Ω γ B b hΩ hγ hB_smooth hB_symm hB_ell

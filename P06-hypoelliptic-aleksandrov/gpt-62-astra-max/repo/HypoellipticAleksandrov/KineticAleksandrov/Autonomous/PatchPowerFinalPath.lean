@@ -36,13 +36,12 @@ theorem return_fixed_patch_path (lam Lam : ℝ) (hlam : 0 < lam) (hLam : lam ≤
   let xh := hermitePosition T x0 z.velocity P.position P.velocity
   let vh := hermiteVelocity T x0 z.velocity P.position P.velocity
   have hr2 : r ^ 2 ≤ 1 / 64 := by nlinarith
-  have ha : 0 < a := by dsimp [a]; positivity
+  have ha : 0 < a := by positivity
   have hT : 0 < T := by dsimp [T, tminus]; linarith
-  have hTlo : 1 / 2 ≤ T := by dsimp [T, tminus]; linarith
+  have hTlo : 1 / 2 ≤ T := by linarith
   have hThi : T ≤ 4 := by dsimp [T, tminus, a]; linarith
   have hres : P.position - x0 - T • z.velocity =
       P.position - z.position - (P.time - z.time) • z.velocity := by
-    dsimp [x0, T, tminus]
     module
   have hacc : 6 * PDE.vecEuclideanNorm (P.position - x0 - T • z.velocity) / T ^ 2 +
       4 * PDE.vecEuclideanNorm (P.velocity - z.velocity) / T ≤ 1000 := by
@@ -70,10 +69,10 @@ theorem return_fixed_patch_path (lam Lam : ℝ) (hlam : 0 < lam) (hLam : lam ≤
     constructor
     · dsimp only [x]
       rw [extendPosition_left xh vh hT.le hs]
-      simp only [xh, vh, hermitePosition_zero, hermiteVelocity_zero, sub_zero]
+      simp [xh, vh, hermitePosition_zero, hermiteVelocity_zero]
     · dsimp only [v, extendVelocity]
       rw [projIcc_of_le_left hT.le hs]
-      exact hermiteVelocity_zero _ _ _ _ _
+      apply hermiteVelocity_zero
   have hxend : x T = P.position := by
     rw [show x T = xh T from extendPosition_eq hT.le hs (right_mem_Icc.mpr hT.le)]
     exact hermitePosition_end hT.ne' _ _ _ _
@@ -95,8 +94,7 @@ theorem return_fixed_patch_path (lam Lam : ℝ) (hlam : 0 < lam) (hLam : lam ≤
   change q.time - tminus ∈ Icc (-a) T ∧
     PDE.vecEuclideanNorm (q.position - x (q.time - tminus)) ≤ r ^ 3 / 2 ∧
     PDE.vecEuclideanNorm (q.velocity - v (q.time - tminus)) ≤ r / 2 at hq
-  have hs0 : q.time - tminus ≤ 0 := sub_nonpos.mpr hqt
-  obtain ⟨hxq, hvq⟩ := hleft (q.time - tminus) hs0
+  obtain ⟨hxq, hvq⟩ := hleft (q.time - tminus) (sub_nonpos.mpr hqt)
   apply hpatch q
   refine ⟨?_, ?_, ?_, ?_⟩
   · have ht := hq.1.1

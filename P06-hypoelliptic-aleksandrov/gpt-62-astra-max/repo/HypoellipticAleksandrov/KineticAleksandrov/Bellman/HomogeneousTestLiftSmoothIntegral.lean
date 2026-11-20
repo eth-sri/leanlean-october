@@ -40,12 +40,6 @@ theorem bellman_joint_contDiff_integral {E F A : Type*}
       (U ×ˢ univ) (U ×ˢ Ioi 0) := fun w hw => ⟨hw.1, hrp w.2⟩
   have hcm : Continuous (fun w : E × A => (w.1, radius w.2)) :=
     continuous_fst.prodMk (hr.comp continuous_snd)
-  have hc0 : ContinuousOn (fun w : E × A => f (w.1, radius w.2))
-      (U ×ˢ univ) := hf.continuousOn.comp hcm.continuousOn hmap
-  have hc1 : ContinuousOn (fun w : E × A => g (w.1, radius w.2))
-      (U ×ˢ univ) := hg.continuousOn.comp hcm.continuousOn hmap
-  have hc2 : ContinuousOn (fun w : E × A => g' (w.1, radius w.2))
-      (U ×ˢ univ) := hg'.comp hcm.continuousOn hmap
   have hd0 : ∀ q ∈ U, ∀ a : A,
       HasFDerivAt (fun x => f (x, radius a)) (g (q, radius a)) q := by
     intro q hq a
@@ -64,6 +58,6 @@ theorem bellman_joint_contDiff_integral {E F A : Type*}
     exact hd.hasFDerivAt.comp q hc
   exact bellman_compact_parameter_contDiffOn_two mu hU
     (fun q a => f (q, radius a)) (fun q a => g (q, radius a))
-    (fun q a => g' (q, radius a)) hc0 hc1 hc2 hd0 hd1
+    (fun q a => g' (q, radius a)) (hf.continuousOn.comp hcm.continuousOn hmap) (hg.continuousOn.comp hcm.continuousOn hmap) (hg'.comp hcm.continuousOn hmap) hd0 hd1
 
 end HypoellipticAleksandrov.KineticAleksandrov

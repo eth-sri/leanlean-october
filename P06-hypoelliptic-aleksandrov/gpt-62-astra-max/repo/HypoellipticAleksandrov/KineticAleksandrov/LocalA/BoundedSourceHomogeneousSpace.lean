@@ -28,45 +28,44 @@ structure BoundedSourceSmoothTest (U : Set (EvolutionVec d)) where
   /-- The closed support lies inside the testing domain. -/
   support : tsupport toFun ⊆ U
 
+variable (B : FullKineticCoefficient d) (b : PDE.Vec d → PDE.Vec d)
+    (hB : IsSmoothFullKineticCoefficient B) (hb : IsSmoothDrift b) (lam Lam m : ℝ)
+    (hlam : 0 < lam) (hm : 0 < m) (hell : HasEverywhereLoewnerBounds lam Lam B)
+    (hcoerc : HasUnitDirectionDriftCoercivity m b) (U : Set (EvolutionVec d))
+    (φ : BoundedSourceSmoothTest U)
+
+include hB hb in
 /-- The literal adjoint of a compact smooth test is in restricted L2. -/
-theorem boundedSource_testAdjoint_memLp (B : FullKineticCoefficient d)
-    (b : PDE.Vec d → PDE.Vec d) (hB : IsSmoothFullKineticCoefficient B)
-    (hb : IsSmoothDrift b) (U : Set (EvolutionVec d)) (φ : BoundedSourceSmoothTest U) :
+theorem boundedSource_testAdjoint_memLp :
     MemLp (transportedAdjoint B b φ.toFun) 2 (volume.restrict U) :=
   (contDiff_transportedAdjoint hB hb φ.smooth).continuous.memLp_of_hasCompactSupport
     (hasCompactSupport_transportedAdjoint φ.compact)
 
+include hB hb φ in
 /-- Pairing a restricted L2 function with the actual kinetic adjoint test. -/
-def boundedSource_testFunctional (B : FullKineticCoefficient d)
-    (b : PDE.Vec d → PDE.Vec d) (hB : IsSmoothFullKineticCoefficient B)
-    (hb : IsSmoothDrift b) (U : Set (EvolutionVec d)) (φ : BoundedSourceSmoothTest U) :
+def boundedSource_testFunctional :
     Lp ℝ 2 (volume.restrict U) →L[ℝ] ℝ :=
   innerSL ℝ ((boundedSource_testAdjoint_memLp B b hB hb U φ).toLp
     (transportedAdjoint B b φ.toFun))
 
 /-- This continuous functional is exactly the distributional test integral. -/
-theorem boundedSource_testFunctional_apply (B : FullKineticCoefficient d)
-    (b : PDE.Vec d → PDE.Vec d) (hB : IsSmoothFullKineticCoefficient B)
-    (hb : IsSmoothDrift b) (U : Set (EvolutionVec d)) (φ : BoundedSourceSmoothTest U)
+theorem boundedSource_testFunctional_apply
     (u : Lp ℝ 2 (volume.restrict U)) :
     boundedSource_testFunctional B b hB hb U φ u =
       ∫ z in U, u z * transportedAdjoint B b φ.toFun z := by
   rw [boundedSource_testFunctional, innerSL_apply_apply, L2.inner_def]
   apply integral_congr_ae
   filter_upwards [(boundedSource_testAdjoint_memLp B b hB hb U φ).coeFn_toLp] with z hz
-  simp only [RCLike.inner_apply, conj_trivial, hz]
+  aesop
 
+include hB hb in
 /-- The common kernel of all actual distributional adjoint tests. -/
-def boundedSourceHomogeneousL2Space (B : FullKineticCoefficient d)
-    (b : PDE.Vec d → PDE.Vec d) (hB : IsSmoothFullKineticCoefficient B)
-    (hb : IsSmoothDrift b) (U : Set (EvolutionVec d)) :
+def boundedSourceHomogeneousL2Space :
     Submodule ℝ (Lp ℝ 2 (volume.restrict U)) :=
   ⨅ φ : BoundedSourceSmoothTest U, (boundedSource_testFunctional B b hB hb U φ).ker
 
 /-- The homogeneous weak-solution space is a closed L2 subspace. -/
-theorem isClosed_boundedSourceHomogeneousL2Space (B : FullKineticCoefficient d)
-    (b : PDE.Vec d → PDE.Vec d) (hB : IsSmoothFullKineticCoefficient B)
-    (hb : IsSmoothDrift b) (U : Set (EvolutionVec d)) :
+theorem isClosed_boundedSourceHomogeneousL2Space :
     IsClosed (boundedSourceHomogeneousL2Space B b hB hb U :
       Set (Lp ℝ 2 (volume.restrict U))) := by
   change IsClosed (↑(⨅ φ : BoundedSourceSmoothTest U,
@@ -75,9 +74,7 @@ theorem isClosed_boundedSourceHomogeneousL2Space (B : FullKineticCoefficient d)
   exact isClosed_iInter fun φ => (boundedSource_testFunctional B b hB hb U φ).isClosed_ker
 
 /-- Members of the closed space satisfy the actual homogeneous weak equation. -/
-theorem boundedSourceHomogeneousL2Space_isWeak (B : FullKineticCoefficient d)
-    (b : PDE.Vec d → PDE.Vec d) (hB : IsSmoothFullKineticCoefficient B)
-    (hb : IsSmoothDrift b) (U : Set (EvolutionVec d))
+theorem boundedSourceHomogeneousL2Space_isWeak
     [IsFiniteMeasure (volume.restrict U)]
     (u : boundedSourceHomogeneousL2Space B b hB hb U) :
     IsWeakTransportedSolution B b U (u.1 : EvolutionVec d → ℝ) (fun _ => 0) := by
@@ -91,13 +88,10 @@ theorem boundedSourceHomogeneousL2Space_isWeak (B : FullKineticCoefficient d)
   have hz := hm (⟨φ, hφ, hc, hs⟩ : BoundedSourceSmoothTest U)
   change boundedSource_testFunctional B b hB hb U ⟨φ, hφ, hc, hs⟩ u.1 = 0 at hz
   rw [boundedSource_testFunctional_apply] at hz
-  simpa only [zero_mul, integral_zero] using hz
+  simp_all
 
 /-- An actual homogeneous L2 function belongs to the closed weak-solution space. -/
-theorem mem_boundedSourceHomogeneousL2Space_of_isWeak
-    (B : FullKineticCoefficient d) (b : PDE.Vec d → PDE.Vec d)
-    (hB : IsSmoothFullKineticCoefficient B) (hb : IsSmoothDrift b)
-    (U : Set (EvolutionVec d)) (u : EvolutionVec d → ℝ)
+theorem mem_boundedSourceHomogeneousL2Space_of_isWeak (u : EvolutionVec d → ℝ)
     (hu : MemLp u 2 (volume.restrict U))
     (hw : IsWeakTransportedSolution B b U u (fun _ => 0)) :
     hu.toLp u ∈ boundedSourceHomogeneousL2Space B b hB hb U := by
@@ -114,21 +108,15 @@ theorem mem_boundedSourceHomogeneousL2Space_of_isWeak
     rw [hz]
   rw [he]
   have hh := hw.2 φ.toFun φ.smooth φ.compact φ.support
-  simpa only [zero_mul, integral_zero] using hh
+  simp_all
 
+include hlam hm hell hcoerc in
 /-- Hörmander gives continuous representatives for every member of the closed space. -/
-theorem boundedSourceHomogeneousL2Space_hasContinuousRepresentative
-    (hH : HormanderHypoellipticityStatement)
-    (B : FullKineticCoefficient d) (b : PDE.Vec d → PDE.Vec d)
-    (hB : IsSmoothFullKineticCoefficient B) (hb : IsSmoothDrift b)
-    (lam Lam m : ℝ) (hlam : 0 < lam) (hm : 0 < m)
-    (hell : HasEverywhereLoewnerBounds lam Lam B)
-    (hcoerc : HasUnitDirectionDriftCoercivity m b)
-    (U : Set (EvolutionVec d)) (hU : IsOpen U) [IsFiniteMeasure (volume.restrict U)]
+theorem boundedSourceHomogeneousL2Space_hasContinuousRepresentative (hU : IsOpen U) [IsFiniteMeasure (volume.restrict U)]
     (u : boundedSourceHomogeneousL2Space B b hB hb U) :
     ∃ f : EvolutionVec d → ℝ, ContinuousOn f U ∧
       (u.1 : EvolutionVec d → ℝ) =ᵐ[volume.restrict U] f := by
-  obtain ⟨f, hf, he⟩ := exists_smooth_representative_transported_source hH hlam hB hell hb
+  obtain ⟨f, hf, he⟩ := exists_smooth_representative_transported_source hlam hB hell hb
     hm hcoerc hU (boundedSourceHomogeneousL2Space_isWeak B b hB hb U u) contDiffOn_const
   exact ⟨f, hf.continuousOn, he⟩
 

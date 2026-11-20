@@ -24,7 +24,7 @@ theorem exists_bellman_barrier (lam Lam : ℝ) (hlam : 0 < lam) (hLam : lam ≤ 
             c * bellmanGauge q ^ (alpha - 2) ≤ bellmanOperator b phi q := by
   have hr : 1 ≤ Lam / lam := by
     apply (le_div_iff₀ hlam).2
-    simpa only [one_mul] using hLam
+    simpa using hLam
   obtain ⟨hlo, hhi⟩ := bellmanAdjointExponent_range (Lam / lam) hr
   refine ⟨hlo, hhi, ?_⟩
   intro alpha ha ha1

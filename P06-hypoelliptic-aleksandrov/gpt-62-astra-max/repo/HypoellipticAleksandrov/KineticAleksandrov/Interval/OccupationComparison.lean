@@ -37,7 +37,7 @@ theorem interval_scalar_test_le_whole {a c lam Lam σ τ : ℝ}
   obtain ⟨M, hM⟩ := hφs.continuous.bounded_above_of_compact_support hφc
   let F : BoundedBorel (PDE.Vec 1) :=
     ⟨φ, hφs.continuous.measurable, ⟨max M 0, le_max_right _ _, fun w =>
-      (show |φ w| ≤ M from by simpa only [Real.norm_eq_abs] using hM w).trans
+      (show |φ w| ≤ M from by exact hM w).trans
         (le_max_left _ _)⟩⟩
   obtain ⟨Q, _, _, _, _, _, hrepr, _, _, _, hsolve⟩ := hp (fun _ _ _ _ => rfl)
   obtain ⟨Qw, hfirstw, _, hposw, _, _, hreprw, _, _, _, hsolvew⟩ :=
@@ -48,45 +48,45 @@ theorem interval_scalar_test_le_whole {a c lam Lam σ τ : ℝ}
     ⟨hφs, hφc, fun _ _ => by simp only [movingDomain_wholeSpace, mem_univ]⟩
   have hUn : ∀ p : TimeVelocity 1, p.1 ≤ τ → 0 ≤ U p := by
     intro p ht
-    rw [hevalw p.1 ht ⟨p.2, by simp only [movingDomain_wholeSpace, mem_univ]⟩]
+    rw [hevalw p.1 ht ⟨p.2, by simp [movingDomain_wholeSpace]⟩]
     exact hposw p.1 τ ht (terminalPositionDatum F) (fun w => hφ0 w.1) _
   have hcmp := interval_terminal_comparison hac hστ hB.1 B hB F V U hV
     (hU.2.1.mono fun p hp => ⟨hp.1.2, by
-      simp only [movingDomain_wholeSpace, closure_univ, mem_univ]⟩)
+      simp [movingDomain_wholeSpace]⟩)
     (fun p hp => (hU.2.2.1 p ⟨hp.1.2, by
-      simp only [movingDomain_wholeSpace, mem_univ]⟩).contDiffAt
+      simp [movingDomain_wholeSpace]⟩).contDiffAt
       (by
         simpa only [ParabolicProbe.scalarPastOpenCylinder, movingDomain_wholeSpace, mem_univ,
           and_true, preimage, Iio, mem_ofPred_eq] using
           (isOpen_Iio.preimage continuous_fst).mem_nhds hp.1.2)
       |>.of_le (by norm_num))
     (fun p hp => (hU.2.2.2.1 p ⟨hp.1.2, by
-      simp only [movingDomain_wholeSpace, mem_univ]⟩).le)
+      simp [movingDomain_wholeSpace]⟩).le)
     (fun w _ => (hU.2.2.2.2.1 (τ, w) ⟨rfl, by
-      simp only [movingDomain_wholeSpace, closure_univ, mem_univ]⟩).ge)
+      simp [movingDomain_wholeSpace]⟩).ge)
     (fun p hp => hUn p hp.1.2) v (subset_closure (by
-      simpa only [movingDomain_stationary] using hv))
+      simpa using hv))
   rw [heval σ hστ.le ⟨v, hv⟩, hrepr] at hcmp
-  rw [hevalw σ hστ.le ⟨v, by simp only [movingDomain_wholeSpace, mem_univ]⟩, hreprw] at hcmp
+  rw [hevalw σ hστ.le ⟨v, by simp [movingDomain_wholeSpace]⟩, hreprw] at hcmp
   have hi := integral_map (μ := parabolicMarginalKernel K hJ σ τ hστ.le ⟨v, hv⟩)
     measurable_subtype_coe.aemeasurable hφs.continuous.measurable.aestronglyMeasurable
   have hiw := integral_map (μ := parabolicMarginalKernel Kw MeasurableSet.univ σ τ
-      hστ.le ⟨v, by simp only [movingDomain_wholeSpace, mem_univ]⟩)
+      hστ.le ⟨v, by simp [movingDomain_wholeSpace]⟩)
     measurable_subtype_coe.aemeasurable hφs.continuous.measurable.aestronglyMeasurable
   change (∫ w, φ w ∂Measure.map Subtype.val
     (parabolicMarginalKernel K hJ σ τ hστ.le ⟨v, hv⟩)) ≤ _
   rw [hi]
   have hmap := Kw.map_fiberFirstMarginal_eq_firstMarginal MeasurableSet.univ σ τ
-    hστ.le (evolutionStateOfPosition (wholeSpace 1) (fun _ => (0 : PDE.Vec 1)) σ
-      ⟨v, by simp only [movingDomain_wholeSpace, mem_univ]⟩ 0)
+    hστ.le (evolutionStateOfPosition (wholeSpace 1) (fun _ => 0) σ
+      ⟨v, by simp [movingDomain_wholeSpace]⟩ 0)
   have hfirstw' := hfirstw σ τ hστ.le
-    ⟨v, by simp only [movingDomain_wholeSpace, mem_univ]⟩ 0
+    ⟨v, by simp [movingDomain_wholeSpace]⟩ 0
   rw [← hfirstw'] at hmap
   change (∫ w, φ w.1 ∂parabolicMarginalKernel K hJ σ τ hστ.le ⟨v, hv⟩) ≤
     ∫ w, φ w ∂Kw.firstMarginal
-      (evolutionQueryOfState (wholeSpace 1) (fun _ => (0 : PDE.Vec 1)) σ τ hστ.le
-        (evolutionStateOfPosition (wholeSpace 1) (fun _ => (0 : PDE.Vec 1)) σ
-          ⟨v, by simp only [movingDomain_wholeSpace, mem_univ]⟩ 0))
+      (evolutionQueryOfState (wholeSpace 1) (fun _ => 0) σ τ hστ.le
+        (evolutionStateOfPosition (wholeSpace 1) (fun _ => 0) σ
+          ⟨v, by simp [movingDomain_wholeSpace]⟩ 0))
   rw [← hmap, hiw]
   exact hcmp
 

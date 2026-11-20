@@ -38,14 +38,13 @@ lemma eLpNorm_fiberHeight_le {m : Measure Y} [SigmaFinite m] {g : Y → ℝ≥0�
   set F : Y → PDE.Vec d → ℝ≥0∞ := fun y ξ => ‖fiberDensity g κ ξ y‖ₑ with hF
   have hFm : Measurable (Function.uncurry F) :=
     ((measurable_fiberDensity hg κ).comp measurable_swap).enorm
-  have hmink := minkowski_integral (m := m) (ν := (volume : Measure (PDE.Vec d))) hγ hFm
-  have hHm := measurable_fiberHeight hg κ
+  have hmink := minkowski_integral (m := m) (ν := volume) hγ hFm
   have hnorm : ∀ ξ, eLpNorm (fiberDensity g κ ξ) (ENNReal.ofReal γ) m =
       (∫⁻ y, F y ξ ^ γ ∂m) ^ (1 / γ) := by
     intro ξ
     rw [eLpNorm_eq_lintegral_rpow_enorm_toReal hp0 hpT
       (measurable_fiberDensity_right hg κ ξ).aestronglyMeasurable, ENNReal.toReal_ofReal hγ0.le]
-  rw [eLpNorm_eq_lintegral_rpow_enorm_toReal hp0 hpT hHm.aestronglyMeasurable,
+  rw [eLpNorm_eq_lintegral_rpow_enorm_toReal hp0 hpT (measurable_fiberHeight hg κ).aestronglyMeasurable,
     ENNReal.toReal_ofReal hγ0.le]
   simp_rw [hnorm]
   have h1 : ∫⁻ y, ‖fiberHeight g κ y‖ₑ ^ γ ∂m =
@@ -65,8 +64,7 @@ lemma ae_lt_top_of_eLpNorm_lt_top {m : Measure Y} {H : Y → ℝ≥0∞} (hH : M
   have hp0 : ENNReal.ofReal γ ≠ 0 := by simpa using hγ
   rw [eLpNorm_lt_top_iff_lintegral_rpow_enorm_lt_top hp0 ENNReal.ofReal_ne_top
     hH.aestronglyMeasurable, ENNReal.toReal_ofReal hγ.le] at h
-  have h2 := ae_lt_top (hH.enorm.pow_const γ) h.ne
-  filter_upwards [h2] with y hy
+  filter_upwards [(ae_lt_top (hH.enorm.pow_const γ) h.ne)] with y hy
   rw [enorm_eq_self] at hy
   by_contra hcon
   rw [not_lt, top_le_iff] at hcon
@@ -95,13 +93,10 @@ theorem fiber_height_minkowski {m : Measure Y} [SigmaFinite m] (Γ : Measure (Y 
   have hle := eLpNorm_fiberHeight_le (m := m) hg Γ.condKernel hγ
   rw [hnorm (ENNReal.ofReal γ)] at hle
   refine ⟨hle, fun hfin => ?_⟩
-  have hlt : eLpNorm (fiberHeight g Γ.condKernel) (ENNReal.ofReal γ) m < ∞ :=
-    lt_of_le_of_lt hle hfin
-  filter_upwards [ae_lt_top_of_eLpNorm_lt_top hHm (by linarith) hlt] with y hy
+  filter_upwards [ae_lt_top_of_eLpNorm_lt_top hHm (by linarith) (lt_of_le_of_lt hle hfin)] with y hy
   refine ⟨hy, ⟨(continuous_const.mul (continuous_fiberFourier _ y)).aestronglyMeasurable, ?_⟩⟩
   have hc : ENNReal.ofReal (((2 * Real.pi) ^ d)⁻¹) ≠ 0 := by
-    have := Real.pi_pos
-    simpa using (by positivity : (0 : ℝ) < ((2 * Real.pi) ^ d)⁻¹)
+    positivity
   have : ∫⁻ ξ, ‖fiberDensity g Γ.condKernel ξ y‖ₑ < ∞ := by
     unfold fiberHeight at hy
     rcases ENNReal.mul_lt_top_iff.1 hy with ⟨_, h⟩ | h | h

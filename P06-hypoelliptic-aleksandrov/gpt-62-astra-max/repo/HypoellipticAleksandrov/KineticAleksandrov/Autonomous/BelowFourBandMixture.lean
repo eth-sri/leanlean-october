@@ -46,39 +46,35 @@ theorem belowFour_density_subprobability_mixture {X : Type*} [MeasurableSpace X]
     ∃ G : Point → ℝ, Measurable G ∧ (∀ z, 0 ≤ G z) ∧
       k ∘ₘ nu = volume.withDensity (fun z => ENNReal.ofReal (G z)) ∧
       MemLp G (ENNReal.ofReal q) volume ∧ (eLpNorm G (ENNReal.ofReal q) volume).toReal ≤ K := by
-  have : SigmaFinite (volume : Measure Point) := density_volume_sigmaFinite
-  let F := positionKernelDensity k (volume : Measure Point)
-  have hF := measurable_positionKernelDensity k (volume : Measure Point)
+  have  := density_volume_sigmaFinite
+  let F := positionKernelDensity k volume
+  have hF := measurable_positionKernelDensity k volume
   have hd : ∀ᵐ x ∂nu, volume.withDensity (F x) = k x := by
     filter_upwards [hbound] with x hx
     obtain ⟨G, _, _, hGd, _, _⟩ := hx
     apply withDensity_positionKernelDensity
     rw [hGd]
-    exact withDensity_absolutelyContinuous _ _
+    apply withDensity_absolutelyContinuous
   have hp : ∀ᵐ x ∂nu, positionPositiveNorm volume q (F x) ≤ ENNReal.ofReal K := by
     filter_upwards [hbound, hd] with x hx hdx
     obtain ⟨G, hG, hG0, hGd, hGp, hGn⟩ := hx
     have h := positionPositiveNorm_of_density_le volume (F x)
       (hF.comp (measurable_const.prodMk measurable_id)) univ univ MeasurableSet.univ
-      G hG hG0 (by simpa only [Measure.restrict_univ] using hdx.trans hGd)
-      q K (by linarith) hK (by simpa only [Measure.restrict_univ] using hGp)
-      (by simpa only [Measure.restrict_univ] using hGn)
-    simpa only [Measure.restrict_univ] using h
+      G hG hG0 (by simpa using hdx.trans hGd)
+      q K (by linarith) hK (by simpa using hGp)
+      (by simpa using hGn)
+    simpa using h
   let M := fun z => ∫⁻ x, F x z ∂nu
-  have hM : Measurable M := hF.lintegral_prod_left'
   have hm : volume.withDensity M = k ∘ₘ nu := by
     ext B hB
     rw [withDensity_apply _ hB, Measure.bind_apply hB k.aemeasurable]
-    change (∫⁻ z in B, ∫⁻ x, F x z ∂nu ∂volume) = ∫⁻ x, k x B ∂nu
     rw [← lintegral_lintegral_swap (μ := nu) (ν := volume.restrict B)
       (f := F) hF.aemeasurable]
     apply lintegral_congr_ae
     filter_upwards [hd] with x hx
     rw [← withDensity_apply _ hB, hx]
   have hn := positionPositiveNorm_mixture_le nu volume F hF q hq (ENNReal.ofReal K) hp
-  have hn' : positionPositiveNorm volume q M ≤ ENNReal.ofReal K :=
-    hn.trans ((mul_le_mul_left hnu _).trans_eq (one_mul _))
-  exact belowFour_real_density_of_positive_bound volume (k ∘ₘ nu) M hM hm q K
-    (by linarith) hK hn'
+  exact belowFour_real_density_of_positive_bound volume (k ∘ₘ nu) M hF.lintegral_prod_left' hm q K
+    (by linarith) hK (hn.trans ((mul_le_mul_left hnu _).trans_eq (one_mul _)))
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

@@ -18,14 +18,12 @@ theorem box_return_time_average (E : FullSpaceEvolution) (z : Z) (A0 r Y t C : �
     t * (kernelXV E (Real.toNNReal t) z (box A0 r Y)).toReal ≤
       C * ∫ s in Ioc 0 (3 * t),
         (kernelXV E (Real.toNNReal s) z (box A0 r Y)).toReal := by
-  let f := fun s : ℝ => (kernelXV E (Real.toNNReal s) z (box A0 r Y)).toReal
   have hi := box_action_integrableOn E z A0 r Y (3 * t)
   have hs : Ioc (2 * t) (3 * t) ⊆ Ioc 0 (3 * t) :=
     fun s hs => ⟨by linarith [hs.1], hs.2⟩
-  have hsmall := hi.mono_set hs
   have hmono := setIntegral_mono_on
-    (integrableOn_const (C := f t) (by simp : volume (Ioc (2 * t) (3 * t)) ≠ ⊤))
-    (hsmall.const_mul C) measurableSet_Ioc hcomp
+    (integrableOn_const (C := (fun s : ℝ => (kernelXV E (Real.toNNReal s) z (box A0 r Y)).toReal) t) (by simp))
+    ((hi.mono_set hs).const_mul C) measurableSet_Ioc hcomp
   have hvol : volume.real (Ioc (2 * t) (3 * t)) = t := by
     rw [measureReal_def, Real.volume_Ioc, ENNReal.toReal_ofReal (by linarith)]
     ring
@@ -39,13 +37,12 @@ theorem box_decay_scaling {r t alpha : ℝ} (hr : 0 < r) (ht : 0 < t) :
     r ^ (gamma alpha) * t ^ (alpha / 2) / t = (t / r ^ 2) ^ (-gamma alpha / 2) := by
   have he : -gamma alpha / 2 = alpha / 2 - 1 := by dsimp only [gamma]; ring
   rw [Real.div_rpow ht.le (sq_nonneg r), he, Real.rpow_sub_one ht.ne']
-  have hp : (r ^ 2 : ℝ) ^ (alpha / 2 - 1) = r ^ (-gamma alpha) := by
+  have hp : (r ^ 2) ^ (alpha / 2 - 1) = r ^ (-gamma alpha) := by
     rw [← Real.rpow_natCast_mul hr.le]
     congr 1
     dsimp only [gamma]
     ring
   rw [hp, Real.rpow_neg hr.le]
-  have hpow := (Real.rpow_pos_of_pos hr (gamma alpha)).ne'
   field_simp
 
 /-- Negative powers yield the source's `1+t/r²` decay, with a uniform large-time factor. -/

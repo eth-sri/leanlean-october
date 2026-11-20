@@ -22,26 +22,27 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Holder
 
 open Parabolic Scaling
 
+variable {d : ℕ} {f : ℝ × (PDE.Vec d × PDE.Vec d) → ℝ} (hf : ContDiff ℝ (⊤ : ℕ∞) f)
+
+include hf in
 /-- Smoothness of a scaled cutoff in the existing raw product coordinates. -/
-theorem contDiff_rawLift_scaledUnitCutoff {d : ℕ}
-    {f : ℝ × (PDE.Vec d × PDE.Vec d) → ℝ}
-    (hf : ContDiff ℝ (⊤ : ℕ∞) f) (P₀ : KineticPoint d) (R ell : ℝ) :
+theorem contDiff_rawLift_scaledUnitCutoff (P₀ : KineticPoint d) (R ell : ℝ) :
     ContDiff ℝ (⊤ : ℕ∞) (rawLift (scaledUnitCutoff f P₀ R ell)) :=
   contDiff_const.mul (hf.comp (contDiff_kineticAffineInverse_prod P₀ R))
 
 /-- The physical free-transport curve differentiates to the source transport operator. -/
-theorem hasDerivAt_kinetic_transport {d : ℕ} {u : KineticPoint d → ℝ}
+theorem hasDerivAt_kinetic_transport {u : KineticPoint d → ℝ}
     {P : KineticPoint d} (hu : DifferentiableAt ℝ (rawLift u) (rawPoint P)) :
     HasDerivAt (fun t : ℝ => u ⟨P.time + t, P.position + t • P.velocity, P.velocity⟩)
       (kineticTimeDerivative u P + PDE.vecDot P.velocity (kineticPositionGradient u P))
       0 := by
   have ht : HasDerivAt (fun t : ℝ => P.time + t) 1 0 :=
-    (hasDerivAt_id (0 : ℝ)).const_add P.time
+    (hasDerivAt_id 0).const_add P.time
   have hx : HasDerivAt (fun t : ℝ => P.position + t • P.velocity) P.velocity 0 := by
-    simpa only [one_smul, id_eq] using
+    simpa using
       ((hasDerivAt_id (0 : ℝ)).smul_const P.velocity).const_add P.position
-  have hc := ht.prodMk (hx.prodMk (hasDerivAt_const (0 : ℝ) P.velocity))
-  have heq : (P.time + (0 : ℝ), (P.position + (0 : ℝ) • P.velocity, P.velocity)) =
+  have hc := ht.prodMk (hx.prodMk (hasDerivAt_const 0 P.velocity))
+  have heq : (P.time + 0, (P.position + (0 : ℝ) • P.velocity, P.velocity)) =
       rawPoint P := by simp [rawPoint]
   have hu' := hu
   rw [← heq] at hu'
@@ -49,10 +50,9 @@ theorem hasDerivAt_kinetic_transport {d : ℕ} {u : KineticPoint d → ℝ}
   simpa only [heq, rawLift, Function.comp_def] using
     hu'.hasFDerivAt.comp_hasDerivAt 0 hc
 
+include hf in
 /-- The time-plus-transport jet scales by the exact inverse-square radius. -/
-theorem scaledUnitCutoff_transport {d : ℕ}
-    {f : ℝ × (PDE.Vec d × PDE.Vec d) → ℝ}
-    (hf : ContDiff ℝ (⊤ : ℕ∞) f) (P₀ P : KineticPoint d) (R ell : ℝ) :
+theorem scaledUnitCutoff_transport (P₀ P : KineticPoint d) (R ell : ℝ) :
     kineticTimeDerivative (scaledUnitCutoff f P₀ R ell) P +
       PDE.vecDot P.velocity (kineticPositionGradient (scaledUnitCutoff f P₀ R ell) P) =
       ell * (R ^ 2)⁻¹ *
@@ -62,8 +62,8 @@ theorem scaledUnitCutoff_transport {d : ℕ}
   have hi := hasDerivAt_inverse_transport P₀ P R
   have hq : KineticPoint.equivProd d
       (kineticAffineInverse P₀ R
-        ⟨P.time + (0 : ℝ), P.position + (0 : ℝ) • P.velocity, P.velocity⟩) =
-      KineticPoint.equivProd d Q := by simp only [add_zero, zero_smul, Q]
+        ⟨P.time + 0, P.position + (0 : ℝ) • P.velocity, P.velocity⟩) =
+      KineticPoint.equivProd d Q := by simp [Q]
   have hd := (hf.differentiable (by simp)).differentiableAt
     (x := KineticPoint.equivProd d Q)
   rw [← hq] at hd
@@ -76,14 +76,13 @@ theorem scaledUnitCutoff_transport {d : ℕ}
       ell * fderiv ℝ f (KineticPoint.equivProd d Q)
         ((R ^ 2)⁻¹, ((R ^ 3)⁻¹ • (P.velocity - P₀.velocity), 0)) := by
     apply ht.unique
-    simpa only [scaledUnitCutoff, Function.comp_apply, hq] using hc
+    simpa [scaledUnitCutoff] using hc
   have hv : ((R ^ 2)⁻¹, ((R ^ 3)⁻¹ • (P.velocity - P₀.velocity), 0)) =
       (R ^ 2)⁻¹ • ((1, (Q.velocity, 0)) : ℝ × (PDE.Vec d × PDE.Vec d)) := by
     ext i
     all_goals simp [Q, kineticAffineInverse, relativeVelocity]
     all_goals ring
   rw [hsame, hv, map_smul]
-  simp only [smul_eq_mul]
   ring
 
 end HypoellipticAleksandrov.KineticAleksandrov.Holder

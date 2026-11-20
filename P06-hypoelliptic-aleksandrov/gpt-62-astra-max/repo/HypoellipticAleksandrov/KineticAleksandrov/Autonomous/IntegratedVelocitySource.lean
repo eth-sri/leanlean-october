@@ -31,7 +31,7 @@ theorem velocityOccupationDensity_nonneg (r v : ℝ) : 0 ≤ velocityOccupationD
   positivity
 
 /-- A smooth compact unit probe multiplied by the density is a valid compact source. -/
-theorem velocity_profile_source_bound (hH : HormanderHypoellipticityStatement)
+theorem velocity_profile_source_bound
     {lam Lam r : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : SmoothAutonomous lam Lam) (E : FullSpaceEvolution) (hE : IsFullSpaceEvolution A E)
     (hr : 0 < r) (T : ℝ)
@@ -65,7 +65,7 @@ theorem velocity_profile_source_bound (hH : HormanderHypoellipticityStatement)
     change p.position ∈ movingDomain (wholeSpace 1) (fun _ => 0) p.time
     rw [movingDomain_wholeSpace]
     trivial
-  have hb := velocity_duhamel_le_barrier hH hlam hLam A E hE T g
+  have hb := velocity_duhamel_le_barrier hlam hLam A E hE T g
     (velocityOccupationBarrier r Lam T)
     (fun q => mul_nonneg (hf01 _).1
       (mul_nonneg hlam.le (velocityOccupationDensity_nonneg r _))) hgs hc hu

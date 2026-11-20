@@ -37,15 +37,7 @@ def scalarToVecOneContinuousLinearEquiv : ℝ ≃L[ℝ] Vec 1 :=
   funext i
   have hi : i = 0 := Subsingleton.elim _ _
   subst i
-  simp [scalarToVecOne, basisVec]
-
-/-- Pull a native smooth scalar function back to the scalar coordinate. -/
-def scalarPullbackOne (φ : Vec 1 → ℝ) : ℝ → ℝ :=
-  fun t => φ (scalarToVecOne t)
-
-@[simp] theorem scalarPullbackOne_apply (φ : Vec 1 → ℝ) (t : ℝ) :
-    scalarPullbackOne φ t = φ (scalarToVecOne t) :=
-  rfl
+  simp [scalarToVecOne]
 
 end
 

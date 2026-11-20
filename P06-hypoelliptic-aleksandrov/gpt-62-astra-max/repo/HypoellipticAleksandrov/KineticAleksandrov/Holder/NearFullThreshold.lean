@@ -28,11 +28,11 @@ theorem near_full_threshold (d : ℕ) (hd : 1 ≤ d) (Lam p C_A : ℝ) (hp : 1 �
   obtain ⟨C, hC⟩ := near_full d hd Lam p C_A hp
   let B := max C 0
   let delta := 1 / (4 * (B + 1))
-  let eta := min (1 / 2 : ℝ) (delta ^ p)
+  let eta := min (1 / 2) (delta ^ p)
   have hB : 0 ≤ B := le_max_right _ _
   have hden : 0 < 4 * (B + 1) := by positivity
   have hdelta : 0 < delta := one_div_pos.mpr hden
-  have hp0 : 0 < p := lt_of_lt_of_le zero_lt_one hp
+  have hp0 := lt_of_lt_of_le zero_lt_one hp
   have heta : 0 < eta := lt_min (by norm_num) (Real.rpow_pos_of_pos hdelta _)
   have heta1 : eta < 1 := lt_of_le_of_lt (min_le_left _ _) (by norm_num)
   have hroot : eta ^ (1 / p) ≤ delta := by
@@ -41,15 +41,11 @@ theorem near_full_threshold (d : ℕ) (hd : 1 ≤ d) (Lam p C_A : ℝ) (hp : 1 �
         (min_le_right _ _) (one_div_nonneg.mpr hp0.le)
       _ = delta := by rw [← Real.rpow_mul hdelta.le]; simp [hp0.ne']
   have hsmall : B * delta ≤ 1 / 4 := by
-    change B * (1 / (4 * (B + 1))) ≤ 1 / 4
     rw [mul_one_div, div_le_iff₀ hden]
     linarith only [hB]
-  have hCsmall : C * eta ^ (1 / p) ≤ 1 / 4 :=
-    (mul_le_mul_of_nonneg_right (le_max_left _ _) (Real.rpow_nonneg heta.le _)).trans
-      ((mul_le_mul_of_nonneg_left hroot hB).trans hsmall)
   refine ⟨eta, heta, heta1, ?_⟩
   intro lam hlam hLam A hA P₀ R ell hR hell O hO hQO u hu0 hu hdensity P hP
-  exact (mul_le_mul_of_nonneg_right (by linarith only [hCsmall]) hell).trans
+  exact (mul_le_mul_of_nonneg_right (by linarith only [((mul_le_mul_of_nonneg_right (le_max_left _ _) (Real.rpow_nonneg heta.le _)).trans ((mul_le_mul_of_nonneg_left hroot hB).trans hsmall))]) hell).trans
     (hC lam hlam hLam A hA P₀ R ell eta hR hell heta heta1 O hO hQO u hu0 hu hdensity P hP)
 
 end HypoellipticAleksandrov.KineticAleksandrov.Holder

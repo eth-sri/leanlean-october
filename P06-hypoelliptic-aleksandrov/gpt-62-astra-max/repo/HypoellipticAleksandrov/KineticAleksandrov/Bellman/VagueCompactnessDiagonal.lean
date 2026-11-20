@@ -41,9 +41,7 @@ theorem bellmanCompactIntegral_norm_le (mu : Measure X) [IsFiniteMeasure mu]
     ‖bellmanCompactIntegral mu‖ ≤ C := by
   apply ContinuousLinearMap.opNorm_le_bound _ hC
   intro f
-  change ‖∫ x, f x ∂mu‖ ≤ C * ‖f‖
   have hb := (BoundedContinuousFunction.mkOfCompact f).norm_integral_le_mul_norm mu
-  simp only [BoundedContinuousFunction.norm_mkOfCompact] at hb
   convert! hb.trans (mul_le_mul_of_nonneg_right hm (norm_nonneg _)) using 1
 
 /-- One common subsequence for every compact-exhaustion coordinate and every measure lane. -/
@@ -71,14 +69,13 @@ theorem bellman_compact_functionals_subsequence {iota : Type*} [Countable iota]
           ‖bellmanCompactIntegral (mu n i)‖ := by
         convert! dist_zero_right (bellmanCompactIntegral (mu n i)) using 1
       rw [he]
-      exact bellmanCompactIntegral_norm_le _ _ (hC i) (hm n i)⟩
+      solve_by_elim [bellmanCompactIntegral_norm_le]⟩
   obtain ⟨ell, k, hk, ht⟩ := CompactSpace.tendsto_subseq u
   refine ⟨k, hk, ?_⟩
   intro i
   refine ⟨WeakDual.toStrongDual (ell i).val, ?_⟩
   intro f
-  have hi := (continuous_apply i).tendsto ell |>.comp ht
-  have hv := continuous_subtype_val.tendsto (ell i) |>.comp hi
+  have hv := continuous_subtype_val.tendsto (ell i) |>.comp ((continuous_apply i).tendsto ell |>.comp ht)
   convert! (WeakDual.eval_continuous f).tendsto (ell i).val |>.comp hv using 1
 
 end HypoellipticAleksandrov.KineticAleksandrov

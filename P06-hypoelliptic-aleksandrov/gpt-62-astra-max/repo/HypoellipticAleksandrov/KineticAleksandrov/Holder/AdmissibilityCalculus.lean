@@ -18,42 +18,36 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Holder
 
 open Set Parabolic
 
+variable {d : ℕ} (A : FullKineticCoefficient d) {psi : KineticPoint d → ℝ}
+    {E : Set (KineticPoint d)} (h : IsSmoothNear psi E) (hpsi : IsSmoothNear psi E)
+    {P : KineticPoint d} (hP : P ∈ E) (a b : ℝ)
+
+include h in
 /-- Positive rescaling and constant shifting preserve source-near smoothness. -/
-theorem IsSmoothNear.affine {d : ℕ} {psi : KineticPoint d → ℝ}
-    {E : Set (KineticPoint d)} (h : IsSmoothNear psi E) (a b : ℝ) :
+theorem IsSmoothNear.affine :
     IsSmoothNear (fun P => a * psi P + b) E := by
   obtain ⟨U, hU, hEU, hpsi⟩ := h
   exact ⟨U, hU, hEU, contDiffOn_const.mul hpsi |>.add contDiffOn_const⟩
 
+include h hP in
 /-- Near smoothness gives smoothness of each physical coordinate slice. -/
-theorem IsSmoothNear.slices {d : ℕ} {psi : KineticPoint d → ℝ}
-    {E : Set (KineticPoint d)} (h : IsSmoothNear psi E) {P : KineticPoint d}
-    (hP : P ∈ E) :
+theorem IsSmoothNear.slices :
     ContDiffAt ℝ (⊤ : ℕ∞) (fun t => psi ⟨t, P.position, P.velocity⟩) P.time ∧
     ContDiffAt ℝ (⊤ : ℕ∞) (fun x => psi ⟨P.time, x, P.velocity⟩) P.position ∧
     ContDiffAt ℝ (⊤ : ℕ∞) (fun v => psi ⟨P.time, P.position, v⟩) P.velocity := by
   obtain ⟨U, hU, hEU, hpsi⟩ := h
-  have ho : IsOpen ((KineticPoint.equivProd d) '' U) :=
-    (KineticPoint.homeomorphProd d).isOpenMap _ hU
-  have hg := hpsi.contDiffAt (ho.mem_nhds (mem_image_of_mem _ (hEU hP)))
-  have ht : ContDiff ℝ (⊤ : ℕ∞)
-      (fun t : ℝ => (t, (P.position, P.velocity))) :=
-    contDiff_id.prodMk contDiff_const
-  have hx : ContDiff ℝ (⊤ : ℕ∞)
-      (fun x : PDE.Vec d => (P.time, (x, P.velocity))) :=
-    contDiff_const.prodMk (contDiff_id.prodMk contDiff_const)
+  have hg := hpsi.contDiffAt (((KineticPoint.homeomorphProd d).isOpenMap _ hU).mem_nhds (mem_image_of_mem _ (hEU hP)))
   have hv : ContDiff ℝ (⊤ : ℕ∞)
       (fun v : PDE.Vec d => (P.time, (P.position, v))) :=
     contDiff_const.prodMk (contDiff_const.prodMk contDiff_id)
-  have htime := hg.comp P.time ht.contDiffAt
-  have hposition := hg.comp P.position hx.contDiffAt
+  have htime := hg.comp P.time (contDiff_id.prodMk contDiff_const).contDiffAt
+  have hposition := hg.comp P.position (contDiff_const.prodMk (contDiff_id.prodMk contDiff_const)).contDiffAt
   have hvelocity := hg.comp P.velocity hv.contDiffAt
   exact ⟨htime, hposition, hvelocity⟩
 
+include hpsi hP in
 /-- The source backward operator is affine-linear on every smooth-near test. -/
-theorem backwardOperator_affine {d : ℕ} (A : FullKineticCoefficient d)
-    {psi : KineticPoint d → ℝ} {E : Set (KineticPoint d)}
-    (hpsi : IsSmoothNear psi E) {P : KineticPoint d} (hP : P ∈ E) (a b : ℝ) :
+theorem backwardOperator_affine :
     backwardOperator A (fun Q => a * psi Q + b) P = a * backwardOperator A psi P := by
   obtain ⟨ht, hx, hv⟩ := hpsi.slices hP
   have htd := ht.differentiableAt (by simp)

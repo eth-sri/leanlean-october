@@ -21,8 +21,7 @@ theorem capacity_primitive_smooth {f : ℝ → ℝ} (hf : ContDiff ℝ (⊤ : �
       hf.continuous.aestronglyMeasurable.stronglyMeasurableAtFilter hf.continuous.continuousAt
   apply contDiff_infty_iff_deriv.mpr
   refine ⟨fun v => (hd v).differentiableAt, ?_⟩
-  have he : deriv (fun v => ∫ x in a..v, f x) = f := funext fun v => (hd v).deriv
-  rw [he]
+  rw [(funext fun v => (hd v).deriv)]
   exact hf
 
 /-- The cumulative integral of a nonnegative compactly supported function is bounded
@@ -35,9 +34,8 @@ theorem capacity_cumulative_bounds {f : ℝ → ℝ} {a : ℝ}
   · rw [intervalIntegral.integral_of_le hav]
     exact ⟨integral_nonneg (fun x => hn x),
       setIntegral_le_integral hi (Filter.Eventually.of_forall hn)⟩
-  · have hva : v ≤ a := (not_le.mp hav).le
-    have hz : (∫ x in v..a, f x) = 0 := by
-      rw [intervalIntegral.integral_of_le hva]
+  · have hz : (∫ x in v..a, f x) = 0 := by
+      rw [intervalIntegral.integral_of_le ((not_le.mp hav).le)]
       apply integral_eq_zero_of_ae
       apply (ae_restrict_iff' measurableSet_Ioc).mpr
       exact Filter.Eventually.of_forall fun x hx =>

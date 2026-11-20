@@ -12,17 +12,16 @@ open HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 
 /-- Time autonomy identifies an absolute native query with the scalar elapsed kernel. -/
 theorem enlargedFullSpace_native_terminal_integral
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
     {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : SmoothAutonomous lam Lam) (P : Point) (b : ℝ) (hb : P.time ≤ b)
     (F : Point → ℝ) (hF : Measurable F) :
     (∫ w, F ⟨b, w.2, w.1⟩
-      ∂(fullSpaceEvolution hH hLE hlam hLam A).2.master
+      ∂(fullSpaceEvolution hlam hLam A).2.master
         (wholeSpaceQuery P.time b hb P.velocity P.position)) =
       ∫ z, F (enlargedTerminalPoint b z)
-        ∂kernelXV (fullSpaceEvolution hH hLE hlam hLam A) (Real.toNNReal (b - P.time))
+        ∂kernelXV (fullSpaceEvolution hlam hLam A) (Real.toNNReal (b - P.time))
           (P.position 0, P.velocity 0) := by
-  let E := fullSpaceEvolution hH hLE hlam hLam A
+  let E := fullSpaceEvolution hlam hLam A
   let q := wholeSpaceQuery P.time b hb P.velocity P.position
   have hq : autonomousQueryShift (-P.time) q =
       wholeQuery (Real.toNNReal (b - P.time)) (P.position 0, P.velocity 0) := by
@@ -39,7 +38,7 @@ theorem enlargedFullSpace_native_terminal_integral
     congr 1
     ring
   have hk := fullspace_kernel_timeShift A E
-    (fullSpaceEvolution_spec hH hLE hlam hLam A) (-P.time) q
+    (fullSpaceEvolution_spec hlam hLam A) (-P.time) q
   rw [hq] at hk
   change (∫ w, F ⟨b, w.2, w.1⟩ ∂E.2.master q) =
     ∫ z, F (enlargedTerminalPoint b z)

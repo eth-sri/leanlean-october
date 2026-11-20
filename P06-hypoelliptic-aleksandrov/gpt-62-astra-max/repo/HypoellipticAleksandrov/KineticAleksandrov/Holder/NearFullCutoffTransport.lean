@@ -21,25 +21,27 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Holder
 
 open Parabolic Scaling
 
+variable {d : ℕ} {u : KineticPoint d → ℝ} {P : KineticPoint d}
+    (hu : DifferentiableAt ℝ (rawLift u) (rawPoint P))
+
+include hu in
 /-- The position slice derivative is the corresponding raw coordinate direction. -/
-theorem fderiv_positionSlice {d : ℕ} {u : KineticPoint d → ℝ} {P : KineticPoint d}
-    (hu : DifferentiableAt ℝ (rawLift u) (rawPoint P)) (w : PDE.Vec d) :
+theorem fderiv_positionSlice (w : PDE.Vec d) :
     fderiv ℝ (fun x => u ⟨P.time, x, P.velocity⟩) P.position w =
       fderiv ℝ (rawLift u) (rawPoint P) (0, (w, 0)) := by
   have hc : HasFDerivAt (fun x : PDE.Vec d => (P.time, (x, P.velocity)))
       ((0 : PDE.Vec d →L[ℝ] ℝ).prod
         ((ContinuousLinearMap.id ℝ (PDE.Vec d)).prod
-          (0 : PDE.Vec d →L[ℝ] PDE.Vec d))) P.position :=
+          0)) P.position :=
     (hasFDerivAt_const P.time P.position).prodMk
       ((hasFDerivAt_id P.position).prodMk (hasFDerivAt_const P.velocity P.position))
   change (fderiv ℝ (rawLift u ∘ fun x => (P.time, (x, P.velocity))) P.position) w = _
   rw [(hu.hasFDerivAt.comp P.position hc).fderiv]
-  simp only [ContinuousLinearMap.comp_apply, ContinuousLinearMap.prod_apply,
-    zero_apply, ContinuousLinearMap.id_apply]
+  simp
 
+include hu in
 /-- The source time-plus-transport operator is the literal raw directional derivative. -/
-theorem kinetic_transport_eq_fderiv {d : ℕ} {u : KineticPoint d → ℝ}
-    {P : KineticPoint d} (hu : DifferentiableAt ℝ (rawLift u) (rawPoint P)) :
+theorem kinetic_transport_eq_fderiv :
     kineticTimeDerivative u P + PDE.vecDot P.velocity (kineticPositionGradient u P) =
       fderiv ℝ (rawLift u) (rawPoint P) (1, (P.velocity, 0)) := by
   rw [kineticTimeDerivative_eq_fderiv hu, PDE.vecDot_comm]
@@ -51,15 +53,15 @@ theorem kinetic_transport_eq_fderiv {d : ℕ} {u : KineticPoint d → ℝ}
   ext <;> simp
 
 /-- The unit free-transport direction under the inverse physical affine coordinates. -/
-theorem hasDerivAt_inverse_transport {d : ℕ} (P₀ P : KineticPoint d)
+theorem hasDerivAt_inverse_transport (P₀ P : KineticPoint d)
     (R : ℝ) :
     HasDerivAt (fun t : ℝ => KineticPoint.equivProd d
       (kineticAffineInverse P₀ R ⟨P.time + t, P.position + t • P.velocity, P.velocity⟩))
       ((R ^ 2)⁻¹, ((R ^ 3)⁻¹ • (P.velocity - P₀.velocity), 0)) 0 := by
   have ht : HasDerivAt (fun t : ℝ => P.time + t) 1 0 :=
-    (hasDerivAt_id (0 : ℝ)).const_add P.time
+    (hasDerivAt_id 0).const_add P.time
   have hx : HasDerivAt (fun t : ℝ => P.position + t • P.velocity) P.velocity 0 := by
-    simpa only [one_smul, id_eq] using
+    simpa using
       ((hasDerivAt_id (0 : ℝ)).smul_const P.velocity).const_add P.position
   have ht' := (ht.sub_const P₀.time).div_const (R ^ 2)
   have hx' := ((hx.sub_const P₀.position).sub

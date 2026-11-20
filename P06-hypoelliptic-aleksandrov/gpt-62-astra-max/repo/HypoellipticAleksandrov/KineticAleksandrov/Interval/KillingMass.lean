@@ -23,19 +23,18 @@ theorem mass_le_of_interval_smooth_tests {U : Set (PDE.Vec 1)} (hU : IsOpen U)
     rw [hU.measure_eq_iSup_isCompact μ]
     refine iSup_le fun A => iSup_le fun hAU => iSup_le fun hA => ?_
     obtain ⟨φ, hφ, hφc, hφU, hφr, hφA⟩ := exists_smooth_cutoff hA hU hAU
-    have hi := hφ.continuous.integrable_of_hasCompactSupport hφc (μ := μ)
     have hle : μ.real A ≤ ∫ w, φ w ∂μ := by
       rw [← integral_indicator_one hA.measurableSet]
-      apply integral_mono ((integrable_const (1 : ℝ)).indicator hA.measurableSet) hi
+      apply integral_mono ((integrable_const 1).indicator hA.measurableSet) (hφ.continuous.integrable_of_hasCompactSupport hφc (μ := μ))
       intro w
       by_cases hw : w ∈ A
       · simp only [indicator_of_mem hw, hφA w hw, le_refl]
-      · simpa only [indicator_of_notMem hw] using (hφr w).1
+      · simpa [indicator_of_notMem hw] using (hφr w).1
     rw [← ENNReal.ofReal_toReal (measure_ne_top μ A)]
     exact ENNReal.ofReal_le_ofReal (hle.trans (htest φ hφ hφc hφU hφr))
   have he : μ univ = μ U := by
     conv_lhs => rw [← hμ]
-    rw [Measure.restrict_apply MeasurableSet.univ, univ_inter]
+    simp
   rw [Measure.real, he]
   exact (ENNReal.toReal_mono ENNReal.ofReal_ne_top hbound).trans_eq
     (ENNReal.toReal_ofReal hC)
@@ -54,16 +53,13 @@ theorem interval_endpoint_mass_bound {a c lam Lam σ τ s e : ℝ}
     (P K hJ (scalarQuery σ τ hστ.le v hv)).real univ ≤
       intervalHeat lam (τ - σ) (s * (v 0 - e)) := by
   have hvJ : v ∈ PDE.oneDimensionalAxisBox a c := by
-    simpa only [movingDomain_stationary] using hv
+    simpa using hv
   apply mass_le_of_interval_smooth_tests
     (isOpen_of_isAdmissibleEvolutionDomain (interval_admissible hac))
     (P K hJ (scalarQuery σ τ hστ.le v hv))
   · apply Measure.restrict_eq_self_of_ae_mem
-    rw [ae_iff]
-    exact P_compl_eq_zero_stationary K hJ _
+    apply P_compl_eq_zero_stationary
   · exact intervalErf_nonneg (div_nonneg (hdpos v hvJ).le (by positivity))
-  · intro φ hφs hφc hφJ hφ
-    exact interval_endpoint_test_bound hac hστ hlam hs B hB hJ K hpar
-      hdpos hdnonneg v hv φ hφs hφc hφJ hφ
+  · apply interval_endpoint_test_bound <;> assumption
 
 end HypoellipticAleksandrov.KineticAleksandrov.Interval

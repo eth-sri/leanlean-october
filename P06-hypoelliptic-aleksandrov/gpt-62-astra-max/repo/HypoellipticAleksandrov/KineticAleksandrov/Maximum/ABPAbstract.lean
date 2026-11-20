@@ -44,21 +44,18 @@ theorem kinetic_abp_abstract_of_continuous
       sSup ((fun P => max (u P) 0) '' exitBoundary Z₀ R hR) +
       K * (eLpNorm ({P | 0 < u P}.indicator g₀)
         (ENNReal.ofReal (q / (q - 1))) μQ).toReal := by
-  let : IsFiniteMeasureOnCompacts (volume : Measure (KineticPoint d)) :=
+  let : IsFiniteMeasureOnCompacts volume :=
     Measure.IsFiniteMeasureOnCompacts.map
-      (volume : Measure (ℝ × (PDE.Vec d × PDE.Vec d)))
+      volume
       (KineticPoint.homeomorphProd d).symm
   let p := q / (q - 1)
-  have hpq : q.HolderConjugate p := Real.HolderConjugate.conjExponent hq
-  have hp : 1 < p := hpq.symm.lt
+  have hpq := Real.HolderConjugate.conjExponent hq
   have hQ := isOpen_forwardCylinder Z₀ R hR
   let F := {P | 0 < u P}.indicator g₀
   have hFeq : (Q ∩ {P | 0 < u P}).indicator g₀ =ᵐ[μQ] F := by
     filter_upwards [ae_restrict_mem hQ.measurableSet] with P hP
-    simp only [indicator,mem_inter_iff,mem_ofPred_eq,hP,true_and,F]
-  have hFs : MeasurableSet (Q ∩ {P | 0 < u P}) :=
-    (hreg.continuousOn.isOpen_inter_preimage hQ isOpen_Ioi).measurableSet
-  have hFp : MemLp F (ENNReal.ofReal p) μQ := (hLp.indicator hFs).ae_eq hFeq
+    simp [indicator, mem_inter_iff, mem_ofPred_eq, hP, F]
+  have hFp := (hLp.indicator ((hreg.continuousOn.isOpen_inter_preimage hQ isOpen_Ioi).measurableSet)).ae_eq hFeq
   let N := (eLpNorm F (ENNReal.ofReal p) μQ).toReal
   let M := sSup ((fun P => max (u P) 0) '' exitBoundary Z₀ R hR)
   have hinterior : ∀ P ∈ Q, u P ≤ M + K * N := by
@@ -82,12 +79,10 @@ theorem kinetic_abp_abstract_of_continuous
       nlinarith [sq_pos_of_pos hR]
     have hδτ : δ < τ := by
       have h1 : δ ≤ min τ a / 2 := min_le_right _ _
-      have h2 := min_le_left τ a
-      linarith only [h1,h2,hτ]
+      linarith only [h1,(min_le_left τ a),hτ]
     have hδa : δ < a := by
       have h1 : δ ≤ min τ a / 2 := min_le_right _ _
-      have h2 := min_le_right τ a
-      linarith only [h1,h2,ha]
+      linarith only [h1,(min_le_right τ a),ha]
     obtain ⟨hdef,hdef0,_,hdom⟩ := abp_defect_cutoff hQ.measurableSet A u g₀
       hreg hAcont hg₀0 hsub ε hε
     have hcut := abpPositiveCutoff_spec hε
@@ -97,14 +92,12 @@ theorem kinetic_abp_abstract_of_continuous
       (h := fun P => abpPositiveCutoff ε (u P) * max (-forwardKineticOperator A u P) 0)
       (F := F) ((hcut.1.continuous.comp_continuousOn hreg.continuousOn).mul hdef)
       (fun P _ => mul_nonneg (hcut.2.1 _).1 (hdef0 P))
-      (hdom.mono fun _ h => h.2) (ENNReal.one_le_ofReal.mpr hp.le)
+      (hdom.mono fun _ h => h.2) (ENNReal.one_le_ofReal.mpr (hpq.symm.lt).le)
       ENNReal.ofReal_ne_top hη
     have hgc' : Continuous g := by
       have he : (fun P : KineticPoint d =>
           g ((KineticPoint.equivProd d).symm ((KineticPoint.homeomorphProd d) P))) = g := by
-        funext P
-        exact congrArg g ((KineticPoint.equivProd d).symm_apply_apply P)
-      rw [← he]
+        apply_rules [congrArg]
       exact hgs.continuous.comp (KineticPoint.homeomorphProd d).continuous
     have hgp : MemLp g (ENNReal.ofReal p) μQ :=
       (hgc'.memLp_of_hasCompactSupport hgc).mono_measure Measure.restrict_le_self
@@ -121,10 +114,8 @@ theorem kinetic_abp_abstract_of_continuous
     obtain ⟨G,hG,hG0,hΓ,hGnorm,hGq⟩ := hdensity P hP
     have hWbound := abp_potential_holder μQ (Γ P) G g hpq hG hG0
       (Filter.Eventually.of_forall hg0) hΓ hGq hgp hGnorm
-    have hb : (∫ z, g z ∂Γ P) ≤ K * (N + η) :=
-      hWbound.trans (mul_le_mul_of_nonneg_left hgN hK.le)
     dsimp only [ε] at hcompare
-    nlinarith only [hcompare,hb,hbudget,hζ]
+    nlinarith only [hcompare,(hWbound.trans (mul_le_mul_of_nonneg_left hgN hK.le)),hbudget,hζ]
   exact le_on_closure hinterior hcont continuousOn_const
 
 end HypoellipticAleksandrov.KineticAleksandrov

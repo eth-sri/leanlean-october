@@ -22,31 +22,36 @@ instance physicalElapsedKernel_isFinite (E : FullSpaceEvolution) (z : Z) :
     IsFiniteKernel (physicalElapsedKernel E z) :=
   ⟨⟨1, ENNReal.one_lt_top, fun t => kernelXV_mass_le_one E (Real.toNNReal t) z⟩⟩
 
+section
+variable {lam Lam : ℝ} (hlam : 0 < lam) (A : SmoothAutonomous lam Lam) (E : FullSpaceEvolution)
+    (hE : IsFullSpaceEvolution A E) (z : Z) (T : ℝ)
+
+include E z T in
 /-- Occupation is integration of the actual terminal kernel over the source time window. -/
-def physicalOccupationMeasure (E : FullSpaceEvolution) (z : Z) (T : ℝ) : Measure Z :=
+def physicalOccupationMeasure : Measure Z :=
   physicalElapsedKernel E z ∘ₘ volume.restrict (Ioc 0 T)
 
 /-- Source boxes are evaluated by the exact time integral of physical kernel masses. -/
-theorem physicalOccupationMeasure_apply (E : FullSpaceEvolution) (z : Z) (T : ℝ)
+theorem physicalOccupationMeasure_apply
     (s : Set Z) (hs : MeasurableSet s) :
     physicalOccupationMeasure E z T s =
       ∫⁻ t in Ioc 0 T, kernelXV E (Real.toNNReal t) z s :=
   Measure.bind_apply hs (physicalElapsedKernel E z).aemeasurable
 
 /-- The actual occupation measure has total mass at most the observation time. -/
-theorem physicalOccupationMeasure_mass_le (E : FullSpaceEvolution) (z : Z) (T : ℝ) :
+theorem physicalOccupationMeasure_mass_le :
     physicalOccupationMeasure E z T univ ≤ ENNReal.ofReal T := by
   rw [physicalOccupationMeasure_apply _ _ _ _ MeasurableSet.univ]
   apply (lintegral_mono (fun t => kernelXV_mass_le_one E (Real.toNNReal t) z)).trans_eq
-  simp only [lintegral_const, one_mul, Measure.restrict_apply_univ, Real.volume_Ioc, sub_zero]
+  simp
 
+include hlam hE in
 /-- The conservative full-space kernel gives occupation mass exactly equal to elapsed time. -/
-theorem physicalOccupationMeasure_mass_eq {lam Lam : ℝ} (hlam : 0 < lam)
-    (A : SmoothAutonomous lam Lam) (E : FullSpaceEvolution) (hE : IsFullSpaceEvolution A E)
-    (z : Z) (T : ℝ) : physicalOccupationMeasure E z T univ = ENNReal.ofReal T := by
+theorem physicalOccupationMeasure_mass_eq : physicalOccupationMeasure E z T univ = ENNReal.ofReal T := by
   rw [physicalOccupationMeasure_apply _ _ _ _ MeasurableSet.univ]
-  simp only [kernelXV_mass_one hlam A E hE, lintegral_const, one_mul,
-    Measure.restrict_apply_univ, Real.volume_Ioc, sub_zero]
+  simp [kernelXV_mass_one hlam A E hE, lintegral_const, Measure.restrict_apply_univ, Real.volume_Ioc]
+
+end
 
 /-- Every finite observation window gives a genuinely finite occupation measure. -/
 instance physicalOccupationMeasure_isFinite (E : FullSpaceEvolution) (z : Z) (T : ℝ) :
@@ -59,7 +64,6 @@ theorem physicalOccupationMeasure_integral (E : FullSpaceEvolution) (z : Z) (T :
     (∫ w, f w ∂physicalOccupationMeasure E z T) =
       ∫ t in Ioc 0 T, ∫ w, f w ∂kernelXV E (Real.toNNReal t) z := by
   rw [physicalOccupationMeasure, Measure.comp_eq_comp_const_apply] at hf ⊢
-  simpa only [Kernel.const_apply, physicalElapsedKernel, Kernel.coe_mk] using
-    ProbabilityTheory.Kernel.integral_comp hf
+  exact ProbabilityTheory.Kernel.integral_comp hf
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

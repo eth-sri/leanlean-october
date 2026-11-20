@@ -27,10 +27,13 @@ namespace HypoellipticAleksandrov.KineticAleksandrov
 open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic Filter Set
 open scoped Topology MatrixOrder
 
-/-- Inset comparison on the collar region of `[α, t₂]`, `t₁ < α < t₂`. -/
-theorem collar_piece_inset {n : ℕ} {c : PDE.Vec n} {r₀ dstar : ℝ} (hd : 0 < dstar)
-    (hdr : dstar < r₀) {γ : ℝ → PDE.Vec n} (hγ : Continuous γ) {Lγ : ℝ} (hLγ : 0 ≤ Lγ)
+variable {n : ℕ} {c : PDE.Vec n} {r₀ dstar : ℝ} (hd : 0 < dstar) (hdr : dstar < r₀)
+    {γ : ℝ → PDE.Vec n} (hγ : Continuous γ) {Lγ : ℝ} (hLγ : 0 ≤ Lγ)
     (hγL : ∀ s t, PDE.vecEuclideanNorm (γ s - γ t) ≤ Lγ * |s - t|)
+include hd hdr hγ hLγ hγL
+
+/-- Inset comparison on the collar region of `[α, t₂]`, `t₁ < α < t₂`. -/
+theorem collar_piece_inset
     {t₁ t₂ α : ℝ} (hα : t₁ < α)
     (hdiff : ∀ σ ∈ Ioo t₁ t₂, DifferentiableAt ℝ γ σ)
     {lam Lam : ℝ} (hlam : 0 < lam) {B : FullKineticCoefficient n}
@@ -48,9 +51,9 @@ theorem collar_piece_inset {n : ℕ} {c : PDE.Vec n} {r₀ dstar : ℝ} (hd : 0 
     (htop : ∀ p ∈ collarClosed c r₀ dstar γ t₁ t₂, p.time = t₂ →
       v p ≤ collarSupersolution c r₀ dstar Lγ lam FB γ p) :
     ∀ p ∈ collarClosed c r₀ dstar γ α t₂, v p ≤ collarSupersolution c r₀ dstar Lγ lam FB γ p := by
-  have hΩo : IsOpen (PDE.euclideanBall c r₀) := PDE.isOpen_euclideanBall c r₀
+  have hΩo := PDE.isOpen_euclideanBall c r₀
   have hκ : 0 < collarKappa Lγ lam := div_pos (by linarith) hlam
-  have hc0 : 0 ≤ FB / barrierW (collarKappa Lγ lam) dstar :=
+  have hc0 :=
     div_nonneg hFB (barrierW_pos hκ hd).le
   have hr₀ : 0 ≤ r₀ := by linarith
   have hKsub : collarClosed c r₀ dstar γ α t₂ ⊆ movingClosedSlab (PDE.euclideanBall c r₀) γ t₁ t₂ :=
@@ -79,17 +82,11 @@ theorem collar_piece_inset {n : ℕ} {c : PDE.Vec n} {r₀ dstar : ℝ} (hd : 0 
       (isClosed_le continuous_const (continuous_centreSq c hγ)))
     (fun p hp => ⟨hp.1.1, hp.1.2.1⟩)
     ?hfut ?hcont ?hbdd ?hreg ?hpsd ?hsub ?hbdry
-  · intro p hp
-    have : v p - collarSupersolution c r₀ dstar Lγ lam FB γ p ≤ 0 := key p hp
-    linarith
+  · grind
   case hfut =>
     intro p hp
     obtain ⟨⟨hat, htb, hpm⟩, hpS⟩ := hp
-    have h1 := eventually_future_mem_movingClosedSlab hΩo hγ (a := α) (b := t₂)
-      (p := p) ⟨hat, htb, hpm⟩
-    have h2 : ∀ᶠ q in 𝓝 p, (r₀ - dstar) ^ 2 < centreSq c γ q :=
-      (isOpen_lt continuous_const (continuous_centreSq c hγ)).mem_nhds hpS
-    filter_upwards [h1, h2] with q hq1 hq2 hqt
+    filter_upwards [(eventually_future_mem_movingClosedSlab hΩo hγ (a := α) (b := t₂) (p := p) ⟨hat, htb, hpm⟩), ((isOpen_lt continuous_const (continuous_centreSq c hγ)).mem_nhds hpS)] with q hq1 hq2 hqt
     exact ⟨hq1 hqt, hq2.le⟩
   case hcont =>
     exact (hcont.mono hKsub).sub
@@ -97,10 +94,7 @@ theorem collar_piece_inset {n : ℕ} {c : PDE.Vec n} {r₀ dstar : ℝ} (hd : 0 
   case hbdd =>
     obtain ⟨M, hM⟩ := hbdd
     refine ⟨M, fun p hp => ?_⟩
-    have h1 := hM p (hKsub hp)
-    have h2 := hGnn p hp
-    show v p - collarSupersolution c r₀ dstar Lγ lam FB γ p ≤ M
-    linarith
+    grind
   case hreg =>
     intro p hp
     exact (hreg p (hDsub hp)).sub (hGreg p hp)
@@ -109,18 +103,10 @@ theorem collar_piece_inset {n : ℕ} {c : PDE.Vec n} {r₀ dstar : ℝ} (hd : 0 
     exact posSemidef_of_hasEverywhereLoewnerBounds hlam.le hB _ _ _
   case hsub =>
     intro p hp
-    have hr := hreg p (hDsub hp)
-    have hG := hGreg p hp
-    rw [viscousTransportedOperator_sub hr hG]
+    rw [viscousTransportedOperator_sub (hreg p (hDsub hp)) (hGreg p hp)]
     have hpt : p.time ∈ Ioo t₁ t₂ := ⟨hα.trans_le hp.1.1, hp.1.2.1⟩
-    have hm' : HasDerivAt (fun t => γ t + c) (deriv γ p.time) p.time :=
-      (hdiff _ hpt).hasDerivAt.add_const c
-    have hmnorm : PDE.vecEuclideanNorm (deriv γ p.time) ≤ Lγ :=
-      vecEuclideanNorm_le_of_hasDerivAt_lipschitz hLγ (hdiff _ hpt).hasDerivAt hγL
-    have hκlam : collarKappa Lγ lam * lam = 1 + Lγ := div_mul_cancel₀ _ hlam.ne'
-    have hBlam : lam • (1 : PDE.Mat n) ≤ B p.time p.position p.velocity := (hB _ _ _).1
-    have hLcb := viscousTransportedOperator_collarBarrier_nonpos (b := b) ε hκ hlam.le hκlam r₀
-      hm' hmnorm (hSpos p hp) hBlam
+    have hLcb := viscousTransportedOperator_collarBarrier_nonpos (b := b) ε hκ hlam.le (div_mul_cancel₀ _ hlam.ne') r₀
+      ((hdiff _ hpt).hasDerivAt.add_const c) (vecEuclideanNorm_le_of_hasDerivAt_lipschitz hLγ (hdiff _ hpt).hasDerivAt hγL) (hSpos p hp) ((hB _ _ _).1)
     have e : viscousTransportedOperator B b ε (collarSupersolution c r₀ dstar Lγ lam FB γ) p =
         FB / barrierW (collarKappa Lγ lam) dstar *
           viscousTransportedOperator B b ε
@@ -131,30 +117,18 @@ theorem collar_piece_inset {n : ℕ} {c : PDE.Vec n} {r₀ dstar : ℝ} (hd : 0 
         (collarSupersolution c r₀ dstar Lγ lam FB γ) p ≤ 0 := by
       rw [e]
       exact mul_nonpos_of_nonneg_of_nonpos hc0 hLcb
-    have := hop p (hDsub hp)
-    linarith
+    grind
   case hbdry =>
     intro p hpK hpD
     by_cases hact : p ∈ movingActiveSlab (PDE.euclideanBall c r₀) γ α t₂
-    · have hS : centreSq c γ p = (r₀ - dstar) ^ 2 :=
-        le_antisymm (not_lt.mp (fun h => hpD ⟨hact, h⟩)) hpK.2
-      have h1 := collarSupersolution_inner (Lγ := Lγ) (lam := lam) (FB := FB) hdr hκ hd hS
-      have h2 := hFBle p (hKsub hpK)
-      show v p - collarSupersolution c r₀ dstar Lγ lam FB γ p ≤ 0
-      linarith
+    · have h1 := collarSupersolution_inner (Lγ := Lγ) (lam := lam) (FB := FB) hdr hκ hd (le_antisymm (not_lt.mp (fun h => hpD ⟨hact, h⟩)) hpK.2)
+      grind
     · rcases mem_boundary_of_movingClosedSlab hΩo hpK.1 hact with h | h
-      · have h1 := htop p ⟨⟨hα.le.trans hpK.1.1, hpK.1.2.1, hpK.1.2.2⟩, hpK.2⟩ h
-        show v p - collarSupersolution c r₀ dstar Lγ lam FB γ p ≤ 0
-        linarith
-      · have h1 := hlat p (hKsub hpK) h
-        have h2 := hGnn p hpK
-        show v p - collarSupersolution c r₀ dstar Lγ lam FB γ p ≤ 0
-        linarith
+      · linarith [htop p ⟨⟨hα.le.trans hpK.1.1, hpK.1.2.1, hpK.1.2.2⟩, hpK.2⟩ h]
+      grind
 
 /-- Collar comparison on the whole closed piece `[t₁, t₂]`. -/
-theorem collar_piece {n : ℕ} {c : PDE.Vec n} {r₀ dstar : ℝ} (hd : 0 < dstar)
-    (hdr : dstar < r₀) {γ : ℝ → PDE.Vec n} (hγ : Continuous γ) {Lγ : ℝ} (hLγ : 0 ≤ Lγ)
-    (hγL : ∀ s t, PDE.vecEuclideanNorm (γ s - γ t) ≤ Lγ * |s - t|)
+theorem collar_piece
     {t₁ t₂ : ℝ} (ht : t₁ < t₂)
     (hdiff : ∀ σ ∈ Ioo t₁ t₂, DifferentiableAt ℝ γ σ)
     {lam Lam : ℝ} (hlam : 0 < lam) {B : FullKineticCoefficient n}
@@ -179,17 +153,14 @@ theorem collar_piece {n : ℕ} {c : PDE.Vec n} {r₀ dstar : ℝ} (hd : 0 < dsta
   · exact htop p hp h2
   by_cases h1 : t₁ < p.time
   · exact inset p.time h1 p ⟨⟨le_rfl, hp.1.2.1, hp.1.2.2⟩, hp.2⟩
-  have hpt : p.time = t₁ := le_antisymm (not_lt.mp h1) hp.1.1
+  have hpt := le_antisymm (not_lt.mp h1) hp.1.1
   -- limit from later times along the translated curve
   let q : ℝ → KineticPoint n := fun α => ⟨α, p.position + γ α - γ t₁, p.velocity⟩
   have hqc : Continuous q :=
     KineticPoint.continuous_mk continuous_id ((continuous_const.add hγ).sub continuous_const)
       continuous_const
   have hq1 : q t₁ = p := by
-    ext
-    · exact hpt.symm
-    · simp [q]
-    · rfl
+    aesop
   have hqslab : ∀ᶠ α in 𝓝[>] t₁, q α ∈ collarClosed c r₀ dstar γ α t₂ := by
     filter_upwards [Ioo_mem_nhdsGT ht] with α hα
     refine ⟨⟨le_rfl, hα.2.le, ?_⟩, ?_⟩
@@ -197,21 +168,16 @@ theorem collar_piece {n : ℕ} {c : PDE.Vec n} {r₀ dstar : ℝ} (hd : 0 < dsta
       have := mem_closure_movingDomain_iff.mp hp.1.2.2
       rw [hpt] at this
       have e : (p.position + γ α - γ t₁) - γ α = p.position - γ t₁ := by abel
-      show (p.position + γ α - γ t₁) - γ α ∈ closure (PDE.euclideanBall c r₀)
-      rw [e]
-      exact this
+      grind
     · have e : (q α).position - (γ (q α).time + c) = p.position - (γ p.time + c) := by
-        show p.position + γ α - γ t₁ - (γ α + c) = _
-        rw [hpt]
-        abel
+        grind
       have := hp.2
       show (r₀ - dstar) ^ 2 ≤ PDE.vecNormSq ((q α).position - (γ (q α).time + c))
       rw [e]
       exact this
   have hle : ∀ᶠ α in 𝓝[>] t₁, v (q α) ≤ collarSupersolution c r₀ dstar Lγ lam FB γ (q α) := by
     filter_upwards [Ioo_mem_nhdsGT ht, hqslab] with α hα hα'
-    exact inset α hα.1 _ hα'
-  have hpslab : p ∈ movingClosedSlab (PDE.euclideanBall c r₀) γ t₁ t₂ := hp.1
+    grind
   have htend : Tendsto q (𝓝[>] t₁)
       (𝓝[movingClosedSlab (PDE.euclideanBall c r₀) γ t₁ t₂] p) := by
     rw [tendsto_nhdsWithin_iff]
@@ -220,11 +186,10 @@ theorem collar_piece {n : ℕ} {c : PDE.Vec n} {r₀ dstar : ℝ} (hd : 0 < dsta
       rwa [hq1] at this
     · filter_upwards [Ioo_mem_nhdsGT ht, hqslab] with α hα hα'
       exact ⟨hα.1.le, hα.2.le, hα'.1.2.2⟩
-  have hv := (hcont p hpslab).tendsto.comp htend
+  have hv := (hcont p (hp.1)).tendsto.comp htend
   have hG : Tendsto (fun α => collarSupersolution c r₀ dstar Lγ lam FB γ (q α)) (𝓝[>] t₁)
       (𝓝 (collarSupersolution c r₀ dstar Lγ lam FB γ p)) := by
-    have hGc := (continuous_collarSupersolution c r₀ dstar Lγ lam FB hγ).comp hqc
-    have := (hGc.tendsto t₁).mono_left (nhdsWithin_le_nhds (s := Ioi t₁))
+    have := (((continuous_collarSupersolution c r₀ dstar Lγ lam FB hγ).comp hqc).tendsto t₁).mono_left (nhdsWithin_le_nhds (s := Ioi t₁))
     simp only [Function.comp_apply, hq1] at this
     exact this
   exact le_of_tendsto_of_tendsto hv hG hle

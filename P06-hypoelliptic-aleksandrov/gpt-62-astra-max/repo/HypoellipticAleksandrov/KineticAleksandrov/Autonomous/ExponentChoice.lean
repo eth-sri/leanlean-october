@@ -21,7 +21,7 @@ theorem exists_autonomous_exponents (lam Lam : ℝ) (hlam : 0 < lam)
       alpha < 1 ∧ alpha < p - 3 ∧
       1 < p / (p - 1) ∧ p / (p - 1) < (4 - (1 - alpha)) / (3 - (1 - alpha)) := by
   let ratio : {r : ℝ // 1 ≤ r} :=
-    ⟨Lam / lam, (le_div_iff₀ hlam).2 (by simpa only [one_mul] using hLam)⟩
+    ⟨Lam / lam, (le_div_iff₀ hlam).2 (by simpa using hLam)⟩
   have hb := bellmanAdjointExponent_range ratio.1 ratio.2
   have hp' : 1 + bellmanAdjointExponent ratio.1 ratio.2 < p := hp
   have hinterval : bellmanAdjointExponent ratio.1 ratio.2 - 2 < min 1 (p - 3) :=

@@ -60,18 +60,20 @@ local notation "S_nonneg" => terminalValue_nonneg n hn lam Lam m L_b hlam hlamLa
 local notation "S_abs_le" => abs_terminalValue_le n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
   hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx
 
+variable (σ τ : ℝ) (hστ : σ ≤ τ) (p : EvolutionState Ω γ σ)
+
 /-- The terminal point value depends only on the datum, not on the smoothness proof or the
 presentation of the datum. -/
 theorem terminalValue_congr
-    (σ τ : ℝ) (hστ : σ ≤ τ) (p : EvolutionState Ω γ σ)
     {F G : BoundedBorel (EvolutionAmbientState n)} (h : F = G)
     (hF : IsSmoothCompactTerminalDatum Ω γ τ F) (hG : IsSmoothCompactTerminalDatum Ω γ τ G) :
     S σ τ hστ p F hF = S σ τ hστ p G hG := by
   subst h
   rfl
 
+include hστ p in
 /-- The terminal point value as a linear functional on smooth compactly supported probes. -/
-def terminalProbeValue (σ τ : ℝ) (hστ : σ ≤ τ) (p : EvolutionState Ω γ σ) :
+def terminalProbeValue :
     terminalProbeSubmodule Ω γ τ →ₗ[ℝ] ℝ where
   toFun F := S σ τ hστ p (terminalProbeDatum F) F.2
   map_add' F G := by
@@ -92,8 +94,7 @@ def terminalProbeValue (σ τ : ℝ) (hστ : σ ≤ τ) (p : EvolutionState Ω 
 
 /-- For each source state, the terminal point value extends uniquely to a positive
 linear functional on `C_c` of the open terminal fiber, bounded by the sup norm. -/
-theorem exists_unique_terminalFunctional
-    (σ τ : ℝ) (hστ : σ ≤ τ) (p : EvolutionState Ω γ σ) :
+theorem exists_unique_terminalFunctional :
     ∃! ℓ : C_c(EvolutionState Ω γ τ, ℝ) →ₚ[ℝ] ℝ,
       (∀ (f : C_c(EvolutionState Ω γ τ, ℝ)) (c : ℝ), 0 ≤ c → (∀ x, |f x| ≤ c) →
         |ℓ f| ≤ c) ∧
@@ -119,31 +120,27 @@ theorem exists_unique_terminalFunctional
     have hfeq : f = terminalProbeCcLinear (terminalProbeOfDatum F hF) :=
       CompactlySupportedContinuousMap.ext fun x => hf x
     rw [hfeq, hℓ]
-    exact terminalValue_congr n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
-      hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx σ τ hστ p
-      (terminalProbeDatum_ofDatum F hF) (terminalProbeDatum_isSmoothCompact _) hF
+    apply_rules [terminalValue_congr]
   refine ⟨ℓ, ⟨hbd, hprobe⟩, ?_⟩
   rintro ℓ' ⟨hbd', hprobe'⟩
   have hlin : ℓ'.toLinearMap = ℓ.toLinearMap := by
     refine eq_of_bounded_of_dense (terminalProbeCcLinear (Ω := Ω) (γ := γ) (τ := τ))
       ℓ'.toLinearMap ℓ.toLinearMap hbd' hbd (fun F => ?_)
       (fun f ε hε => exists_terminalProbe_close hΩo f ε hε)
-    have h1 := hprobe' (terminalProbeDatum F) F.2 (terminalProbeCcLinear F) (fun q => rfl)
-    have h2 := hprobe (terminalProbeDatum F) F.2 (terminalProbeCcLinear F) (fun q => rfl)
-    exact h1.trans h2.symm
+    exact (hprobe' (terminalProbeDatum F) F.2 (terminalProbeCcLinear F) (fun q => rfl)).trans (hprobe (terminalProbeDatum F) F.2 (terminalProbeCcLinear F) (fun q => rfl)).symm
   exact PositiveLinearMap.ext fun f => LinearMap.congr_fun hlin f
 
+include hστ p in
 /-- The unique positive terminal functional at the source state `p`, chosen from the
 `∃!` statement `exists_unique_terminalFunctional`. -/
-def terminalFunctional (σ τ : ℝ) (hστ : σ ≤ τ) (p : EvolutionState Ω γ σ) :
+def terminalFunctional :
     C_c(EvolutionState Ω γ τ, ℝ) →ₚ[ℝ] ℝ :=
   (exists_unique_terminalFunctional n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
     hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx σ τ hστ p).choose
 
 /-- The chosen functional is sup-norm bounded and reproduces the point value on
 every smooth compactly supported probe. -/
-theorem terminalFunctional_spec
-    (σ τ : ℝ) (hστ : σ ≤ τ) (p : EvolutionState Ω γ σ) :
+theorem terminalFunctional_spec :
     (∀ (f : C_c(EvolutionState Ω γ τ, ℝ)) (c : ℝ), 0 ≤ c → (∀ x, |f x| ≤ c) →
       |terminalFunctional n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
         hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx σ τ hστ p f| ≤ c) ∧

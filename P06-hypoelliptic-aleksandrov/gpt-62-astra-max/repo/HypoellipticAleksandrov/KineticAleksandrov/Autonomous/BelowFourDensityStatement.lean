@@ -17,8 +17,7 @@ open Set MeasureTheory
 
 /-- The source's improved density assertion for the canonical strip Green measure. -/
 def BelowFourDensityStatement : Prop :=
-  ∀ (hH : HormanderHypoellipticityStatement)
-    (hLE : LiebermanEllipsoidDirichletStatement)
+  ∀
     (lam Lam : ℝ) (hlam : 0 < lam) (hLam : lam ≤ Lam) (alpha q : ℝ),
     (bellmanAdjointExponent (Lam / lam) ((le_div_iff₀ hlam).2
       (by simpa only [one_mul] using hLam)) - 2 < alpha ∧ alpha < 1) →
@@ -27,7 +26,7 @@ def BelowFourDensityStatement : Prop :=
       (Z₀ : Point) (R : ℝ) (hR : 0 < R) (P : Point)
       (hP : P ∈ forwardCylinder Z₀ R hR),
       ∃ G : Point → ℝ, Measurable G ∧ (∀ z, 0 ≤ G z) ∧
-        (stripGreen hH hLE hlam hLam A (capacityCylinderInterval Z₀ R hR)
+        (stripGreen hlam hLam A (capacityCylinderInterval Z₀ R hR)
           (Z₀.time + R ^ 2) (capacityCylinderPole Z₀ P R hR hP)).restrict
             (forwardCylinder Z₀ R hR) =
           (volume.restrict (forwardCylinder Z₀ R hR)).withDensity

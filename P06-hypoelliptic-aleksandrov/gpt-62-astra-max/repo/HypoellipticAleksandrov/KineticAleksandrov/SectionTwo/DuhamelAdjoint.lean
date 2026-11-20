@@ -14,19 +14,21 @@ open Evolution
 
 variable {d : ℕ}
 
+variable {U : Set (EvolutionVec d)} (hU : IsOpen U) {B : FullKineticCoefficient d}
+    (hB : IsSmoothFullKineticCoefficient B) (hBs : IsSymmetricFullKineticCoefficient B)
+    {b : PDE.Vec d → PDE.Vec d} (hb : IsSmoothDrift b) {u : EvolutionVec d → ℝ}
+    (hu : ContDiffOn ℝ (⊤ : ℕ∞) u U)
+include hU hu
+
 /-- Interior smoothness gives smooth directional derivatives on an open set. -/
-theorem contDiffOn_duhamel_direction {U : Set (EvolutionVec d)} (hU : IsOpen U)
-    {u : EvolutionVec d → ℝ} (hu : ContDiffOn ℝ (⊤ : ℕ∞) u U)
+theorem contDiffOn_duhamel_direction
     (v : EvolutionVec d) :
     ContDiffOn ℝ (⊤ : ℕ∞) (fun x => fderiv ℝ u x v) U :=
   (hu.fderiv_of_isOpen hU (by simp)).clm_apply contDiffOn_const
 
+include hB hBs hb in
 /-- Full kinetic integration by parts, with all jets discharged by interior smoothness. -/
-theorem integral_transportedAdjoint_contDiffOn {U : Set (EvolutionVec d)} (hU : IsOpen U)
-    {B : FullKineticCoefficient d} (hB : IsSmoothFullKineticCoefficient B)
-    (hBs : IsSymmetricFullKineticCoefficient B)
-    {b : PDE.Vec d → PDE.Vec d} (hb : IsSmoothDrift b)
-    {u : EvolutionVec d → ℝ} (hu : ContDiffOn ℝ (⊤ : ℕ∞) u U)
+theorem integral_transportedAdjoint_contDiffOn
     (ψ : EvolutionVec d → ℝ) (hψ : ContDiff ℝ (⊤ : ℕ∞) ψ)
     (hc : HasCompactSupport ψ) (hs : tsupport ψ ⊆ U) :
     (∫ x in U, u x * transportedAdjoint B b ψ x) =

@@ -2,7 +2,10 @@ module
 
 public import HypoellipticAleksandrov.Parabolic.KrylovEstimate.InnerCylinder
 public import HypoellipticAleksandrov.Parabolic.KrylovEstimate.ScalarAffine
-public import HypoellipticAleksandrov.Parabolic.ParabolicMorreyScaling
+public import HypoellipticAleksandrov.Parabolic.Derivatives
+public import HypoellipticAleksandrov.Parabolic.ScalingMeasure
+public import Mathlib.Analysis.Calculus.FDeriv.Const
+public import Mathlib.MeasureTheory.Function.LpSpace.Indicator
 
 /-! # Restricted norms of the scalar residual and its inward compression -/
 
@@ -52,7 +55,7 @@ theorem compressed_source_memLp_norm_le
     rintro _ ⟨z, hz, rfl⟩
     exact innerMap_mapsTo t₀ h v₀ hh hρ hρ1
       (parabolicInterior_subset_closedParabolicCylinder h 0 hz)
-  have hgJ : MemLp g (parabolicExponent N) (volume.restrict J) :=
+  have hgJ :=
     hg.mono_measure (Measure.restrict_mono hJ le_rfl)
   have hscale := parabolicELpNormOn_pullback_raw
     (t₀ - h + (1 - ρ ^ 2) * h / 2) v₀ hρ g S
@@ -64,16 +67,16 @@ theorem compressed_source_memLp_norm_le
     rw [Real.enorm_eq_ofReal (sq_nonneg ρ), ENNReal.ofReal_rpow_of_nonneg
       (by positivity) ENNReal.toReal_nonneg, ← ENNReal.ofReal_mul (sq_nonneg ρ)]
     apply ENNReal.ofReal_le_one.mpr
-    have hp : (1 / parabolicExponent N).toReal = 1 / ((N : ℝ) + 1) := by
-      have hpval : parabolicExponent N = ((N + 1 : ℕ) : ℝ≥0∞) := by
-        simp only [parabolicExponent, Nat.cast_add, Nat.cast_one]
+    have hp : (1 / parabolicExponent N).toReal = 1 / (N + 1) := by
+      have hpval : parabolicExponent N = ((N + 1 : ℕ)) := by
+        simp [parabolicExponent]
       rw [hpval, ENNReal.toReal_div, ENNReal.toReal_one, ENNReal.toReal_natCast]
       norm_num
     rw [hp, Real.inv_rpow (by positivity)]
     rw [← Real.rpow_natCast ρ (N + 2), ← Real.rpow_mul hρ.le,
       ← Real.rpow_neg hρ.le, ← Real.rpow_natCast ρ 2, ← Real.rpow_add hρ]
-    have he : (2 : ℝ) + -((N + 2 : ℝ) * (1 / ((N : ℝ) + 1))) =
-        (N : ℝ) / ((N : ℝ) + 1) := by field_simp; ring
+    have he : 2 + -((N + 2 : ℝ) * (1 / (N + 1))) =
+        N / ((N : ℝ) + 1) := by field_simp; ring
     norm_num only [Nat.cast_add, Nat.cast_ofNat] at *
     rw [he]
     exact Real.rpow_le_one hρ.le hρ1.le (by positivity)
@@ -82,9 +85,7 @@ theorem compressed_source_memLp_norm_le
       parabolicELpNormOn N g J := by
     rw [hscale]
     exact (mul_le_mul_left hfac _).trans_eq (one_mul _)
-  have hmem : MemLp (fun z => ρ ^ 2 * g (innerMap t₀ h v₀ ρ z))
-      (parabolicExponent N) (volume.restrict S) := hnorm.trans_lt hgJ
-  refine ⟨hmem, ?_⟩
+  refine ⟨(hnorm.trans_lt hgJ), ?_⟩
   exact ENNReal.toReal_mono hg.eLpNorm_ne_top
     (hnorm.trans (eLpNorm_mono_measure g (Measure.restrict_mono hJ le_rfl)))
 

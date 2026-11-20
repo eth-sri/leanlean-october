@@ -50,40 +50,33 @@ theorem le_zero_of_viscous_nonneg_growth {n : ℕ} {B : FullKineticCoefficient n
     rw [hC]
     unfold growthConstant
     have : 0 ≤ PDE.vecEuclideanNorm (b 0) := PDE.vecEuclideanNorm_nonneg _
-    have : (0 : ℝ) ≤ n := Nat.cast_nonneg n
     positivity
   have hΦ : ∀ p : KineticPoint n, viscousTransportedOperator B b ε (growthBarrier C T) p ≤
       -growthBarrier C T p := by
     intro p
     rw [hC]
-    exact viscousTransportedOperator_growthBarrier_le hε1 hBLam hb T p
+    apply viscousTransportedOperator_growthBarrier_le <;> assumption
   have hR2nn : ∀ (δ : ℝ) (p₀ : KineticPoint n),
       0 ≤ max (max M 0 / δ) (radialSq p₀) := fun δ p₀ =>
     le_trans (add_nonneg (PDE.vecNormSq_nonneg _) (PDE.vecNormSq_nonneg _)) (le_max_right _ _)
   have key : ∀ δ : ℝ, 0 < δ → ∀ p₀ ∈ K, u p₀ ≤ δ * growthBarrier C T p₀ := by
     intro δ hδ p₀ hp₀
     obtain ⟨R2, hR2⟩ : ∃ R2, R2 = max (max M 0 / δ) (radialSq p₀) := ⟨_, rfl⟩
-    have hR2nn' : 0 ≤ R2 := hR2 ▸ hR2nn δ p₀
     obtain ⟨R, hR⟩ : ∃ R, R = Real.sqrt R2 := ⟨_, rfl⟩
-    have hRsq : R ^ 2 = R2 := by rw [hR]; exact Real.sq_sqrt hR2nn'
+    have hRsq : R ^ 2 = R2 := by rw [hR]; exact Real.sq_sqrt (hR2 ▸ hR2nn δ p₀)
     have hMR : max M 0 ≤ δ * R2 := by
-      have : max M 0 / δ ≤ R2 := hR2 ▸ le_max_left _ _
+      have  := hR2 ▸ le_max_left _ _
       rw [div_le_iff₀ hδ] at this
       linarith
-    have hp₀R : radialSq p₀ ≤ R ^ 2 := by rw [hRsq, hR2]; exact le_max_right _ _
-    have hKR : IsCompact (K ∩ {p | radialSq p ≤ R ^ 2}) := isCompact_inter_radialSq hK hKt R
+    have hp₀R : radialSq p₀ ≤ R ^ 2 := by rw [hRsq, hR2]; apply le_max_right
     have hw := le_zero_of_strict_viscous_compact (B := B) (b := b) (ε := ε)
       (K := K ∩ {p | radialSq p ≤ R ^ 2}) (D := D ∩ {p | radialSq p < R ^ 2})
-      (w := fun q => u q + (-δ) * growthBarrier C T q) hε0 hKR ?_ ?_ ?_ ?_ ?_ ?_
-    · have : u p₀ + (-δ) * growthBarrier C T p₀ ≤ 0 := hw p₀ ⟨hp₀, hp₀R⟩
-      linarith
+      (w := fun q => u q + (-δ) * growthBarrier C T q) hε0 (isCompact_inter_radialSq hK hKt R) ?_ ?_ ?_ ?_ ?_ ?_
+    · linarith [hw p₀ ⟨hp₀, hp₀R⟩]
     · exact (hcont.mono inter_subset_left).add
         ((continuous_const.mul (continuous_growthBarrier C T)).continuousOn)
     · intro p hp
-      have h1 := hfut p hp.1
-      have h2 : ∀ᶠ q in 𝓝 p, radialSq q < R ^ 2 :=
-        (isOpen_lt continuous_radialSq continuous_const).mem_nhds hp.2
-      filter_upwards [h1, h2] with q hq1 hq2 hqt
+      filter_upwards [(hfut p hp.1), ((isOpen_lt continuous_radialSq continuous_const).mem_nhds hp.2)] with q hq1 hq2 hqt
       exact ⟨hq1 hqt, hq2.le⟩
     · intro p hp
       exact (hreg p hp.1).add ((isSliceRegularAt_growthBarrier C T p).const_mul (-δ))
@@ -100,12 +93,10 @@ theorem le_zero_of_viscous_nonneg_growth {n : ℕ} {B : FullKineticCoefficient n
     · intro p hp hnot
       by_cases hpD : p ∈ D
       · have hrad : ¬ radialSq p < R ^ 2 := fun h => hnot ⟨hpD, h⟩
-        have heq : R ^ 2 ≤ radialSq p := not_lt.mp hrad
+        have heq := not_lt.mp hrad
         have hΦge := one_add_radialSq_le_growthBarrier hCpos (hKt p hp.1).2
         have hu := hM p hp.1
-        have h1 : δ * (1 + radialSq p) ≤ δ * growthBarrier C T p :=
-          mul_le_mul_of_nonneg_left hΦge hδ.le
-        have h2 : δ * R ^ 2 ≤ δ * radialSq p := mul_le_mul_of_nonneg_left heq hδ.le
+        have h2 := mul_le_mul_of_nonneg_left heq hδ.le
         have h3 := le_max_left M 0
         show u p + (-δ) * growthBarrier C T p ≤ 0
         rw [hRsq] at h2

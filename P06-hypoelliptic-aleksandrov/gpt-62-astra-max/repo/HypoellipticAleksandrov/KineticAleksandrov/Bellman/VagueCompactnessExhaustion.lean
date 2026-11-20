@@ -52,12 +52,12 @@ theorem bellman_radon_family_subsequence {iota : Type*} [Countable iota]
     ⟨by rw [hm]; exact (K.isCompact w.2).measure_lt_top⟩
   have hbound (w : iota × ℕ) := hb w.1 (K w.2) (K.isCompact w.2)
   choose C hC using hbound
-  have hmreal (n : ℕ) (w : iota × ℕ) : (m n w).real univ ≤ (C w : ℝ) := by
+  have hmreal (n : ℕ) (w : iota × ℕ) : (m n w).real univ ≤ (C w) := by
     rw [measureReal_def, hm]
-    have h := ENNReal.toReal_mono (by simp : (C w : ℝ≥0∞) ≠ ∞) (hC w n)
-    simpa only [ENNReal.coe_toReal] using h
+    have h := ENNReal.toReal_mono (by simp) (hC w n)
+    exact h
   obtain ⟨k, hk, ht⟩ := bellman_compact_functionals_subsequence Y m
-    (fun w => (C w : ℝ)) (fun w => (C w).property) hmreal
+    (fun w => (C w)) (fun w => (C w).property) hmreal
   refine ⟨k, hk, ?_⟩
   intro i
   apply bellman_riesz_of_test_limits (fun n => mu i (k n))
@@ -68,6 +68,6 @@ theorem bellman_radon_family_subsequence {iota : Type*} [Countable iota]
   refine ⟨ell fc, ?_⟩
   have he (n : ℕ) : (∫ x, fc x ∂m (k n) (i, j)) = ∫ x, f x ∂mu i (k n) :=
     bellman_compact_test_integral _ (K.isCompact j) _ f hj
-  simpa only [he] using hell fc
+  simpa [he] using hell fc
 
 end HypoellipticAleksandrov.KineticAleksandrov

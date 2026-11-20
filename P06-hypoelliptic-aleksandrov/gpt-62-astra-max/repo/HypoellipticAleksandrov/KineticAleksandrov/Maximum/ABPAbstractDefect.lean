@@ -43,10 +43,7 @@ theorem continuousOn_matrixContraction {E : Type*} [TopologicalSpace E] {d : ℕ
   apply continuousOn_finsetSum
   intro i _
   apply continuousOn_finsetSum
-  intro j _
-  exact ((continuous_apply j).comp_continuousOn
-    ((continuous_apply i).comp_continuousOn hA)).mul
-    ((continuous_apply j).comp_continuousOn ((continuous_apply i).comp_continuousOn hH))
+  fun_prop
 
 /-- The forward operator of a classical function is continuous for continuous coefficients. -/
 theorem continuousOn_forwardKineticOperator {d : ℕ} {D : Set (KineticPoint d)}
@@ -79,8 +76,7 @@ theorem abp_defect_cutoff {d : ℕ} {Q : Set (KineticPoint d)} (hQ : MeasurableS
   have hcut := abpPositiveCutoff_spec hε
   refine ⟨(continuousOn_forwardKineticOperator hu A hA).neg.sup continuousOn_const,
     fun P => le_max_right _ _,fun P => ?_,?_⟩
-  · have h := le_max_left (-forwardKineticOperator A u P) 0
-    linarith only [h]
+  · linarith [le_max_left (-forwardKineticOperator A u P) 0]
   · filter_upwards [hsub,ae_restrict_mem hQ] with P hP hPQ
     refine ⟨mul_nonneg (hcut.2.1 _).1 (le_max_right _ _),?_⟩
     by_cases hpos : 0 < u P

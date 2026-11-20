@@ -28,18 +28,27 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Reconstruction
 
 variable {Y : Type*} [MeasurableSpace Y] {d : ℕ}
 
+section
+variable (g : Y → ℝ≥0∞) (κ : Kernel Y (PDE.Vec d)) (ξ : PDE.Vec d) (y : Y)
+include κ y
+
+include ξ in
 /-- The Fourier transform `ξ ↦ ∫ e^{-i ξ·z} π_y(dz)` of the fibre measure `κ y`. -/
-def fiberFourier (κ : Kernel Y (PDE.Vec d)) (ξ : PDE.Vec d) (y : Y) : ℂ :=
+def fiberFourier : ℂ :=
   ∫ z, cexp (-((PDE.vecDot ξ z : ℝ) * I)) ∂(κ y)
 
+include g ξ in
 /-- The fibre representative `k̃^ξ(y) = g(y) ∫ e^{-i ξ·z} π_y(dz)` of the Fourier-marginal
 density. -/
-def fiberDensity (g : Y → ℝ≥0∞) (κ : Kernel Y (PDE.Vec d)) (ξ : PDE.Vec d) (y : Y) : ℂ :=
+def fiberDensity : ℂ :=
   ((g y).toReal : ℂ) * fiberFourier κ ξ y
 
+include g in
 /-- The fibre height `H(y) = (2π)^{-d} ∫ |k̃^ξ(y)| dξ`. -/
-def fiberHeight (g : Y → ℝ≥0∞) (κ : Kernel Y (PDE.Vec d)) (y : Y) : ℝ≥0∞ :=
+def fiberHeight : ℝ≥0∞ :=
   ENNReal.ofReal (((2 * Real.pi) ^ d)⁻¹) * ∫⁻ ξ, ‖fiberDensity g κ ξ y‖ₑ
+
+end
 
 /-- The character `ξ ↦ e^{-i ξ·z}` is continuous. -/
 lemma continuous_exp_vecDot (z : PDE.Vec d) :
@@ -56,13 +65,10 @@ lemma norm_exp_vecDot (ξ z : PDE.Vec d) : ‖cexp (-((PDE.vecDot ξ z : ℝ) * 
 lemma measurable_fiberFourier (κ : Kernel Y (PDE.Vec d)) [IsSFiniteKernel κ] :
     Measurable fun p : PDE.Vec d × Y => fiberFourier κ p.1 p.2 := by
   have hc : Continuous fun q : PDE.Vec d × PDE.Vec d =>
-      cexp (-((PDE.vecDot q.1 q.2 : ℝ) * I)) := by
+      cexp (-((PDE.vecDot q.1 q.2) * I)) := by
     unfold PDE.vecDot
     fun_prop
-  have hf : Measurable fun q : (PDE.Vec d × Y) × PDE.Vec d =>
-      cexp (-((PDE.vecDot q.1.1 q.2 : ℝ) * I)) :=
-    hc.measurable.comp ((measurable_fst.comp measurable_fst).prodMk measurable_snd)
-  have := (hf.stronglyMeasurable).integral_kernel_prod_right'
+  have := ((hc.measurable.comp ((measurable_fst.comp measurable_fst).prodMk measurable_snd)).stronglyMeasurable).integral_kernel_prod_right'
     (κ := Kernel.prodMkLeft (PDE.Vec d) κ)
   exact this.measurable
 
@@ -122,16 +128,12 @@ lemma setIntegral_fiberDensity {m : Measure Y} {g : Y → ℝ≥0∞} (hg : Meas
     ∫ y in E, fiberDensity g κ ξ y ∂m =
       ∫ p in E ×ˢ (univ : Set (PDE.Vec d)), cexp (-((PDE.vecDot ξ p.2 : ℝ) * I))
         ∂((m.withDensity g) ⊗ₘ κ) := by
-  have hf : Measurable fun p : Y × PDE.Vec d => cexp (-((PDE.vecDot ξ p.2 : ℝ) * I)) := by
-    have hc : Continuous fun z : PDE.Vec d => cexp (-((PDE.vecDot ξ z : ℝ) * I)) := by
+  have hf : Measurable fun p : Y × PDE.Vec d => cexp (-((PDE.vecDot ξ p.2) * I)) := by
+    have hc : Continuous fun z : PDE.Vec d => cexp (-((PDE.vecDot ξ z) * I)) := by
       unfold PDE.vecDot
       fun_prop
     exact hc.measurable.comp measurable_snd
-  have hint : IntegrableOn (fun p : Y × PDE.Vec d => cexp (-((PDE.vecDot ξ p.2 : ℝ) * I)))
-      (E ×ˢ (univ : Set (PDE.Vec d))) ((m.withDensity g) ⊗ₘ κ) :=
-    (Integrable.of_bound hf.aestronglyMeasurable 1
-      (Filter.Eventually.of_forall fun p => (norm_exp_vecDot ξ p.2).le)).integrableOn
-  rw [Measure.setIntegral_compProd hE MeasurableSet.univ hint]
+  rw [Measure.setIntegral_compProd hE MeasurableSet.univ ((Integrable.of_bound hf.aestronglyMeasurable 1 (Filter.Eventually.of_forall fun p => (norm_exp_vecDot ξ p.2).le)).integrableOn)]
   simp only [Measure.restrict_univ]
   rw [setIntegral_withDensity_eq_setIntegral_toReal_smul hg
     (ae_restrict_of_ae hgtop) _ hE]
@@ -181,14 +183,13 @@ theorem fiber_disintegration {m : Measure Y} [SigmaFinite m] (Γ : Measure (Y ×
   have hdis : Γ = (m.withDensity g) ⊗ₘ Γ.condKernel := by
     rw [← hΓ]; exact (Measure.disintegrate Γ Γ.condKernel).symm
   have hg1 := lintegral_ne_top_of_fst_eq Γ hΓ
-  have hgtop : ∀ᵐ y ∂m, g y < ∞ := ae_lt_top hg hg1
   have hae : ∀ ξ, fiberDensity g Γ.condKernel ξ =ᵐ[m] k ξ := by
     intro ξ
     refine ae_eq_of_forall_setIntegral_eq_of_sigmaFinite
       (fun s _ _ => (integrable_fiberDensity hg hg1 _ ξ).integrableOn)
       (fun s _ _ => (hk ξ).1.integrableOn) fun s hs _ => ?_
     have : IsFiniteMeasure ((m.withDensity g) ⊗ₘ Γ.condKernel) := by rw [← hdis]; infer_instance
-    rw [setIntegral_fiberDensity hg hgtop _ ξ hs, (hk ξ).2 s hs, ← hdis]
+    rw [setIntegral_fiberDensity hg (ae_lt_top hg hg1) _ ξ hs, (hk ξ).2 s hs, ← hdis]
   refine ⟨hdis, fun y => inferInstance, measurable_fiberDensity hg _,
     fun y => continuous_const.mul (continuous_fiberFourier _ y), hae,
     fun ξ p => eLpNorm_congr_ae (hae ξ), fun p => ?_, measurable_fiberHeight hg _⟩

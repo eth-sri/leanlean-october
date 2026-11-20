@@ -13,50 +13,48 @@ open Evolution Occupation
 open scoped Topology
 variable {d : ℕ}
 
-/-- Testing a classical kinetic slice with the terminal-layer cutoff gives its weak identity. -/
-theorem kinetic_slice_cutoff_identity {B : FullKineticCoefficient d}
-    (hB : IsSmoothFullKineticCoefficient B) (hBs : IsSymmetricFullKineticCoefficient B)
-    {b : PDE.Vec d → PDE.Vec d} (hb : IsSmoothDrift b)
+variable {B : FullKineticCoefficient d} (hB : IsSmoothFullKineticCoefficient B)
+    (hBs : IsSymmetricFullKineticCoefficient B) {b : PDE.Vec d → PDE.Vec d} (hb : IsSmoothDrift b)
     {D : Set (EvolutionVec d)} (hD : IsOpen D) {V u : EvolutionVec d → ℝ}
-    (hV : ContDiffOn ℝ (⊤ : ℕ∞) V D)
-    (hVeq : ∀ p ∈ D, transportedOperator B b V p = 0)
-    (huV : ∀ p ∈ D, u p = V p) (hum : Measurable u)
-    (C : ℝ) (hub : ∀ p, |u p| ≤ C)
-    {ψ : EvolutionVec d → ℝ} (hψ : ContDiff ℝ (⊤ : ℕ∞) ψ) (hc : HasCompactSupport ψ)
-    (r : ℝ) (hψD : ∀ x ∈ tsupport ψ, timeCoord d x < r → x ∈ D)
+    (hV : ContDiffOn ℝ (⊤ : ℕ∞) V D) (hVeq : ∀ p ∈ D, transportedOperator B b V p = 0)
+    (huV : ∀ p ∈ D, u p = V p) (hum : Measurable u) (C : ℝ) (hC0 : 0 ≤ C) (hub : ∀ p, |u p| ≤ C)
+    {ψ : EvolutionVec d → ℝ} (hψ : ContDiff ℝ (⊤ : ℕ∞) ψ) (hc : HasCompactSupport ψ) (r : ℝ)
+    (hψD : ∀ x ∈ tsupport ψ, timeCoord d x < r → x ∈ D)
+include hB hBs hb hD hV hVeq huV hum hub hψ hc hψD
+
+/-- Testing a classical kinetic slice with the terminal-layer cutoff gives its weak identity. -/
+theorem kinetic_slice_cutoff_identity
     (h : ℝ) (hh : 0 < h) :
     (∫ x, u x * (layerStep ((r - timeCoord d x) / h) * transportedAdjoint B b ψ x)) +
       ∫ x, u x * (h⁻¹ * layerKernel ((r - timeCoord d x) / h) * ψ x) = 0 := by
   set Ladj := transportedAdjoint B b with hLadj
-  have hU : IsOpen D := hD
+  have hU := hD
   have hχ := contDiff_sliceCutoff r h
-  let φ : EvolutionVec d → ℝ := fun x => sliceCutoff r h (Evolution.timeCoord d x) * ψ x
-  have hφs : ContDiff ℝ (⊤ : ℕ∞) φ := (hχ.comp (Evolution.timeCoord d).contDiff).mul hψ
+  let φ := fun x => sliceCutoff r h (Evolution.timeCoord d x) * ψ x
+  have hφs := (hχ.comp (Evolution.timeCoord d).contDiff).mul hψ
   have hφc : HasCompactSupport φ := hc.mul_left
   have hφsub : tsupport φ ⊆ D := by
     intro x hx
-    have h1 : x ∈ tsupport ψ := tsupport_mul_subset_right hx
     have h2 : tsupport φ ⊆ {x | Evolution.timeCoord d x ≤ r - h} := by
       apply closure_minimal
       · intro y hy
-        have hy1 : sliceCutoff r h (Evolution.timeCoord d y) ≠ 0 := left_ne_zero_of_mul hy
-        exact (lt_of_sliceCutoff_ne_zero hh hy1).le
+        exact (lt_of_sliceCutoff_ne_zero hh (left_ne_zero_of_mul hy)).le
       · exact isClosed_le (Evolution.timeCoord d).continuous continuous_const
-    exact hψD x h1 (by have := h2 hx; simp only [mem_ofPred_eq] at this; linarith)
+    exact hψD x (tsupport_mul_subset_right hx) (by have := h2 hx; simp only [mem_ofPred_eq] at this; linarith)
   have key := integral_transportedAdjoint_contDiffOn hD hB hBs hb hV φ hφs hφc hφsub
   have hR : (∫ x in D, transportedOperator B b V x * φ x) = 0 := by
-    rw [setIntegral_congr_fun hU.measurableSet (g := fun _ => (0 : ℝ))]
+    rw [setIntegral_congr_fun hU.measurableSet (g := fun _ => 0)]
     · simp
     · intro x hx
-      simp only [hVeq _ hx, zero_mul]
+      simp [hVeq _ hx]
   rw [hR] at key
   have hL : (∫ x in D, V x * Ladj φ x) = ∫ x, u x * Ladj φ x := by
     rw [setIntegral_congr_fun hU.measurableSet (g := fun x => u x * Ladj φ x)]
     · refine setIntegral_eq_integral_of_forall_compl_eq_zero fun x hx => ?_
-      have : x ∉ tsupport φ := fun h' => hx (hφsub h')
+      have  := fun h' => hx (hφsub h')
       rw [hLadj, transportedAdjoint_eq_zero_of_notMem_tsupport φ this, mul_zero]
     · intro x hx
-      simp only [huV _ hx]
+      simp [huV _ hx]
   rw [hL] at key
   have hexp : ∀ x, Ladj φ x = sliceCutoff r h (Evolution.timeCoord d x) * Ladj ψ x +
       h⁻¹ * layerKernel ((r - Evolution.timeCoord d x) / h) * ψ x := by
@@ -65,40 +63,26 @@ theorem kinetic_slice_cutoff_identity {B : FullKineticCoefficient d}
     rw [transportedAdjoint_cutoff_mul hB hχ hψ x, deriv_sliceCutoff]
     ring
   simp_rw [hexp, mul_add] at key
-  have hLc : Continuous (Ladj ψ) := (contDiff_transportedAdjoint hB hb hψ).continuous
-  have hLcs : HasCompactSupport (Ladj ψ) := hasCompactSupport_transportedAdjoint hc
-  have hmeasu : Measurable (fun x => u x) := hum
-  have hbd : ∀ᵐ x ∂(volume : Measure (EvolutionVec d)), ‖u x‖ ≤ C :=
-    Eventually.of_forall fun x => by simpa only [Real.norm_eq_abs] using hub x
+  have hmeasu := hum
+  have hbd : ∀ᵐ x ∂volume, ‖u x‖ ≤ C :=
+    Eventually.of_forall fun x => by exact hub x
   have i1 : Integrable (fun x => u x * (sliceCutoff r h (Evolution.timeCoord d x) *
       Ladj ψ x)) := by
     have : Integrable (fun x => sliceCutoff r h (Evolution.timeCoord d x) * Ladj ψ x) :=
-      ((hχ.continuous.comp (Evolution.timeCoord d).continuous).mul hLc
-        ).integrable_of_hasCompactSupport hLcs.mul_left
+      ((hχ.continuous.comp (Evolution.timeCoord d).continuous).mul ((contDiff_transportedAdjoint hB hb hψ).continuous)
+        ).integrable_of_hasCompactSupport (hasCompactSupport_transportedAdjoint hc).mul_left
     exact this.bdd_mul hmeasu.aestronglyMeasurable hbd
   have i2 : Integrable (fun x => u x * (h⁻¹ * layerKernel ((r - Evolution.timeCoord d x) / h)
       * ψ x)) := by
-    have hk : Continuous (fun x : EvolutionVec d =>
-        h⁻¹ * layerKernel ((r - Evolution.timeCoord d x) / h) * ψ x) :=
-      (continuous_const.mul (continuous_layerKernel.comp
-        ((continuous_const.sub (Evolution.timeCoord d).continuous).div_const h))).mul hψ.continuous
     have : Integrable (fun x : EvolutionVec d =>
         h⁻¹ * layerKernel ((r - Evolution.timeCoord d x) / h) * ψ x) :=
-      hk.integrable_of_hasCompactSupport hc.mul_left
+      ((continuous_const.mul (continuous_layerKernel.comp ((continuous_const.sub (Evolution.timeCoord d).continuous).div_const h))).mul hψ.continuous).integrable_of_hasCompactSupport hc.mul_left
     exact this.bdd_mul hmeasu.aestronglyMeasurable hbd
   exact (integral_add i1 i2).symm.trans key
 
+include hC0 in
 /-- Passing the kinetic cutoff identity to the limit retains the terminal source term. -/
-theorem kinetic_slice_weak_identity {B : FullKineticCoefficient d}
-    (hB : IsSmoothFullKineticCoefficient B) (hBs : IsSymmetricFullKineticCoefficient B)
-    {b : PDE.Vec d → PDE.Vec d} (hb : IsSmoothDrift b)
-    {D : Set (EvolutionVec d)} (hD : IsOpen D) {V u : EvolutionVec d → ℝ}
-    (hV : ContDiffOn ℝ (⊤ : ℕ∞) V D)
-    (hVeq : ∀ p ∈ D, transportedOperator B b V p = 0)
-    (huV : ∀ p ∈ D, u p = V p) (hum : Measurable u)
-    (C : ℝ) (hC0 : 0 ≤ C) (hub : ∀ p, |u p| ≤ C)
-    {ψ : EvolutionVec d → ℝ} (hψ : ContDiff ℝ (⊤ : ℕ∞) ψ) (hc : HasCompactSupport ψ)
-    (r : ℝ) (hψD : ∀ x ∈ tsupport ψ, timeCoord d x < r → x ∈ D)
+theorem kinetic_slice_weak_identity
     (m₀ : EvolutionAmbientState d → ℝ)
     (hlim : ∀ w, Tendsto (fun t => u (packQ d (t, w)) * ψ (packQ d (t, w)))
       (𝓝[<] r) (𝓝 (m₀ w))) :
@@ -108,7 +92,7 @@ theorem kinetic_slice_weak_identity {B : FullKineticCoefficient d}
       ∫ w, m₀ w = 0 := by
   have hLc := (contDiff_transportedAdjoint hB hb hψ).continuous
   have hLcs := hasCompactSupport_transportedAdjoint (B := B) (b := b) hc
-  refine layer_slice_identity (volume : Measure (EvolutionAmbientState d)) r
+  refine layer_slice_identity volume r
     (fun q => u (packQ d q)) (fun q => ψ (packQ d q))
     (fun q => transportedAdjoint B b ψ (packQ d q))
     (hum.comp continuous_packQ.measurable) C hC0 (fun q => hub _)

@@ -21,14 +21,13 @@ theorem bellman_compact_measure_le_of_positive_tests (mu nu : Measure X)
     (ht : ∀ f : C_c(X, ℝ), (∀ x, 0 ≤ f x) → ∫ x, f x ∂mu ≤ ∫ x, f x ∂nu)
     {K : Set X} (hK : IsCompact K) : mu K ≤ nu K := by
   refine ENNReal.le_of_forall_pos_le_add fun eps heps hnu => ?_
-  have hnuK : nu K ≠ ⊤ := hnu.ne
   have hmuK : mu K ≠ ⊤ := hK.measure_lt_top.ne
   obtain ⟨V, hKV, hV, hmass⟩ :=
     exists_isOpen_le_add K nu (ne_of_gt (ENNReal.coe_lt_coe.mpr heps))
   suffices mu.real K ≤ nu.real K + eps by
     rwa [← ENNReal.toReal_le_toReal, ENNReal.toReal_add, ENNReal.coe_toReal]
     all_goals finiteness
-  have hVfinite : nu V < ⊤ := hmass.trans_lt (by finiteness)
+  have hVfinite := hmass.trans_lt (by finiteness)
   obtain ⟨f, hfone, hfc, hfs, hf01⟩ :=
     exists_continuousMap_one_of_isCompact_subset_isOpen hK hV hKV
   let g : C_c(X, ℝ) := ⟨f, hfc⟩
@@ -55,8 +54,8 @@ theorem bellman_compact_measure_le_of_positive_tests (mu nu : Measure X)
       (IntegrableOn.integrable_indicator integrableOn_const hV.measurableSet) hgV
     _ ≤ nu.real K + eps := by
       rw [integral_indicator_one hV.measurableSet]
-      have hh := ENNReal.toReal_mono (by finiteness : nu K + (eps : ℝ≥0∞) ≠ ∞) hmass
-      rw [ENNReal.toReal_add hnuK ENNReal.coe_ne_top, ENNReal.coe_toReal] at hh
+      have hh := ENNReal.toReal_mono (by finiteness) hmass
+      rw [ENNReal.toReal_add hnu.ne ENNReal.coe_ne_top, ENNReal.coe_toReal] at hh
       exact hh
 
 /-- Inner regularity upgrades positive compact-test order to actual measure order. -/

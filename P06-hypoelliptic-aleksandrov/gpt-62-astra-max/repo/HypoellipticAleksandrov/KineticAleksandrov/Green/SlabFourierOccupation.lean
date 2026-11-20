@@ -84,7 +84,7 @@ lemma integral_indicatorBB_occupation {d : ℕ}
       (occupationKernel K σ t v {w | (t, w) ∈ A}).toReal := by
   have hs : MeasurableSet {w : PDE.Vec d | (t, w) ∈ A} := measurable_prodMk_left hA
   have hf : (fun w => indicatorBB hA (t, w)) =
-      {w : PDE.Vec d | (t, w) ∈ A}.indicator (fun _ => (1 : ℝ)) := by
+      {w : PDE.Vec d | (t, w) ∈ A}.indicator (fun _ => 1) := by
     funext w; simp [indicatorBB_apply, Set.indicator]
   rw [hf, integral_indicator_const _ hs]
   simp [measureReal_def]
@@ -98,17 +98,13 @@ lemma elapsed_finite_set (S : ℝ) (hS : 0 < S) :
 lemma integral_elapsed_finite (S : ℝ) (hS : 0 < S) (F : ℝ → ℝ) :
     ∫ τ : ElapsedTime (ENNReal.ofReal S), F τ.1 ∂elapsedVolume (ENNReal.ofReal S) =
       ∫ t in Ioo 0 S, F t := by
-  have h := integral_subtype_comap (μ := (volume : Measure ℝ))
-    (measurableSet_elapsedTime (ENNReal.ofReal S)) F
-  refine Eq.trans h ?_
+  refine Eq.trans (integral_subtype_comap (μ := (volume : Measure ℝ)) (measurableSet_elapsedTime (ENNReal.ofReal S)) F) ?_
   rw [elapsed_finite_set S hS]
 
 lemma lintegral_elapsed_finite (S : ℝ) (hS : 0 < S) (F : ℝ → ℝ≥0∞) :
     ∫⁻ τ : ElapsedTime (ENNReal.ofReal S), F τ.1 ∂elapsedVolume (ENNReal.ofReal S) =
       ∫⁻ t in Ioo 0 S, F t := by
-  have h := lintegral_subtype_comap (μ := (volume : Measure ℝ))
-    (measurableSet_elapsedTime (ENNReal.ofReal S)) F
-  refine Eq.trans h ?_
+  refine Eq.trans (lintegral_subtype_comap (μ := (volume : Measure ℝ)) (measurableSet_elapsedTime (ENNReal.ofReal S)) F) ?_
   rw [elapsed_finite_set S hS]
 
 /-- The right-hand side of (4.2) for an indicator, as a real number. -/
@@ -169,7 +165,7 @@ theorem occupation_set_identity {d : ℕ}
   obtain ⟨hgm, hgn, hchar⟩ := hg
   have h := hchar (indicatorBB hA)
   rw [occupation_rhs_indicator K σ S hS ρ hA] at h
-  set R : Set (ℝ × PDE.Vec d) := Ioo (0 : ℝ) S ×ˢ (univ : Set (PDE.Vec d)) with hR
+  set R : Set (ℝ × PDE.Vec d) := Ioo 0 S ×ˢ univ with hR
   have hrestr : (volume.restrict R).restrict A = volume.restrict A := by
     rw [Measure.restrict_restrict hA, inter_eq_left.2 hAS]
   have hL : (∫ q, indicatorBB hA q * g q ∂volume.restrict R) =
@@ -195,8 +191,7 @@ theorem occupation_set_identity {d : ℕ}
             refine lintegral_mono (fun t => ?_)
             exact (measure_mono (subset_univ _)).trans (occupationKernel_univ_le K σ t v)
         _ = ENNReal.ofReal S := by
-            rw [lintegral_const, Measure.restrict_apply MeasurableSet.univ, univ_inter,
-              Real.volume_Ioo, sub_zero, one_mul]
+            simp
     refine ne_top_of_le_ne_top ?_ hle
     rw [lintegral_const]
     exact ENNReal.mul_ne_top ENNReal.ofReal_ne_top (measure_ne_top _ _)
@@ -274,8 +269,7 @@ lemma section_shift_image {d : ℕ} (s : ℝ) (E : Set (SlabBase d)) (τ : Elaps
   · intro ⟨y, hy, hyψ⟩
     have h1 : y.1.1 - s = τ.1 - s := congrArg Prod.fst hyψ
     have h2 : y.2 = w := congrArg Prod.snd hyψ
-    have h3 : y.1 = τ := Subtype.ext (by linarith)
-    have h4 : y = (τ, w) := Prod.ext h3 h2
+    have h4 : y = (τ, w) := Prod.ext (Subtype.ext (by linarith)) h2
     rwa [h4] at hy
   · intro hw
     exact ⟨(τ, w), hw, rfl⟩
@@ -303,21 +297,17 @@ theorem slab_occupation_identity {d : ℕ}
       ∫⁻ v, (∫⁻ τ in slabTimeSet T, occupationKernel K σ₁ (τ.1 - s) v {w | (τ, w) ∈ E}
         ∂elapsedVolume ⊤) ∂ρ := by
   have hA := measurableSet_slabImage T s hE
-  have hAB : slabImage d T s E ⊆ Ioo (T - s) (2 * T - s) ×ˢ (univ : Set (PDE.Vec d)) :=
+  have hAB : slabImage d T s E ⊆ Ioo (T - s) (2 * T - s) ×ˢ univ :=
     inter_subset_right
-  have hAS : slabImage d T s E ⊆ Ioo (0 : ℝ) S ×ˢ (univ : Set (PDE.Vec d)) := by
-    intro q hq
-    have := hAB hq
-    simp only [mem_prod, mem_Ioo, mem_univ, and_true] at this ⊢
-    constructor <;> linarith [this.1, this.2]
+  have hAS : slabImage d T s E ⊆ Ioo 0 S ×ˢ univ := by
+    grind
   have hid := occupation_set_identity K σ₁ S hS ρ g hg hint hA hAS
   -- left side
   have hL : ∫⁻ q in slabImage d T s E, ENNReal.ofReal (g q) =
       ∫⁻ y in E, ENNReal.ofReal (g (slabShift d s y)) ∂slabBase d T := by
-    have hmap := map_slabBase_slabShift d T s hT.le
     have h1 : ∫⁻ q in slabImage d T s E, ENNReal.ofReal (g q) =
         ∫⁻ q in slabImage d T s E, ENNReal.ofReal (g q) ∂(slabBase d T).map (slabShift d s) := by
-      rw [hmap, Measure.restrict_restrict hA, inter_eq_left.2 hAB]
+      rw [(map_slabBase_slabShift d T s hT.le), Measure.restrict_restrict hA, inter_eq_left.2 hAB]
     have hm : Measurable (fun q : ℝ × PDE.Vec d => ENNReal.ofReal (g q)) :=
       ENNReal.measurable_ofReal.comp hg.1
     rw [h1, setLIntegral_map hA hm (measurable_slabShift d s), preimage_slabImage]
@@ -330,7 +320,7 @@ theorem slab_occupation_identity {d : ℕ}
   rw [hid]
   refine lintegral_congr (fun v => ?_)
   have hBt : MeasurableSet (Ioo (T - s) (2 * T - s)) := measurableSet_Ioo
-  have hBsub : Ioo (T - s) (2 * T - s) ⊆ Ioo (0 : ℝ) S := fun t ht =>
+  have hBsub : Ioo (T - s) (2 * T - s) ⊆ Ioo 0 S := fun t ht =>
     ⟨by linarith [ht.1], by linarith [ht.2]⟩
   set H : ℝ → ℝ≥0∞ := fun t =>
     occupationKernel K σ₁ t v {w | (t, w) ∈ slabShift d s '' E} with hH
@@ -342,7 +332,6 @@ theorem slab_occupation_identity {d : ℕ}
   simp_rw [h1]
   rw [lintegral_indicator hBt, Measure.restrict_restrict hBt, inter_eq_left.2 hBsub,
     ← lintegral_Ioo_sub T (2 * T) s H, ← lintegral_slabTime T hT.le (fun t => H (t - s))]
-  refine lintegral_congr (fun τ => ?_)
   simp only [hH, section_shift_image]
 
 end HypoellipticAleksandrov.KineticAleksandrov.Green

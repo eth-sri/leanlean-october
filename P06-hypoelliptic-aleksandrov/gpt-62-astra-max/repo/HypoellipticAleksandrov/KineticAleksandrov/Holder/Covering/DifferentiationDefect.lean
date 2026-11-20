@@ -21,10 +21,9 @@ theorem measure_density_defect {d : ℕ} {E C : Set (KineticPoint d)}
     {eta : ℝ} (heta : 0 ≤ eta)
     (hdef : (volume (E ∩ C)).toReal ≤ (1-eta)*(volume C).toReal) :
     ENNReal.ofReal eta * volume C ≤ volume (C \ E) := by
-  have hI : volume (C ∩ E) ≠ ⊤ := ne_top_of_le_ne_top hC (measure_mono inter_subset_left)
   have hD : volume (C \ E) ≠ ⊤ := ne_top_of_le_ne_top hC (measure_mono sdiff_subset)
   have hsum := congrArg ENNReal.toReal (measure_inter_add_sdiff₀ (μ := volume) C hE)
-  rw [ENNReal.toReal_add hI hD, inter_comm] at hsum
+  rw [ENNReal.toReal_add (ne_top_of_le_ne_top hC (measure_mono inter_subset_left)) hD, inter_comm] at hsum
   apply (ENNReal.toReal_le_toReal
     (ENNReal.mul_ne_top ENNReal.ofReal_ne_top hC) hD).mp
   rw [ENNReal.toReal_mul, ENNReal.toReal_ofReal heta]

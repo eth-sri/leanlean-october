@@ -26,7 +26,7 @@ theorem skeleton_position_remainder_le {d : ℕ} {x v : ℝ → PDE.Vec d} {H : 
     PDE.vecEuclideanNorm (x s - x b - (s - b) • v b) ≤ H * (b - s) ^ 2 / 2 := by
   have hsk : IsSkeleton x v H s b :=
     ⟨hv.continuousOn, fun t _ => (hkin t).hasDerivWithinAt, fun t _ r _ => hLip t r⟩
-  have hpos := hsk.position_eq_integral (show b ∈ Icc s b from ⟨hsb, le_rfl⟩)
+  have hpos := hsk.position_eq_integral (⟨hsb, le_rfl⟩)
   have hint : IntervalIntegrable (fun t => v t - v b) volume s b :=
     (hv.intervalIntegrable s b).sub intervalIntegrable_const
   have hI : (∫ t in s..b, v t - v b) = x b - x s - (b - s) • v b := by
@@ -39,16 +39,14 @@ theorem skeleton_position_remainder_le {d : ℕ} {x v : ℝ → PDE.Vec d} {H : 
   change (∫ t in s..b, e (v t - v b)) = e (∫ t in s..b, v t - v b) at he
   have hc := intervalIntegral.norm_integral_le_integral_norm (μ := volume)
     (f := fun t => e (v t - v b)) hsb
-  have hc1 : Continuous (fun t => ‖e (v t - v b)‖) :=
-    (e.continuous.comp (hv.sub continuous_const)).norm
   have hc2 : Continuous (fun t : ℝ => H * (b - t)) := by fun_prop
-  have hm := intervalIntegral.integral_mono_on (μ := volume) hsb (hc1.intervalIntegrable s b)
+  have hm := intervalIntegral.integral_mono_on (μ := volume) hsb (((e.continuous.comp (hv.sub continuous_const)).norm).intervalIntegrable s b)
     (hc2.intervalIntegrable s b) (fun t ht => show ‖e (v t - v b)‖ ≤ H * (b - t) from by
       change ‖(v t - v b).toHilbertVec‖ ≤ H * (b - t)
       rw [← PDE.Vec.vecEuclideanNorm_eq_norm_toHilbertVec]
       have h := hLip t b
       rw [abs_of_nonpos (sub_nonpos.mpr ht.2)] at h
-      simpa only [neg_sub] using h)
+      simpa using h)
   have hid : IntervalIntegrable (fun t : ℝ => t) volume s b :=
     continuous_id.intervalIntegrable s b
   have hi : (∫ t in s..b, H * (b - t)) = H * (b - s) ^ 2 / 2 := by

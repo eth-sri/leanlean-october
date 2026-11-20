@@ -13,7 +13,6 @@ variable {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
 /-- Every signed bounded Borel source supported in the past domain has a continuous
 literal potential there, with only the Hörmander input. -/
 theorem continuousOn_duhamelPotential_bounded_signed
-    (hH : HormanderHypoellipticityStatement)
     (hΩa : IsAdmissibleEvolutionDomain Ω) (hΩ : MeasurableSet Ω) (hγ : Continuous γ)
     (B : FullKineticCoefficient d) (b : PDE.Vec d → PDE.Vec d)
     (S : TerminalOperatorFamily Ω γ) (K : MovingFiberKernel Ω γ)
@@ -35,21 +34,11 @@ theorem continuousOn_duhamelPotential_bounded_signed
   have hgb (p : KineticPoint d) : 0 ≤ g p ∧ g p ≤ M :=
     ⟨le_max_right _ _, max_le ((neg_le_abs _).trans (hFb p)) hM⟩
   have hfz : ∀ p, KineticPoint.equivProd d p ∉ boundedSourcePast Ω γ T → f p = 0 := by
-    intro p hp
-    simp only [f, hFz p hp, max_self]
+    grind
   have hgz : ∀ p, KineticPoint.equivProd d p ∉ boundedSourcePast Ω γ T → g p = 0 := by
-    intro p hp
-    simp only [g, hFz p hp, neg_zero, max_self]
-  have hfc := continuousOn_duhamelPotential_bounded_nonneg hH hΩa hΩ hγ B b S K hreal
-    hB hBs hb lam Lam m hlam hm hell hcoerc T f hfm M hM hfb hfz
-  have hgc := continuousOn_duhamelPotential_bounded_nonneg hH hΩa hΩ hγ B b S K hreal
-    hB hBs hb lam Lam m hlam hm hell hcoerc T g hgm M hM hgb hgz
+    grind
   have hsplit : F = (fun p => f p + -g p) := by
-    funext p
-    change F p = max (F p) 0 + -max (-F p) 0
-    by_cases hp : 0 ≤ F p
-    · rw [max_eq_left hp, max_eq_right (neg_nonpos.mpr hp), neg_zero, add_zero]
-    · rw [max_eq_right (le_of_not_ge hp), max_eq_left (by linarith), neg_neg, zero_add]
+    grind
   have heq : duhamelPotential K T F =
       (fun p => duhamelPotential K T f p - duhamelPotential K T g p) := by
     funext p
@@ -60,6 +49,6 @@ theorem continuousOn_duhamelPotential_bounded_signed
       duhamelPotential_neg]
     rfl
   rw [heq]
-  exact hfc.sub hgc
+  exact (continuousOn_duhamelPotential_bounded_nonneg hΩa hΩ hγ B b S K hreal hB hBs hb lam Lam m hlam hm hell hcoerc T f hfm M hM hfb hfz).sub (continuousOn_duhamelPotential_bounded_nonneg hΩa hΩ hγ B b S K hreal hB hBs hb lam Lam m hlam hm hell hcoerc T g hgm M hM hgb hgz)
 
 end HypoellipticAleksandrov.KineticAleksandrov.SectionTwo

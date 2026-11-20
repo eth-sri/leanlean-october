@@ -1,12 +1,8 @@
 module
 
-public import HypoellipticAleksandrov.KineticAleksandrov.MainAssembly
+public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.AssemblyDensity
 public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.FinalAutonomous
-public import HypoellipticAleksandrov.KineticAleksandrov.Geometry
-public import HypoellipticAleksandrov.KineticAleksandrov.Operator
-public import HypoellipticAleksandrov.KineticAleksandrov.Bellman.Exponent
-public import HypoellipticAleksandrov.Geometry.KineticPointMeasure
-public import Mathlib.MeasureTheory.Function.LpSeminorm.Basic
+public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.LocalisedAutonomous
 
 /-!
 # Localised kinetic Aleksandrov estimate for autonomous coefficients
@@ -46,7 +42,9 @@ theorem kinetic_aleksandrov_autonomous_localised
             C * R ^ (2 - 6 / p) *
               (eLpNorm ({P | 0 < u P}.indicator (fun P => max (f P) 0)) (ENNReal.ofReal p)
                 (volume.restrict (backwardCylinder P₀ R))).toReal := by
-  exact HypoellipticAleksandrov.KineticAleksandrov.kinetic_aleksandrov_autonomous_localised_proof
+  exact kinetic_aleksandrov_autonomous_localised_relative_of_below_four_density
+    (Autonomous.below_four_density_of_frontier Autonomous.autonomousRemainingFrontier_holds
+)
     lam Lam p hlam hLam hp
 
 end HypoellipticAleksandrov.KineticAleksandrov

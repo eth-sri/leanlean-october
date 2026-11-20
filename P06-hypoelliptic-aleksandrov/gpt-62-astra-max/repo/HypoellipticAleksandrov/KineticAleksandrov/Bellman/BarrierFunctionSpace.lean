@@ -15,52 +15,64 @@ namespace HypoellipticAleksandrov.KineticAleksandrov
 /-- The open punctured product plane. -/
 def bellmanPuncturedSet : Set (ℝ × ℝ) := {q | q ≠ (0, 0)}
 
+section
+variable (alpha : ℝ) (b : ℝ) (phi : (ℝ × ℝ) → ℝ) (q : ℝ × ℝ)
+include phi
+
+include alpha in
 /-- The literal C² homogeneity property used in the source separation argument. -/
-def IsBellmanHomogeneous (alpha : ℝ) (phi : (ℝ × ℝ) → ℝ) : Prop :=
+def IsBellmanHomogeneous : Prop :=
   ContDiffOn ℝ 2 phi bellmanPuncturedSet ∧
     ∀ r : ℝ, 0 < r → ∀ q ∈ bellmanPuncturedSet,
       phi (bellmanPlaneDilation r q) = r ^ alpha * phi q
 
+include q in
 /-- The position directional derivative. -/
-def bellmanDx (phi : (ℝ × ℝ) → ℝ) (q : ℝ × ℝ) : ℝ :=
+def bellmanDx : ℝ :=
   fderiv ℝ phi q (1, 0)
 
+include q in
 /-- The velocity directional derivative. -/
-def bellmanDv (phi : (ℝ × ℝ) → ℝ) (q : ℝ × ℝ) : ℝ :=
+def bellmanDv : ℝ :=
   fderiv ℝ phi q (0, 1)
 
+include q in
 /-- The second velocity derivative. -/
-def bellmanDvv (phi : (ℝ × ℝ) → ℝ) (q : ℝ × ℝ) : ℝ :=
+def bellmanDvv : ℝ :=
   fderiv ℝ (bellmanDv phi) q (0, 1)
 
+include b q in
 /-- The constant-diffusion operator in the source sign convention. -/
-def bellmanOperator (b : ℝ) (phi : (ℝ × ℝ) → ℝ) (q : ℝ × ℝ) : ℝ :=
+def bellmanOperator : ℝ :=
   q.2 * bellmanDx phi q + b * bellmanDvv phi q
+
+end
 
 /-- The punctured carrier is open. -/
 theorem bellmanPuncturedSet_isOpen : IsOpen bellmanPuncturedSet := isOpen_ne_fun
   continuous_id continuous_const
 
+section
+variable {alpha : ℝ} {phi : (ℝ × ℝ) → ℝ} (h : IsBellmanHomogeneous alpha phi)
+include h
+
 /-- C² homogeneity gives a C¹ directional derivative on the punctured plane. -/
-theorem IsBellmanHomogeneous.directional_contDiffOn {alpha : ℝ}
-    {phi : (ℝ × ℝ) → ℝ} (h : IsBellmanHomogeneous alpha phi) (e : ℝ × ℝ) :
-    ContDiffOn ℝ 1 (fun q => fderiv ℝ phi q e) bellmanPuncturedSet := by
-  exact (h.1.fderiv_of_isOpen bellmanPuncturedSet_isOpen (by norm_num)).clm_apply
+theorem IsBellmanHomogeneous.directional_contDiffOn (e : ℝ × ℝ) :
+    ContDiffOn ℝ 1 (fun q => fderiv ℝ phi q e) bellmanPuncturedSet := (h.1.fderiv_of_isOpen bellmanPuncturedSet_isOpen (by norm_num)).clm_apply
     contDiffOn_const
 
 /-- Each first jet is continuous on the source carrier. -/
-theorem IsBellmanHomogeneous.dx_continuousOn {alpha : ℝ}
-    {phi : (ℝ × ℝ) → ℝ} (h : IsBellmanHomogeneous alpha phi) :
+theorem IsBellmanHomogeneous.dx_continuousOn :
     ContinuousOn (bellmanDx phi) bellmanPuncturedSet :=
   (h.directional_contDiffOn (1, 0)).continuousOn
 
 /-- The second velocity jet is continuous on the source carrier. -/
-theorem IsBellmanHomogeneous.dvv_continuousOn {alpha : ℝ}
-    {phi : (ℝ × ℝ) → ℝ} (h : IsBellmanHomogeneous alpha phi) :
-    ContinuousOn (bellmanDvv phi) bellmanPuncturedSet := by
-  exact ((h.directional_contDiffOn (0, 1)).fderiv_of_isOpen
+theorem IsBellmanHomogeneous.dvv_continuousOn :
+    ContinuousOn (bellmanDvv phi) bellmanPuncturedSet := ((h.directional_contDiffOn (0, 1)).fderiv_of_isOpen
     bellmanPuncturedSet_isOpen (m := 0) (by norm_num)).continuousOn.clm_apply
     continuousOn_const
+
+end
 
 /-- The Bellman expression is continuous on the sphere and coefficient interval. -/
 theorem IsBellmanHomogeneous.image_continuous {alpha lam Lam : ℝ}
@@ -71,10 +83,8 @@ theorem IsBellmanHomogeneous.image_continuous {alpha lam Lam : ℝ}
     continuous_subtype_val.comp continuous_fst
   have hm : MapsTo (fun w : BellmanSphere × BellmanCoefficient lam Lam => w.1.val)
       univ bellmanPuncturedSet := fun w _ => w.1.ne_zero
-  have hx := h.dx_continuousOn.comp hz.continuousOn hm
-  have hv := h.dvv_continuousOn.comp hz.continuousOn hm
-  exact ((continuous_snd.comp hz).mul (continuousOn_univ.mp hx)).add
-    ((continuous_subtype_val.comp continuous_snd).mul (continuousOn_univ.mp hv))
+  exact ((continuous_snd.comp hz).mul (continuousOn_univ.mp (h.dx_continuousOn.comp hz.continuousOn hm))).add
+    ((continuous_subtype_val.comp continuous_snd).mul (continuousOn_univ.mp (h.dvv_continuousOn.comp hz.continuousOn hm)))
 
 /-- The continuous image of one C² homogeneous function. -/
 def bellmanImage {alpha : ℝ} (lam Lam : ℝ) (phi : (ℝ × ℝ) → ℝ)

@@ -11,27 +11,32 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic Set MeasureTheory
 open HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 
-/-- Exchange position and velocity, and reverse terminal time into elapsed time. -/
-def autonomousReversal (p : Point) : Point := ⟨-p.time, p.velocity, p.position⟩
+section
+variable (a : ℝ → ℝ → ℝ) (u : Point → ℝ) (p : Point)
 
+include p in
+/-- Exchange position and velocity, and reverse terminal time into elapsed time. -/
+def autonomousReversal : Point := ⟨-p.time, p.velocity, p.position⟩
+
+include a u p in
 /-- The generator equation uses positive transport and diffusion on its right side. -/
-def autonomousGeneratorResidual (a : ℝ → ℝ → ℝ) (u : Point → ℝ) (p : Point) : ℝ :=
+def autonomousGeneratorResidual : ℝ :=
   kineticTimeDerivative u p - p.velocity 0 * kineticPositionGradient u p 0 -
     a (p.position 0) (p.velocity 0) * kineticVelocityHessian u p 0 0
 
+include p in
 /-- Reflect physical position without changing elapsed time or velocity. -/
-def autonomousPositionReflection (p : Point) : Point :=
+def autonomousPositionReflection : Point :=
   ⟨p.time, -p.position, p.velocity⟩
 
 /-- Position reflection converts the generator equation to the source PDE convention. -/
-theorem autonomous_generator_positionReflection (a : ℝ → ℝ → ℝ)
-    (u : Point → ℝ) (p : Point) :
+theorem autonomous_generator_positionReflection :
     autonomousScalarOperator (reflectedAutonomous a) (u ∘ autonomousPositionReflection) p =
       autonomousGeneratorResidual a u (autonomousPositionReflection p) := by
   have hg : kineticPositionGradient (u ∘ autonomousPositionReflection) p =
       -kineticPositionGradient u (autonomousPositionReflection p) := by
     ext i
-    let f : PDE.Vec 1 → ℝ := fun x => u ⟨p.time, x, p.velocity⟩
+    let f := fun x => u ⟨p.time, x, p.velocity⟩
     let e := ContinuousLinearEquiv.neg ℝ (M := PDE.Vec 1)
     change (fderiv ℝ (f ∘ e) p.position) (PDE.basisVec i) =
       -(fderiv ℝ f (-p.position)) (PDE.basisVec i)
@@ -46,7 +51,7 @@ theorem autonomous_generator_positionReflection (a : ℝ → ℝ → ℝ)
   ring
 
 /-- The time and coordinate exchange gives the source generator with its literal sign. -/
-theorem autonomous_generator_reversal (a : ℝ → ℝ → ℝ) (u : Point → ℝ) (p : Point) :
+theorem autonomous_generator_reversal :
     autonomousGeneratorResidual a (u ∘ autonomousReversal) p =
       -transportedForwardOperator (evolutionCoefficient a) (identityDrift 1) u
         (autonomousReversal p) := by
@@ -62,6 +67,8 @@ theorem autonomous_generator_reversal (a : ℝ → ℝ → ℝ) (u : Point → �
       a (p.position 0) (p.velocity 0) * diffusedHessian u (autonomousReversal p) 0 0 = _
   dsimp only [autonomousReversal, id_eq]
   ring
+
+end
 
 /-- Physical terminal data use position first, velocity second. -/
 def physicalTerminalDatum (F : BoundedBorel (EvolutionAmbientState 1)) :

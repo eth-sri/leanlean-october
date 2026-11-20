@@ -21,7 +21,6 @@ variable {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
 
 /-- The literal positive bounded Borel potential is continuous on the open past cylinder. -/
 theorem continuousOn_duhamelPotential_bounded_nonneg
-    (hH : HormanderHypoellipticityStatement)
     (hΩa : IsAdmissibleEvolutionDomain Ω) (hΩ : MeasurableSet Ω) (hγ : Continuous γ)
     (B : FullKineticCoefficient d) (b : PDE.Vec d → PDE.Vec d)
     (S : TerminalOperatorFamily Ω γ) (K : MovingFiberKernel Ω γ)
@@ -51,70 +50,52 @@ theorem continuousOn_duhamelPotential_bounded_nonneg
     let g := {q : KineticPoint d | q.time ≤ s}.indicator F
     have hfm : Measurable f := hF.indicator (measurableSet_lt measurable_const
       continuous_time.measurable)
-    have hgm : Measurable g := hF.indicator (measurableSet_le continuous_time.measurable
-      measurable_const)
     have hfb : ∀ q, 0 ≤ f q ∧ f q ≤ M := by
       intro q
       by_cases hq : s < q.time
       · simpa only [f, indicator_apply, mem_ofPred_eq, ite_eq_left hq] using hFb q
-      · simp only [f, indicator_apply, mem_ofPred_eq, ite_eq_right hq]
-        exact ⟨le_rfl, hM⟩
+      simp_all [f, ite_eq_right, hq]
     have hgb : ∀ q, 0 ≤ g q ∧ g q ≤ M := by
       intro q
       by_cases hq : q.time ≤ s
       · simpa only [g, indicator_apply, mem_ofPred_eq, ite_eq_left hq] using hFb q
-      · simp only [g, indicator_apply, mem_ofPred_eq, ite_eq_right hq]
-        exact ⟨le_rfl, hM⟩
+      simp_all [g, ite_eq_right, hq]
     have hfz : ∀ q, KineticPoint.equivProd d q ∉ boundedSourceFutureSet Ω γ s T →
         f q = 0 := by
       intro q hq
       by_cases hqt : s < q.time
-      · have hqpast : KineticPoint.equivProd d q ∉ boundedSourcePast Ω γ T :=
-          fun h => hq ⟨hqt, h⟩
-        simp only [f, indicator_apply, mem_ofPred_eq, ite_eq_left hqt, hFz q hqpast]
-      · simp only [f, indicator_apply, mem_ofPred_eq, ite_eq_right hqt]
+      · simp only [f, indicator_apply, mem_ofPred_eq, ite_eq_left hqt, hFz q (fun h => hq ⟨hqt, h⟩)]
+      simp_all [f, ite_eq_right, hqt]
     have hgzero : ∀ q : KineticPoint d, s < q.time → g q = 0 := by
       intro q hq
-      simp only [g, indicator_apply, mem_ofPred_eq, ite_eq_right (not_le_of_gt hq)]
+      simp_all [g, ite_eq_right]
     have hsplit : F = (fun q => f q + g q) := by
       funext q
       by_cases hq : s < q.time
-      · simp only [f, g, indicator_apply, mem_ofPred_eq, ite_eq_left hq,
-          ite_eq_right (not_le_of_gt hq), add_zero]
-      · simp only [f, g, indicator_apply, mem_ofPred_eq, ite_eq_right hq,
-          ite_eq_left (le_of_not_gt hq), zero_add]
-    have hfa : ∀ q, |f q| ≤ M := fun q => by
-      rw [abs_of_nonneg (hfb q).1]; exact (hfb q).2
-    have hga : ∀ q, |g q| ≤ M := fun q => by
-      rw [abs_of_nonneg (hgb q).1]; exact (hgb q).2
+      · simp_all [f, g, ite_eq_left, hq]
+      simp_all [f, g, ite_eq_right, hq]
+    have hfa : ∀ q, |f q| ≤ M := by grind
+    have hga : ∀ q, |g q| ≤ M := by grind
     have heq (q : KineticPoint d) : duhamelPotential K T F q =
         duhamelPotential K T f q + duhamelPotential K T g q := by
       conv_lhs => rw [hsplit]
-      exact duhamelPotential_add_bounded K hΩ hγ f g hfm hgm M M hM hM hfa hga T q
-    have hfuture := continuousOn_duhamelFuture_before_source hH hΩa hΩ hγ B b S K hreal
+      exact duhamelPotential_add_bounded K hΩ hγ f g hfm (hF.indicator (measurableSet_le continuous_time.measurable measurable_const)) M M hM hM hfa hga T q
+    have hfuture := continuousOn_duhamelFuture_before_source hΩa hΩ hγ B b S K hreal
       hB hBs hb lam Lam m hlam hm hell hcoerc s T hsT f hfm M hM hfb hfz
-    have hfutureAt := hfuture.continuousAt
-      ((isOpen_evolutionPastOpenCylinder (isOpen_of_isAdmissibleEvolutionDomain hΩa)
-        hγ s).mem_nhds ⟨hps, hp.2⟩)
-    have hnear := hfutureAt.eventually (Metric.ball_mem_nhds _ (half_pos hε))
-    have htime := continuous_time.continuousAt.eventually (Metric.ball_mem_nhds p.time hδ)
-    filter_upwards [hnear, htime] with q hq hqt
-    change dist (duhamelPotential K T f q) (duhamelPotential K T f p) < ε / 2 at hq
-    change dist q.time p.time < δ at hqt
+    have hnear := (hfuture.continuousAt ((isOpen_evolutionPastOpenCylinder (isOpen_of_isAdmissibleEvolutionDomain hΩa) hγ s).mem_nhds ⟨hps, hp.2⟩)).eventually (Metric.ball_mem_nhds _ (half_pos hε))
+    filter_upwards [hnear, (continuous_time.continuousAt.eventually (Metric.ball_mem_nhds p.time hδ))] with q hq hqt
     rw [Real.dist_eq] at hq hqt
     have hqtime : q.time ≤ s := by
-      have ht := (abs_lt.mp hqt).2
-      dsimp only [s]
-      linarith
+      grind
     have hrecent (w : KineticPoint d) (hws : w.time ≤ s) :
         |duhamelPotential K T g w| ≤ (s - w.time) * M := by
       rw [duhamelPotential_eq_short_terminal K g s T hsT hgzero w]
-      exact abs_duhamelPotential_le K g M hM hga w s hws
+      apply abs_duhamelPotential_le <;> assumption
     have hbq : |duhamelPotential K T g q| ≤ 2 * δ * M := by
       have ht := (abs_lt.mp hqt).1
       exact (hrecent q hqtime).trans (mul_le_mul_of_nonneg_right (by dsimp [s]; linarith) hM)
     have hbp : |duhamelPotential K T g p| ≤ δ * M := by
-      simpa only [s, add_sub_cancel_left] using hrecent p hps.le
+      simp_all <;> grind
     have habs : |duhamelPotential K T F q - duhamelPotential K T F p| ≤
         |duhamelPotential K T f q - duhamelPotential K T f p| +
           |duhamelPotential K T g q| + |duhamelPotential K T g p| := by
@@ -122,8 +103,7 @@ theorem continuousOn_duhamelPotential_bounded_nonneg
       have hid (a b c d : ℝ) : (a + b) - (c + d) = (a - c) + (b - d) := by ring
       rw [hid]
       exact (abs_add_le _ _).trans (by
-        have hh := abs_sub (duhamelPotential K T g q) (duhamelPotential K T g p)
-        linarith)
+        linarith [abs_sub (duhamelPotential K T g q) (duhamelPotential K T g p)])
     rw [Real.dist_eq]
     nlinarith
   exact hc.continuousWithinAt

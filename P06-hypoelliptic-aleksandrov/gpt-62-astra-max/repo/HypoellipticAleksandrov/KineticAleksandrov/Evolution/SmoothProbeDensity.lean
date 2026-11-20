@@ -49,49 +49,40 @@ theorem exists_smooth_compactSupport_close {U : Set E} (hU : IsOpen U) (f : C_c(
     (ε : ℝ) (hε : 0 < ε) :
     ∃ φ : E → ℝ, ContDiff ℝ (⊤ : ℕ∞) φ ∧ HasCompactSupport φ ∧ tsupport φ ⊆ U ∧
       ∀ x : U, |φ x - f x| ≤ ε := by
-  set g : E → ℝ := Subtype.val.extend (f : U → ℝ) 0 with hg
+  set g : E → ℝ := Subtype.val.extend f 0 with hg
   obtain ⟨hgc, hgs⟩ := extendByZero_continuous_hasCompactSupport hU f
   have hgx : ∀ x : U, g x = f x := fun x => Subtype.val_injective.extend_apply _ _ x
-  set K : Set E := Subtype.val '' tsupport (f : U → ℝ) with hKdef
+  set K : Set E := Subtype.val '' tsupport f with hKdef
   have hKc : IsCompact K := f.hasCompactSupport.isCompact.image continuous_subtype_val
   have hKU : K ⊆ U := by
-    rintro _ ⟨x, -, rfl⟩
-    exact x.2
-  have hgK : tsupport g ⊆ K :=
-    f.hasCompactSupport.tsupport_extend_zero_subset continuous_subtype_val
+    simp_all
   obtain ⟨δ0, hδ0, hthick⟩ := hKc.exists_cthickening_subset_open hU hKU
   obtain ⟨δ1, hδ1, hδ1g⟩ := Metric.uniformContinuous_iff.mp
     (hgs.uniformContinuous_of_continuous hgc) ε hε
   set r : ℝ := min δ0 δ1 with hr
-  have hrpos : 0 < r := lt_min hδ0 hδ1
+  have hrpos := lt_min hδ0 hδ1
   set φb : ContDiffBump (0 : E) := ⟨r / 2, r, half_pos hrpos, half_lt_self hrpos⟩ with hφb
   set μ : Measure E := Measure.addHaar with hμ
-  have hgloc : LocallyIntegrable g μ := hgc.locallyIntegrable
   have hconv_smooth : ContDiff ℝ (⊤ : ℕ∞) ((φb.normed μ) ⋆[ContinuousLinearMap.lsmul ℝ ℝ, μ] g) :=
-    φb.hasCompactSupport_normed.contDiff_convolution_left _ φb.contDiff_normed hgloc
-  have hconv_supp : HasCompactSupport ((φb.normed μ) ⋆[ContinuousLinearMap.lsmul ℝ ℝ, μ] g) :=
-    φb.hasCompactSupport_normed.convolution _ hgs
-  have hSc : IsCompact (closedBall (0 : E) r + K) :=
-    (isCompact_closedBall (0 : E) r).add hKc
+    φb.hasCompactSupport_normed.contDiff_convolution_left _ φb.contDiff_normed hgc.locallyIntegrable
   have hts : tsupport ((φb.normed μ) ⋆[ContinuousLinearMap.lsmul ℝ ℝ, μ] g) ⊆
       closedBall (0 : E) r + K := by
-    refine closure_minimal ?_ hSc.isClosed
+    refine closure_minimal ?_ ((isCompact_closedBall (0 : E) r).add hKc).isClosed
     refine (support_convolution_subset _).trans (add_subset_add ?_ ?_)
     · exact subset_tsupport _ |>.trans (φb.tsupport_normed_eq (μ := μ)).subset
-    · exact subset_tsupport _ |>.trans hgK
-  refine ⟨_, hconv_smooth, hconv_supp, ?_, ?_⟩
+    · exact subset_tsupport _ |>.trans (f.hasCompactSupport.tsupport_extend_zero_subset continuous_subtype_val)
+  refine ⟨_, hconv_smooth, (φb.hasCompactSupport_normed.convolution _ hgs), ?_, ?_⟩
   · refine hts.trans ?_
     rintro _ ⟨a, ha, k, hk, rfl⟩
     refine hthick (mem_cthickening_of_dist_le (a + k) k δ0 K hk ?_)
-    have : dist (a + k) k = ‖a‖ := by simp [dist_eq_norm]
+    have : dist (a + k) k = ‖a‖ := by simp
     rw [this]
     exact (mem_closedBall_zero_iff.mp ha).trans (min_le_left _ _)
   · intro x
     rw [← hgx x]
-    have := φb.dist_normed_convolution_le (μ := μ) (x₀ := (x : E)) (ε := ε)
+    have := φb.dist_normed_convolution_le (μ := μ) (x₀ := x) (ε := ε)
       hgc.aestronglyMeasurable (fun y hy => (hδ1g (lt_of_lt_of_le (mem_ball.mp hy)
         (min_le_right _ _))).le)
-    rw [Real.dist_eq] at this
     exact this
 
 end General
@@ -107,10 +98,8 @@ theorem exists_smooth_terminal_test_close_of_isOpen {n : ℕ} {Ω : Set (PDE.Vec
     ∃ F : BoundedBorel (EvolutionAmbientState n),
       IsSmoothCompactTerminalDatum Ω γ τ F ∧
       ∀ p : EvolutionState Ω γ τ, |F p.1 - f p| ≤ ε := by
-  have hU : IsOpen (evolutionStateSet Ω γ τ) :=
-    (isOpen_movingDomain hΩ τ).prod isOpen_univ
-  obtain ⟨φ, hφs, hφc, hφU, hφε⟩ := exists_smooth_compactSupport_close hU f ε hε
-  have hcont : Continuous φ := hφs.continuous
+  obtain ⟨φ, hφs, hφc, hφU, hφε⟩ := exists_smooth_compactSupport_close ((isOpen_movingDomain hΩ τ).prod isOpen_univ) f ε hε
+  have hcont := hφs.continuous
   obtain ⟨C, hC⟩ := hφc.exists_bound_of_continuous hcont
   refine ⟨⟨φ, hcont.measurable, ⟨max C 0, le_max_right _ _,
     fun x => (hC x).trans (le_max_left _ _)⟩⟩, ⟨hφs, hφc, hφU⟩, hφε⟩

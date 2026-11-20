@@ -27,28 +27,23 @@ theorem interval_natural_block_iteration {a b : ℝ}
     (hk : (k : ℝ) * T ≤ τ - σ) (v : PDE.oneDimensionalAxisBox a b) :
     totalVariationNorm (intervalFourierKernel K σ τ hστ ξ v) ≤ ENNReal.ofReal c ^ k := by
   induction k generalizing σ τ v with
-  | zero => simpa only [pow_zero] using intervalFourierKernel_totalVariation_le_one K σ τ hστ ξ v
+  | zero => exact intervalFourierKernel_totalVariation_le_one K σ τ hστ ξ v
   | succ k ih =>
     let r := σ + T
     have hσr : σ ≤ r := le_add_of_nonneg_right hT.le
     have hrτ : r ≤ τ := by
-      have hn : (0 : ℝ) ≤ k := Nat.cast_nonneg k
+      have hn : 0 ≤ k := Nat.cast_nonneg k
       rw [Nat.cast_succ] at hk
       nlinarith only [hk, hT, hn]
-    have hremain : (k : ℝ) * T ≤ τ - r := by
+    have hremain : k * T ≤ τ - r := by
       rw [Nat.cast_succ] at hk
-      dsimp [r]
-      linarith only [hk]
-    have htail : (⨆ w : PDE.oneDimensionalAxisBox a b,
-        totalVariationNorm (intervalFourierKernel K r τ hrτ ξ w)) ≤
-        ENNReal.ofReal c ^ k :=
-      iSup_le fun w => ih r τ hrτ hremain w
+      linarith
     calc
       _ ≤ totalVariationNorm (intervalFourierKernel K σ r hσr ξ v) *
           ⨆ w : PDE.oneDimensionalAxisBox a b,
             totalVariationNorm (intervalFourierKernel K r τ hrτ ξ w) :=
         intervalFourierKernel_totalVariation_composition K hJ hcomp hcov σ r τ hσr hrτ ξ v
-      _ ≤ ENNReal.ofReal c * ENNReal.ofReal c ^ k := mul_le_mul' (hstep σ v) htail
+      _ ≤ ENNReal.ofReal c * ENNReal.ofReal c ^ k := mul_le_mul' (hstep σ v) (iSup_le fun w => ih r τ hrτ hremain w)
       _ = ENNReal.ofReal c ^ (k + 1) := by rw [pow_succ, mul_comm]
 
 end HypoellipticAleksandrov.KineticAleksandrov.Interval

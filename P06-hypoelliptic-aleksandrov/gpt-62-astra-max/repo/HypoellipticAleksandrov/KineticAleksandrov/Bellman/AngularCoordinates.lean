@@ -38,7 +38,7 @@ def bellmanPositionRoot (q : BellmanPositivePositionPlane) : BellmanPositiveTime
 /-- The position root cubed is the original positive position. -/
 theorem bellmanPositionRoot_cube (q : BellmanPositivePositionPlane) :
     (bellmanPositionRoot q).val ^ 3 = q.val.1 :=
-  Real.rpow_inv_natCast_pow q.property.le (by norm_num : (3 : ℕ) ≠ 0)
+  Real.rpow_inv_natCast_pow q.property.le (by norm_num)
 
 /-- Radial-angular coordinates are a homeomorphism onto the positive-position half-plane. -/
 def bellmanAngularHomeomorph :

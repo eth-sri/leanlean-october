@@ -22,7 +22,7 @@ theorem borel_bounded_error_norm_tendsto {E : Type*} [MeasurableSpace E]
   have hmem j : MemLp (e j) (ENNReal.ofReal p) μ := by
     apply (memLp_const B).of_le (hm j)
     filter_upwards [hnn j,hb j] with z hz hzB
-    simpa only [Real.norm_of_nonneg hz,Real.norm_of_nonneg hB] using hzB
+    simp_all <;> grind
   have hpower j : AEStronglyMeasurable (fun z => e j z ^ p) μ :=
     (Real.continuous_rpow_const hp.le).comp_aestronglyMeasurable (hm j)
   have hbound j : ∀ᵐ z ∂μ, ‖e j z ^ p‖ ≤ B ^ p := by
@@ -36,11 +36,10 @@ theorem borel_bounded_error_norm_tendsto {E : Type*} [MeasurableSpace E]
   have hi := tendsto_integral_of_dominated_convergence (fun _ : E => B ^ p)
     hpower (integrable_const _) hbound hconv
   simp only [integral_zero] at hi
-  have hr := (Real.continuous_rpow_const (by positivity : 0 ≤ 1 / p)).tendsto 0
-  have ht := hr.comp hi
+  have ht := ((Real.continuous_rpow_const (by positivity : 0 ≤ 1 / p)).tendsto 0).comp hi
   simp only [Function.comp_def,Real.zero_rpow (by positivity : 1 / p ≠ 0)] at ht
   convert ht using 1
   funext j
-  exact abp_eLpNorm_toReal_nonneg hp (hmem j) (hnn j)
+  apply_rules [abp_eLpNorm_toReal_nonneg]
 
 end HypoellipticAleksandrov.KineticAleksandrov

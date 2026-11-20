@@ -25,7 +25,7 @@ theorem smoothFamily_of_measurable {d : ℕ} {p lam Lam : ℝ}
   obtain ⟨A, U, hA, hb, hU, hnonneg, hboundary, hheight, hsource⟩ := h
   have hpn : ENNReal.ofReal p ≠ 0 := (ENNReal.ofReal_pos.mpr (by linarith)).ne'
   have hp1 : 1 ≤ ENNReal.ofReal p := by
-    simpa only [ENNReal.ofReal_one] using ENNReal.ofReal_le_ofReal hp
+    simp_all
   have hchoose : ∀ j : ℕ, ∃ k : ℕ,
       eLpNorm (fun P => matrixContraction
         (mollifiedMatrix (standardMollifierSequence k) A (P.position, P.velocity) -
@@ -46,8 +46,7 @@ theorem smoothFamily_of_measurable {d : ℕ} {p lam Lam : ℝ}
   · intro j i l
     exact (ContinuousLinearMap.proj l).contDiff.comp
       ((ContinuousLinearMap.proj i).contDiff.comp (hB j).1)
-  · intro j q
-    exact (hB j).2 q
+  · grind
   · let E := fun j P => matrixContraction
       (B j (P.position, P.velocity) - A (P.position, P.velocity))
       (kineticVelocityHessian (U j) P)
@@ -69,7 +68,6 @@ theorem smoothFamily_of_measurable {d : ℕ} {p lam Lam : ℝ}
     apply tendsto_of_tendsto_of_tendsto_of_le_of_le tendsto_const_nhds hlim0
       (fun j => bot_le)
     intro j
-    exact positive_source_norm_le_coefficient_error A (B j) hA (hBm j) (U j) (hU j)
-      (volume.restrict (backwardCylinder P₀ R)) (ENNReal.ofReal p) hp1
+    solve_by_elim [positive_source_norm_le_coefficient_error]
 
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample

@@ -44,27 +44,22 @@ theorem gaussianBarrier_localizedSource_zero {d : ℕ} {lam h R : ℝ}
     P.time - tminus - sblock ≤ h}
   have ht : Continuous (fun P : KineticPoint d => P.time - tminus - sblock) :=
     (continuous_time.sub continuous_const).sub continuous_const
-  have hS : MeasurableSet S :=
-    (isOpen_lt continuous_const ht).measurableSet.inter
-      (isClosed_le ht continuous_const).measurableSet
-  have hs := (ae_restrict_iff' hS).mp
+  have hs := (ae_restrict_iff' ((isOpen_lt continuous_const ht).measurableSet.inter (isClosed_le ht continuous_const).measurableSet)).mp
     (gaussianBarrier_sign hlam hh Lam H L ell tminus sblock hLam hH hell A hA
       hx hv hkin hLip)
   let Q := backwardCylinder
     (⟨tminus + sblock + h, x (sblock + h), v (sblock + h)⟩ : KineticPoint d) R
-  have hQ : MeasurableSet Q := (isOpen_backwardCylinder _ R hR).measurableSet
   filter_upwards [hs.filter_mono (ae_restrict_le (μ := volume) (s := Q)),
-    ae_restrict_mem hQ] with P hsign hP
+    ae_restrict_mem ((isOpen_backwardCylinder _ R hR).measurableSet)] with P hsign hP
   by_cases hp : u P < gaussianBarrier lam Lam H h L ell tminus sblock x v P
   · have hc := subset_closure hP
     have hpositive : 0 < P.time - tminus - sblock := by
       by_contra hn
       exact (not_lt_of_ge (hinit P hc (le_of_not_gt hn))) hp
     have hupper := (closure_backwardCylinder_bounds
-      (⟨tminus + sblock + h, x (sblock + h), v (sblock + h)⟩ : KineticPoint d)
+      (⟨tminus + sblock + h, x (sblock + h), v (sblock + h)⟩)
       hR hc).2.1
-    have hmem : P ∈ S := ⟨hpositive, by change P.time ≤ tminus + sblock + h at hupper
-                                        linarith only [hupper]⟩
+    have hmem : P ∈ S := ⟨hpositive, by linarith⟩
     have hnonpos := (hsign hmem).1.trans (hsign hmem).2
     rw [localizedSource, Set.indicator_of_mem (show P ∈ {Q | u Q <
       gaussianBarrier lam Lam H h L ell tminus sblock x v Q} from hp)]

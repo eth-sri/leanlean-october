@@ -22,7 +22,7 @@ theorem bellmanMeasurePrimitive_weak_Icc (μ : Measure ℝ) [IsFiniteMeasureOnCo
     (∫ x in Icc r R, bellmanMeasurePrimitive μ g r x * deriv φ x) =
       -∫ z in Ioc r R, g z * φ z ∂μ := by
   have hφd := (contDiff_infty_iff_deriv.mp hφ).2
-  have hR : φ R = 0 := image_eq_zero_of_notMem_tsupport
+  have hR := image_eq_zero_of_notMem_tsupport
     (fun h => (lt_irrefl R) (hs h).2)
   have he : (∫ x in Icc r R, bellmanMeasurePrimitive μ g r x * deriv φ x) =
       ∫ x in Icc r R, ∫ z in Ioc r x, g z * deriv φ x ∂μ := by
@@ -40,7 +40,7 @@ theorem bellmanMeasurePrimitive_weak_Icc (μ : Measure ℝ) [IsFiniteMeasureOnCo
     rw [integral_const_mul, integral_Icc_eq_integral_Ioc,
       ← intervalIntegral.integral_of_le hz.2,
       intervalIntegral.integral_deriv_of_contDiffOn_Icc
-        (hφ.of_le (by simp : (1 : WithTop ℕ∞) ≤ (⊤ : ℕ∞))).contDiffOn hz.2,
+        (hφ.of_le (by simp)).contDiffOn hz.2,
       hR]
     ring
   rw [ht, integral_neg]
@@ -64,10 +64,8 @@ theorem bellmanMeasurePrimitive_weak (μ : Measure ℝ) [IsFiniteMeasureOnCompac
       constructor <;> linarith
     have hdr : tsupport (deriv φ) ⊆ Ioo r R := tsupport_deriv_subset.trans hs
     have hφd := (contDiff_infty_iff_deriv.mp hφ).2
-    have hr0 : φ r = 0 := image_eq_zero_of_notMem_tsupport
+    have hr0 := image_eq_zero_of_notMem_tsupport
       (fun h => (lt_irrefl r) (hs h).1)
-    have hR0 : φ R = 0 := image_eq_zero_of_notMem_tsupport
-      (fun h => (lt_irrefl R) (hs h).2)
     have hlhs : (∫ x, bellmanMeasurePrimitive μ g 0 x * deriv φ x) =
         ∫ x in Icc r R, bellmanMeasurePrimitive μ g 0 x * deriv φ x := by
       symm
@@ -83,13 +81,6 @@ theorem bellmanMeasurePrimitive_weak (μ : Measure ℝ) [IsFiniteMeasureOnCompac
         (fun hd => hx ⟨(hs hd).1, (hs hd).2.le⟩), mul_zero]
     have he : (∫ x in Icc r R, bellmanMeasurePrimitive μ g 0 x * deriv φ x) =
         ∫ x in Icc r R, bellmanMeasurePrimitive μ g r x * deriv φ x := by
-      have hi : IntegrableOn (fun x => bellmanMeasurePrimitive μ g 0 x * deriv φ x)
-          (Icc r R) volume :=
-        ((bellmanMeasurePrimitive_locallyIntegrable μ g hg).integrableOn_isCompact
-          isCompact_Icc).mul_continuousOn hφd.continuous.continuousOn isCompact_Icc
-      have hc : IntegrableOn (fun x => bellmanMeasurePrimitive μ g 0 r * deriv φ x)
-          (Icc r R) volume :=
-        (hφd.continuous.continuousOn.integrableOn_Icc).const_mul _
       have hfun : (fun x => bellmanMeasurePrimitive μ g r x * deriv φ x) =
           (fun x => bellmanMeasurePrimitive μ g 0 x * deriv φ x -
             bellmanMeasurePrimitive μ g 0 r * deriv φ x) := by
@@ -100,20 +91,19 @@ theorem bellmanMeasurePrimitive_weak (μ : Measure ℝ) [IsFiniteMeasureOnCompac
         rw [← hp]
         ring
       have hle : r ≤ R := by
-        obtain ⟨x, hx⟩ := hn
-        exact (hs hx).1.le.trans (hs hx).2.le
+        grind
       have hdInt : (∫ x in Icc r R, deriv φ x) = 0 := by
         rw [integral_Icc_eq_integral_Ioc, ← intervalIntegral.integral_of_le hle,
           intervalIntegral.integral_deriv_of_contDiffOn_Icc
-            (hφ.of_le (by simp : (1 : WithTop ℕ∞) ≤ (⊤ : ℕ∞))).contDiffOn hle,
-          hr0, hR0, sub_self]
-      rw [hfun, integral_sub hi hc, integral_const_mul, hdInt, mul_zero, sub_zero]
+            (hφ.of_le (by simp)).contDiffOn hle,
+          hr0, (image_eq_zero_of_notMem_tsupport (fun h => (lt_irrefl R) (hs h).2)), sub_self]
+      rw [hfun, integral_sub (((bellmanMeasurePrimitive_locallyIntegrable μ g hg).integrableOn_isCompact isCompact_Icc).mul_continuousOn hφd.continuous.continuousOn isCompact_Icc) ((hφd.continuous.continuousOn.integrableOn_Icc).const_mul _), integral_const_mul, hdInt, mul_zero, sub_zero]
     rw [hlhs, hrhs, he]
-    exact bellmanMeasurePrimitive_weak_Icc μ g hg r R φ hφ hs
+    apply bellmanMeasurePrimitive_weak_Icc <;> assumption
   · have hz : φ = 0 := by
       funext x
       exact image_eq_zero_of_notMem_tsupport (fun hx => hn ⟨x, hx⟩)
     rw [hz, deriv_zero]
-    simp only [Pi.zero_apply, mul_zero, integral_zero, neg_zero]
+    simp
 
 end HypoellipticAleksandrov.KineticAleksandrov

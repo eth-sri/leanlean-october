@@ -22,27 +22,24 @@ theorem Clock.active_ratio_lower (c : Clock) {v : ℝ} (hv : v ∈ c.active) :
   · apply (le_div_iff_of_neg hneg).mpr
     have hr := c.radius
     rw [abs_of_neg hneg] at hr
-    have hv' : v < c.vbar + 3 * c.r / 4 := hv.2
-    nlinarith
+    nlinarith [hv.2]
   · apply (le_div_iff₀ hpos).mpr
     have hr := c.radius
     rw [abs_of_pos hpos] at hr
-    have hv' : c.vbar - 3 * c.r / 4 < v := hv.1
-    nlinarith
+    nlinarith [hv.1]
 
 /-- The source's physical forward cone implies a lower bound on elapsed position-clock time. -/
 theorem clock_forward_cone_finite
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
     {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : SmoothAutonomous lam Lam) (c : Clock) (T : ℝ)
     (e : StripPole c.activeInterval (T : WithTop ℝ)) :
-    (∀ᵐ p ∂stripExit hH hLE hlam hLam A c.activeInterval T e,
+    (∀ᵐ p ∂stripExit hlam hLam A c.activeInterval T e,
       p.time - e.1.time ≤ 2 * c.r ^ 2 * (c.map e.1 p).time) ∧
-    ∀ᵐ p ∂stripGreen hH hLE hlam hLam A c.activeInterval T e,
+    ∀ᵐ p ∂stripGreen hlam hLam A c.activeInterval T e,
       p.time - e.1.time ≤ 2 * c.r ^ 2 * (c.map e.1 p).time := by
-  have hh := reconstruction_transport_cone_ae hH hlam hLam A c.activeInterval
-    (stripEvolution hH hLE hlam hLam A c.activeInterval)
-    (stripEvolution_spec hH hLE hlam hLam A c.activeInterval) T e
+  have hh := reconstruction_transport_cone_ae hlam hLam A c.activeInterval
+    (stripEvolution hlam hLam A c.activeInterval)
+    (stripEvolution_spec hlam hLam A c.activeInterval) T e
     1 (-2 / c.vbar) (2 * e.1.position 0 / c.vbar - e.1.time)
     (by dsimp only [reconstructionConeCoordinate]; ring) (fun v hv => by
       have hr := c.active_ratio_lower hv

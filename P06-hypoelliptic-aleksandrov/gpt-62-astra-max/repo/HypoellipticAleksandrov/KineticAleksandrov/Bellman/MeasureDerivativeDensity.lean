@@ -29,15 +29,11 @@ theorem bellman_fluxMeasurePrimitive_weak (F : Measure ℝ)
     (∫ x, φ x * J x) - a * (∫ x, g x * φ x ∂F) =
       -(∫ x, deriv φ x *
         ((∫ z in 0..x, J z) - a * bellmanMeasurePrimitive F g 0 x)) := by
-  have h1 := bellman_lebesguePrimitive_weak J hJ φ φ.contDiff φ.hasCompactSupport
-  have h2 := bellmanMeasurePrimitive_weak F g hg φ φ.contDiff φ.hasCompactSupport
-  have hd : Continuous (deriv φ) := (contDiff_infty_iff_deriv.mp φ.contDiff).2.continuous
-  have hc : HasCompactSupport (deriv φ) := φ.hasCompactSupport.deriv
-  have hi1 : Integrable (fun x => deriv φ x * (∫ z in 0..x, J z)) volume := by
-    exact LocallyIntegrable.integrable_smul_left_of_hasCompactSupport
+  have hd := (contDiff_infty_iff_deriv.mp φ.contDiff).2.continuous
+  have hc := φ.hasCompactSupport.deriv
+  have hi1 : Integrable (fun x => deriv φ x * (∫ z in 0..x, J z)) volume := LocallyIntegrable.integrable_smul_left_of_hasCompactSupport
       (bellman_lebesguePrimitive_continuous J hJ).locallyIntegrable hd hc
-  have hi2 : Integrable (fun x => deriv φ x * bellmanMeasurePrimitive F g 0 x) volume := by
-    exact LocallyIntegrable.integrable_smul_left_of_hasCompactSupport
+  have hi2 : Integrable (fun x => deriv φ x * bellmanMeasurePrimitive F g 0 x) volume := LocallyIntegrable.integrable_smul_left_of_hasCompactSupport
       (bellmanMeasurePrimitive_locallyIntegrable F g hg) hd hc
   rw [show (fun x => deriv φ x *
       ((∫ z in 0..x, J z) - a * bellmanMeasurePrimitive F g 0 x)) =
@@ -46,14 +42,12 @@ theorem bellman_fluxMeasurePrimitive_weak (F : Measure ℝ)
     integral_sub hi1 (hi2.const_mul a), integral_const_mul]
   have hs1 : (∫ x, deriv φ x * (∫ z in 0..x, J z)) = -∫ x, φ x * J x := by
     rw [show (fun x => deriv φ x * (∫ z in 0..x, J z)) =
-      (fun x => (∫ z in 0..x, J z) * deriv φ x) by funext x; ring, h1]
-    congr 1
-    apply integral_congr_ae
-    exact ae_of_all _ fun x => mul_comm _ _
+      (fun x => (∫ z in 0..x, J z) * deriv φ x) by funext x; ring, (bellman_lebesguePrimitive_weak J hJ φ φ.contDiff φ.hasCompactSupport)]
+    grind
   have hs2 : (∫ x, deriv φ x * bellmanMeasurePrimitive F g 0 x) =
       -∫ x, g x * φ x ∂F := by
     rw [show (fun x => deriv φ x * bellmanMeasurePrimitive F g 0 x) =
-      (fun x => bellmanMeasurePrimitive F g 0 x * deriv φ x) by funext x; ring, h2]
+      (fun x => bellmanMeasurePrimitive F g 0 x * deriv φ x) by funext x; ring, (bellmanMeasurePrimitive_weak F g hg φ φ.contDiff φ.hasCompactSupport)]
   rw [hs1, hs2]
   ring
 
@@ -83,15 +77,9 @@ theorem bellman_measure_density_of_flux (F H : Measure ℝ)
     simp only [mul_one]
     rw [hw φ]
     have he := bellman_fluxMeasurePrimitive_weak F g J hg hJ a φ
-    change (∫ x, φ x * J x) - a * (∫ x, g x * φ x ∂F) =
-      -(∫ x, deriv φ x * p x) at he
     linarith
   obtain ⟨c, hc⟩ := bellman_test_derivative_kernel L hzero
   refine ⟨c, ?_⟩
-  have hm : Measurable p :=
-    (bellman_lebesguePrimitive_continuous J hJ).measurable.sub
-      (measurable_const.mul
-        (bellmanMeasurePrimitive_stronglyMeasurable F g hg.measurable 0).measurable)
   have hcp : LocallyIntegrable (fun x => c + p x) volume :=
     continuous_const.locallyIntegrable.add hp
   have htest : ∀ φ : BellmanRealTest,
@@ -106,24 +94,15 @@ theorem bellman_measure_density_of_flux (F H : Measure ℝ)
     have hi : Integrable (fun x => φ x * p x) volume := by
       convert! hp.integrable_smul_left_of_hasCompactSupport
         φ.contDiff.continuous φ.hasCompactSupport using 1
-    have hiφ : Integrable (fun x => φ x) volume :=
-      φ.contDiff.continuous.integrable_of_hasCompactSupport φ.hasCompactSupport
     rw [show (fun x => φ x * (c + p x)) =
       (fun x => c * φ x + φ x * p x) by funext x; ring,
-      integral_add (hiφ.const_mul c) hi, integral_const_mul]
+      integral_add ((φ.contDiff.continuous.integrable_of_hasCompactSupport φ.hasCompactSupport).const_mul c) hi, integral_const_mul]
     linarith
   have hmeasure := bellman_measure_eq_withDensity_of_test_pairing H (fun x => c + p x)
-    (measurable_const.add hm) hcp htest
+    (measurable_const.add ((bellman_lebesguePrimitive_continuous J hJ).measurable.sub (measurable_const.mul (bellmanMeasurePrimitive_stronglyMeasurable F g hg.measurable 0).measurable))) hcp htest
   constructor
-  · rw [hmeasure]
-    congr 1
-    funext x
-    congr 1
-    dsimp [p]
-    ring
-  · have hn := bellman_nonneg_of_test_pairing H (fun x => c + p x) hcp htest
-    filter_upwards [hn] with x hx
-    dsimp [p] at hx
+  · grind
+  · filter_upwards [(bellman_nonneg_of_test_pairing H (fun x => c + p x) hcp htest)] with x hx
     linarith
 
 end HypoellipticAleksandrov.KineticAleksandrov

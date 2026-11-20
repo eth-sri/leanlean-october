@@ -26,18 +26,25 @@ def wholeSpace (d : ℕ) : Set (PDE.Vec d) := Set.univ
 /-- Case W has identity transport. -/
 def identityDrift (d : ℕ) : PDE.Vec d → PDE.Vec d := id
 
+section
+variable {d : ℕ} (D : Set (PDE.Vec d)) (m L_b : ℝ) (lam Lam : ℝ) (B : CoefficientField d)
+    (b : PDE.Vec d → PDE.Vec d) (σ₀ : ℝ) (v₀ : PDE.Vec d) (r : {r : ℝ // 0 < r})
+
+include lam Lam B in
 /-- The literal Section 2 smooth, symmetric, elliptic coefficient premises. -/
-def IsSectionTwoCoefficient {d : ℕ} (lam Lam : ℝ) (B : CoefficientField d) : Prop :=
+def IsSectionTwoCoefficient : Prop :=
   0 < lam ∧ lam ≤ Lam ∧
     IsSmoothFullKineticCoefficient (zIndependentCoefficient B) ∧
     IsSymmetricCoefficient B ∧ HasLowerEllipticity lam B ∧ HasUpperEllipticity Lam B
 
+include m L_b b in
 /-- The two source transport bounds, using explicit Euclidean geometry. -/
-def HasTransportBounds {d : ℕ} (m L_b : ℝ) (b : PDE.Vec d → PDE.Vec d) : Prop :=
+def HasTransportBounds : Prop :=
   HasEuclideanLipschitzDrift L_b b ∧ HasUnitDirectionDriftCoercivity m b
 
+include B b in
 /-- The literal transported operator, with KineticPoint read as (sigma,v,z). -/
-abbrev lop {d : ℕ} (B : CoefficientField d) (b : PDE.Vec d → PDE.Vec d)
+abbrev lop
     (u : KineticPoint d → ℝ) (q : KineticPoint d) : ℝ :=
   transportedForwardOperatorOfTimeDiffusedCoefficient B b u q
 
@@ -45,7 +52,7 @@ abbrev lop {d : ℕ} (B : CoefficientField d) (b : PDE.Vec d → PDE.Vec d)
 
 These are source characterizations, not additional hypotheses on the source theorem.
 -/
-def RealizesTerminalEvolution {d : ℕ} (Ω : Set (PDE.Vec d))
+def RealizesTerminalEvolution (Ω : Set (PDE.Vec d))
     (γ : ℝ → PDE.Vec d) (hΩ : MeasurableSet Ω)
     (B : FullKineticCoefficient d) (b : PDE.Vec d → PDE.Vec d)
     (S : TerminalOperatorFamily Ω γ) (K : MovingFiberKernel Ω γ) : Prop :=
@@ -62,25 +69,28 @@ def RealizesTerminalEvolution {d : ℕ} (Ω : Set (PDE.Vec d))
     S σ τ hστ f p = ∫ q, f q ∂K.fiberKernel hΩ σ τ hστ p) ∧
   K.HasEndpoint hΩ ∧ K.HasComposition hΩ
 
+include D v₀ r in
 /-- Rescaled diffused domain, without a default outside the domain. -/
-def scaledDomain {d : ℕ} (D : Set (PDE.Vec d)) (v₀ : PDE.Vec d) (r : {r : ℝ // 0 < r}) :
+def scaledDomain :
     Set (PDE.Vec d) := {Y | v₀ + r.1 • Y ∈ D}
 
+include B σ₀ v₀ r in
 /-- Literal rescaled coefficient. -/
-def scaledCoefficient {d : ℕ} (B : CoefficientField d) (σ₀ : ℝ)
-    (v₀ : PDE.Vec d) (r : {r : ℝ // 0 < r}) : CoefficientField d :=
+def scaledCoefficient : CoefficientField d :=
   fun τ Y => B (σ₀ + r.1 ^ 2 * τ) (v₀ + r.1 • Y)
 
+include b v₀ r in
 /-- Literal rescaled transport; source carrier includes only positive radii. -/
-def scaledDrift {d : ℕ} (b : PDE.Vec d → PDE.Vec d) (v₀ : PDE.Vec d)
-    (r : {r : ℝ // 0 < r}) : PDE.Vec d → PDE.Vec d :=
+def scaledDrift : PDE.Vec d → PDE.Vec d :=
   fun Y => r.1⁻¹ • (b (v₀ + r.1 • Y) - b v₀)
+
+end
 
 /-- Identity transport has the source constants m=L_b=1. -/
 theorem identityDrift_bounds (d : ℕ) : HasTransportBounds 1 1 (identityDrift d) := by
   constructor
   · intro y y'
-    simp only [identityDrift, id_eq, one_mul, le_refl]
+    simp [identityDrift]
   · intro y ξ hξ
     change 1 ≤ PDE.vecDot ξ ((fderiv ℝ id y) ξ)
     rw [fderiv_id, ContinuousLinearMap.id_apply]
@@ -116,10 +126,8 @@ theorem zeroCurve_piecewiseC1 (d : ℕ) :
   refine ⟨continuous_const, ?_⟩
   intro a b hab
   refine ⟨0, ![a, b], ?_, rfl, rfl, ?_⟩
-  · intro i j hij
-    fin_cases i <;> fin_cases j <;> simp_all
-  · intro i
-    exact contDiff_const.contDiffOn
+  · simp_all
+  fun_prop
 
 /-- Identity transport is smooth, rather than requiring analyticity. -/
 theorem identityDrift_smooth (d : ℕ) : IsSmoothDrift (identityDrift d) := contDiff_id
@@ -139,14 +147,18 @@ def wholeSpacePositionEquiv (d : ℕ) (σ : ℝ) :
   measurable_toFun := measurable_subtype_coe
   measurable_invFun := measurable_id.subtype_mk
 
+section
+variable {d : ℕ} (Ω : Set (PDE.Vec d)) (γ : ℝ → PDE.Vec d) (hΩ : MeasurableSet Ω)
+    (B : FullKineticCoefficient d) (b : PDE.Vec d → PDE.Vec d) (K : MovingFiberKernel Ω γ)
+
 /-- Every ordered whole-space point gives a valid query; there is no default query. -/
-def wholeSpaceQuery {d : ℕ} (σ τ : ℝ) (hστ : σ ≤ τ) (v z : PDE.Vec d) :
+def wholeSpaceQuery (σ τ : ℝ) (hστ : σ ≤ τ) (v z : PDE.Vec d) :
     EvolutionQuery (wholeSpace d) (fun _ => 0) :=
   ⟨(σ, (τ, (v, z))), hστ, by simp [evolutionStateSet, movingDomain,
     wholeSpace, PDE.translateSet]⟩
 
 /-- Affine coefficient rescaling preserves the original ellipticity constants. -/
-theorem scaledCoefficient_sectionTwo {d : ℕ} (lam Lam : ℝ) (B : CoefficientField d)
+theorem scaledCoefficient_sectionTwo (lam Lam : ℝ) (B : CoefficientField d)
     (hB : IsSectionTwoCoefficient lam Lam B) (σ₀ : ℝ) (v₀ : PDE.Vec d)
     (r : {r : ℝ // 0 < r}) :
     IsSectionTwoCoefficient lam Lam (scaledCoefficient B σ₀ v₀ r) := by
@@ -158,25 +170,24 @@ theorem scaledCoefficient_sectionTwo {d : ℕ} (lam Lam : ℝ) (B : CoefficientF
         (fun q : ℝ × (PDE.Vec d × PDE.Vec d) =>
           (σ₀ + r.1 ^ 2 * q.1, (v₀ + r.1 • q.2.1, q.2.2))))
   · intro σ y
-    exact hsymm _ _
+    apply hsymm
   · intro σ y
-    exact hlower _ _
+    apply hlower
   · intro σ y
-    exact hupper _ _
+    apply hupper
 
+include hΩ K in
 /-- Exact translation clause of the terminal evolution statement, after z independence.
 Only use this clause for z-independent coefficients; general coefficients do not supply it.
 -/
-def IsTranslationCovariantEvolution {d : ℕ} (Ω : Set (PDE.Vec d))
-    (γ : ℝ → PDE.Vec d) (hΩ : MeasurableSet Ω) (K : MovingFiberKernel Ω γ) : Prop :=
+def IsTranslationCovariantEvolution : Prop :=
   ∀ (σ τ : ℝ) (hστ : σ ≤ τ) (h : PDE.Vec d) (p : EvolutionState Ω γ σ),
     Measure.map (evolutionStateShift Ω γ τ h) (K.fiberKernel hΩ σ τ hστ p) =
       K.fiberKernel hΩ σ τ hστ (evolutionStateShift Ω γ σ h p)
 
+include B b K in
 /-- Exact domain-monotonicity implication, including its entire primed antecedent. -/
-def IsDomainMonotoneEvolution {d : ℕ} (Ω : Set (PDE.Vec d)) (γ : ℝ → PDE.Vec d)
-    (B : FullKineticCoefficient d) (b : PDE.Vec d → PDE.Vec d)
-    (K : MovingFiberKernel Ω γ) : Prop :=
+def IsDomainMonotoneEvolution : Prop :=
 (∀ (Ω' : Set (PDE.Vec d)) (γ' : ℝ → PDE.Vec d)
             (hΩ' : IsAdmissibleEvolutionDomain Ω')
             (hγ' : IsContinuousPiecewiseC1 γ')
@@ -222,11 +233,10 @@ def IsDomainMonotoneEvolution {d : ℕ} (Ω : Set (PDE.Vec d)) (γ : ℝ → PDE
              (measurableSet_of_isAdmissibleEvolutionDomain hΩ') →
           MovingFiberKernel.IsZeroExtensionDominatedBy K' K hsub)
 
+include hΩ B K in
 /-- Exact parabolic clause, retaining one shared Q and every requirement of the terminal evolution
 statement. -/
-def HasParabolicMarginalBundle {d : ℕ} (Ω : Set (PDE.Vec d)) (γ : ℝ → PDE.Vec d)
-    (hΩ : MeasurableSet Ω) (B : FullKineticCoefficient d)
-    (K : MovingFiberKernel Ω γ) : Prop :=
+def HasParabolicMarginalBundle : Prop :=
 (∀ (hBz : ∀ (σ : ℝ) (y z z' : PDE.Vec d),
               B σ y z = B σ y z'),
           ∃ Q : ParabolicOperatorFamily Ω γ,
@@ -296,44 +306,41 @@ def HasParabolicMarginalBundle {d : ℕ} (Ω : Set (PDE.Vec d)) (γ : ℝ → PD
                       EqOn W V
                         (ParabolicProbe.scalarPastClosedCylinder Ω γ τ))))
 
+end
+
 /-- A bounded Borel function is integrable against every finite measure. -/
 theorem boundedBorel_integrable {α : Type*} [MeasurableSpace α]
     (f : BoundedBorel α) (μ : Measure α) [IsFiniteMeasure μ] : Integrable f μ := by
   obtain ⟨C, hC, hbound⟩ := f.exists_bound
   exact Integrable.mono' (integrable_const C) f.measurable.aestronglyMeasurable
-    (Filter.Eventually.of_forall (fun x => by simpa only [Real.norm_eq_abs] using hbound x))
+    (Filter.Eventually.of_forall (fun x => by exact hbound x))
 
+variable {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d} (hΩ : MeasurableSet Ω)
+    (B : FullKineticCoefficient d) (b : PDE.Vec d → PDE.Vec d) (S : TerminalOperatorFamily Ω γ)
+    (K : MovingFiberKernel Ω γ) (h : RealizesTerminalEvolution Ω γ hΩ B b S K) (σ τ : ℝ)
+    (hστ : σ ≤ τ)
+
+include h in
 /-- Realization implies positivity on every bounded Borel datum. -/
-theorem realizes_positive {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
-    (hΩ : MeasurableSet Ω) (B : FullKineticCoefficient d) (b : PDE.Vec d → PDE.Vec d)
-    (S : TerminalOperatorFamily Ω γ) (K : MovingFiberKernel Ω γ)
-    (h : RealizesTerminalEvolution Ω γ hΩ B b S K)
-    (σ τ : ℝ) (hστ : σ ≤ τ) (f : BoundedBorel (EvolutionState Ω γ τ))
+theorem realizes_positive (f : BoundedBorel (EvolutionState Ω γ τ))
     (hf : 0 ≤ f) : 0 ≤ S σ τ hστ f := by
-  change ∀ p, 0 ≤ S σ τ hστ f p
   intro p
   rw [h.2.1 σ τ hστ p f]
-  exact integral_nonneg (fun q => hf q)
+  apply integral_nonneg <;> assumption
 
+include h in
 /-- Realization implies the source sub-Markov contraction. -/
-theorem realizes_contraction {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
-    (hΩ : MeasurableSet Ω) (B : FullKineticCoefficient d) (b : PDE.Vec d → PDE.Vec d)
-    (S : TerminalOperatorFamily Ω γ) (K : MovingFiberKernel Ω γ)
-    (h : RealizesTerminalEvolution Ω γ hΩ B b S K) (σ τ : ℝ) (hστ : σ ≤ τ) :
+theorem realizes_contraction :
     S σ τ hστ (1 : BoundedBorel (EvolutionState Ω γ τ)) ≤
       (1 : BoundedBorel (EvolutionState Ω γ σ)) := by
-  change ∀ p, S σ τ hστ 1 p ≤ 1
   intro p
   rw [h.2.1 σ τ hστ p 1]
   simp only [BoundedBorel.one_apply, integral_const, smul_eq_mul, mul_one, measureReal_def]
-  simpa only [ENNReal.toReal_one] using
-    ENNReal.toReal_mono ENNReal.one_ne_top (K.fiberKernel_mass_le_one hΩ σ τ hστ p)
+  exact ENNReal.toReal_mono ENNReal.one_ne_top (K.fiberKernel_mass_le_one hΩ σ τ hστ p)
 
+include h in
 /-- Realization implies the same shared operator family's composition law. -/
-theorem realizes_composition {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
-    (hΩ : MeasurableSet Ω) (B : FullKineticCoefficient d) (b : PDE.Vec d → PDE.Vec d)
-    (S : TerminalOperatorFamily Ω γ) (K : MovingFiberKernel Ω γ)
-    (h : RealizesTerminalEvolution Ω γ hΩ B b S K)
+theorem realizes_composition
     (σ r τ : ℝ) (hσr : σ ≤ r) (hrτ : r ≤ τ) :
     S σ τ (hσr.trans hrτ) = (S σ r hσr).comp (S r τ hrτ) := by
   have : ProbabilityTheory.IsFiniteKernel (K.fiberKernel hΩ σ r hσr) :=
@@ -351,11 +358,9 @@ theorem realizes_composition {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.
   apply integral_congr_ae
   exact Filter.Eventually.of_forall (fun q => (h.2.1 r τ hrτ q f).symm)
 
+include h in
 /-- Realization implies the endpoint operator identity needed by monotonicity. -/
-theorem realizes_endpoint {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
-    (hΩ : MeasurableSet Ω) (B : FullKineticCoefficient d) (b : PDE.Vec d → PDE.Vec d)
-    (S : TerminalOperatorFamily Ω γ) (K : MovingFiberKernel Ω γ)
-    (h : RealizesTerminalEvolution Ω γ hΩ B b S K) (σ : ℝ) :
+theorem realizes_endpoint (σ : ℝ) :
     S σ σ le_rfl = (LinearMap.id : BoundedBorel (EvolutionState Ω γ σ) →ₗ[ℝ]
       BoundedBorel (EvolutionState Ω γ σ)) := by
   apply LinearMap.ext
@@ -363,12 +368,10 @@ theorem realizes_endpoint {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec
   apply BoundedBorel.ext
   intro p
   rw [h.2.1 σ σ le_rfl p f, h.2.2.1 σ]
-  simp only [ProbabilityTheory.Kernel.id_apply, integral_dirac, LinearMap.id_apply]
+  simp [ProbabilityTheory.Kernel.id_apply]
 
 /-- The exact monotonicity clause applies to any supplied primed realization. -/
-theorem domainMonotone_of_realizes {d : ℕ} {Ω : Set (PDE.Vec d)}
-    {γ : ℝ → PDE.Vec d} (B : FullKineticCoefficient d) (b : PDE.Vec d → PDE.Vec d)
-    (K : MovingFiberKernel Ω γ) (hmono : IsDomainMonotoneEvolution Ω γ B b K)
+theorem domainMonotone_of_realizes (hmono : IsDomainMonotoneEvolution Ω γ B b K)
     (Ω' : Set (PDE.Vec d)) (γ' : ℝ → PDE.Vec d)
     (hΩ' : IsAdmissibleEvolutionDomain Ω') (hγ' : IsContinuousPiecewiseC1 γ')
     (hsub : ∀ σ, movingDomain Ω' γ' σ ⊆ movingDomain Ω γ σ)

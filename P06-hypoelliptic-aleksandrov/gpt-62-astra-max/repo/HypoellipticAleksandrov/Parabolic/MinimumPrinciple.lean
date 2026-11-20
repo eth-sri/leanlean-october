@@ -40,18 +40,15 @@ theorem trace_mul_nonneg_of_posSemidef
     (hA : A.PosSemidef) (hH : H.PosSemidef) :
     0 ≤ (A * H).trace := by
   classical
-  let S : PDE.Mat d := CFC.sqrt H
+  let S := CFC.sqrt H
   have hS : S.PosSemidef := by
-    dsimp [S]
     exact CFC.sqrt_nonneg H |>.posSemidef
-  have hconj : (S * A * Sᴴ).PosSemidef := hA.mul_mul_conjTranspose_same S
   calc
-    0 ≤ (S * A * Sᴴ).trace := hconj.trace_nonneg
+    0 ≤ (S * A * Sᴴ).trace := (hA.mul_mul_conjTranspose_same S).trace_nonneg
     _ = (S * A * S).trace := by rw [hS.isHermitian.eq]
     _ = (A * S * S).trace := (Matrix.trace_mul_cycle A S S).symm
     _ = (A * (S * S)).trace := by rw [Matrix.mul_assoc]
     _ = (A * H).trace := by rw [show S * S = H by
-      dsimp [S]
       exact CFC.sqrt_mul_sqrt_self H hH.nonneg]
 
 end HypoellipticAleksandrov.Parabolic

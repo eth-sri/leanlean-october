@@ -18,33 +18,30 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov ProbabilityTheory
 open scoped ENNReal
 
+variable {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam) (A : SmoothAutonomous lam Lam)
+    (c : Clock)
+
 /-- The all-time active Green kernel is uniformly finite by the quadratic occupation bound. -/
-theorem mixtureActiveGreenKernel_isFiniteKernel
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) :
-    IsFiniteKernel (enlargedActiveGreenKernel hH hLE hlam hLam A c) := by
+theorem mixtureActiveGreenKernel_isFiniteKernel :
+    IsFiniteKernel (enlargedActiveGreenKernel hlam hLam A c) := by
   classical
   refine ⟨ENNReal.ofReal (activeHalfMassTime lam c / 2), ENNReal.ofReal_lt_top, ?_⟩
   intro e
   change (if he : e.velocity 0 ∈ c.active then
-    stripGreen hH hLE hlam hLam A c.activeInterval ⊤ (densityClockPole c e he)
+    stripGreen hlam hLam A c.activeInterval ⊤ (densityClockPole c e he)
       else 0) univ ≤ _
   split
   · rename_i he
-    exact (stripGreen_quadratic_mass hH hLE hlam hLam A c.activeInterval ⊤
+    exact (stripGreen_quadratic_mass hlam hLam A c.activeInterval ⊤
       (densityClockPole c e he)).trans
         (ENNReal.ofReal_le_ofReal (active_quadratic_occupation_le hlam c (e.velocity 0)))
-  · exact zero_le
+  positivity
 
 /-- A finite starting measure gives a finite all-time Green mixture. -/
-theorem enlargedActiveGreen_isFiniteMeasure
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (nu : Measure Point) [IsFiniteMeasure nu] :
-    IsFiniteMeasure (enlargedActiveGreen hH hLE hlam hLam A c nu) := by
+theorem enlargedActiveGreen_isFiniteMeasure (nu : Measure Point) [IsFiniteMeasure nu] :
+    IsFiniteMeasure (enlargedActiveGreen hlam hLam A c nu) := by
   unfold enlargedActiveGreen
-  have := mixtureActiveGreenKernel_isFiniteKernel hH hLE hlam hLam A c
+  have := mixtureActiveGreenKernel_isFiniteKernel hlam hLam A c
   infer_instance
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

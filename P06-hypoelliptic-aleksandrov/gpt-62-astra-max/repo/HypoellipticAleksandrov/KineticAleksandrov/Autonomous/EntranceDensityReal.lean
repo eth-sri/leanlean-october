@@ -11,37 +11,32 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory
 open scoped ENNReal
 
+variable {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam) (q : ℝ) (hq : 1 < q ∧ q < 3 / 2)
+include hq
+
 /-- The actual all-time mixture has the source real density and q-power bin estimate. -/
-theorem entrance_density_sum
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (q : ℝ) (hq : 1 < q ∧ q < 3 / 2) :
+theorem entrance_density_sum :
     ∃ C : ℝ, 0 < C ∧ ∀ (A : SmoothAutonomous lam Lam)
       (c : Clock) (nu : Measure Point) [IsFiniteMeasure nu],
       (∀ᵐ e ∂nu, e.velocity 0 ∈ c.active) →
       ∃ G : Point → ℝ, Measurable G ∧ (∀ z, 0 ≤ G z) ∧
-        enlargedActiveGreen hH hLE hlam hLam A c nu =
+        enlargedActiveGreen hlam hLam A c nu =
           volume.withDensity (fun z => ENNReal.ofReal (G z)) ∧
         MemLp G (ENNReal.ofReal q) volume ∧
         (∫⁻ z, ‖G z‖ₑ ^ q ∂volume) ≤ ENNReal.ofReal (C * c.r ^ (6 - 4 * q)) *
           ∑' k : ℤ, nu (entranceTimeBin c.r k) ^ q := by
-  obtain ⟨C, hC, hd⟩ := entrance_density_power_sum hH hLE hlam hLam q hq
+  obtain ⟨C, hC, hd⟩ := entrance_density_power_sum hlam hLam q hq
   refine ⟨C, hC, ?_⟩
   intro A c nu hfinite hnu
   have hq0 : 0 < q := by linarith [hq.1]
-  let F := positionMixtureDensity hH hLE hlam hLam A c nu
-  have hF := measurable_positionMixtureDensity hH hLE hlam hLam A c nu
-  have hm := withDensity_positionMixtureDensity (pushforwardStatement_holds)
-    hH hLE hlam hLam A c nu
-  have : IsFiniteMeasure (enlargedActiveGreen hH hLE hlam hLam A c nu) :=
-    enlargedActiveGreen_isFiniteMeasure hH hLE hlam hLam A c nu
+  let F := positionMixtureDensity hlam hLam A c nu
+  have : IsFiniteMeasure (enlargedActiveGreen hlam hLam A c nu) :=
+    enlargedActiveGreen_isFiniteMeasure hlam hLam A c nu
   obtain ⟨hG, hG0, hGd, hGi⟩ := position_density_real volume
-    (enlargedActiveGreen hH hLE hlam hLam A c nu) F hF hm q
+    (enlargedActiveGreen hlam hLam A c nu) F (measurable_positionMixtureDensity hlam hLam A c nu) (withDensity_positionMixtureDensity (pushforwardStatement_holds) hlam hLam A c nu) q
   have hbound := hd A c nu hnu
-  have hsum := entranceTimeBin_mass_rpow_sum nu c.r c.positive q hq.1.le (nu univ)
-    (fun _ => measure_mono (subset_univ _))
   have hsumfinite : (∑' k : ℤ, nu (entranceTimeBin c.r k) ^ q) < ⊤ :=
-    hsum.trans_lt (ENNReal.mul_lt_top (measure_lt_top _ _)
+    (entranceTimeBin_mass_rpow_sum nu c.r c.positive q hq.1.le (nu univ) (fun _ => measure_mono (subset_univ _))).trans_lt (ENNReal.mul_lt_top (measure_lt_top _ _)
       (ENNReal.rpow_lt_top_of_nonneg (by linarith [hq.1]) (measure_ne_top _ _)))
   have hi : (∫⁻ z, ‖(F z).toReal‖ₑ ^ q ∂volume) < ⊤ := by
     rw [hGi]
@@ -55,22 +50,19 @@ theorem entrance_density_sum
   · rwa [hGi]
 
 /-- Total and short-window starting masses yield the exact source integrated norm scaling. -/
-theorem entrance_density_from_counts
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (q : ℝ) (hq : 1 < q ∧ q < 3 / 2) (B M : ℝ) (hB : 0 < B) (hM : 0 < M) :
+theorem entrance_density_from_counts (B M : ℝ) (hB : 0 < B) (hM : 0 < M) :
     ∃ C : ℝ, 0 < C ∧ ∀ (A : SmoothAutonomous lam Lam) (c : Clock)
       (nu : Measure Point) [IsFiniteMeasure nu] (b : ℝ), 0 ≤ b →
       (∀ᵐ e ∂nu, e.velocity 0 ∈ c.active) →
       nu univ ≤ ENNReal.ofReal (B * b) →
       (∀ k : ℤ, nu (entranceTimeBin c.r k) ≤ ENNReal.ofReal M) →
       ∃ G : Point → ℝ, Measurable G ∧ (∀ z, 0 ≤ G z) ∧
-        enlargedActiveGreen hH hLE hlam hLam A c nu =
+        enlargedActiveGreen hlam hLam A c nu =
           volume.withDensity (fun z => ENNReal.ofReal (G z)) ∧
         MemLp G (ENNReal.ofReal q) volume ∧
         (eLpNorm G (ENNReal.ofReal q) volume).toReal ≤
           C * c.r ^ (6 / q - 4) * b ^ (1 / q) := by
-  obtain ⟨D, hD, hd⟩ := entrance_density_sum hH hLE hlam hLam q hq
+  obtain ⟨D, hD, hd⟩ := entrance_density_sum hlam hLam q hq
   let C := (D * B * M ^ (q - 1)) ^ (1 / q)
   have hbase : 0 < D * B * M ^ (q - 1) :=
     mul_pos (mul_pos hD hB) (Real.rpow_pos_of_pos hM _)
@@ -78,13 +70,12 @@ theorem entrance_density_from_counts
   intro A c nu hfinite b hb hnu htotal hshort
   obtain ⟨G, hGm, hG0, hGd, hGp, hGi⟩ := hd A c nu hnu
   have hq0 : 0 < q := by linarith [hq.1]
-  have hsum := entranceTimeBin_mass_rpow_sum nu c.r c.positive q hq.1.le _ hshort
   have hp : (∫⁻ z, ‖G z‖ₑ ^ q ∂volume) ≤
       ENNReal.ofReal (D * c.r ^ (6 - 4 * q) * (B * b) * M ^ (q - 1)) := by
     calc
       _ ≤ ENNReal.ofReal (D * c.r ^ (6 - 4 * q)) *
           (nu univ * ENNReal.ofReal M ^ (q - 1)) := by
-        exact hGi.trans (mul_le_mul_right hsum _)
+        exact hGi.trans (mul_le_mul_right (entranceTimeBin_mass_rpow_sum nu c.r c.positive q hq.1.le _ hshort) _)
       _ ≤ ENNReal.ofReal (D * c.r ^ (6 - 4 * q)) *
           (ENNReal.ofReal (B * b) * ENNReal.ofReal M ^ (q - 1)) := by gcongr
       _ = _ := by

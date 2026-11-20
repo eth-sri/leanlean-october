@@ -29,16 +29,19 @@ variable {d : ℕ} (Φ : KineticAffineScaling d)
 
 /-! ### Transport of quantifiers and regularity -/
 
-theorem forall_mem_iff {S S' : Set (KineticPoint d)} (hS : ∀ p, p ∈ S' ↔ Φ.point p ∈ S)
+section
+variable {S S' : Set (KineticPoint d)} (hS : ∀ p, p ∈ S' ↔ Φ.point p ∈ S)
+include hS
+
+theorem forall_mem_iff
     {f : KineticPoint d → Prop} : (∀ p ∈ S', f (Φ.point p)) ↔ ∀ p ∈ S, f p := by
   constructor
   · intro h p hp
-    have hmem : Φ.pointInv p ∈ S' := (hS _).2 (by rwa [Φ.point_pointInv])
-    simpa only [Φ.point_pointInv] using h _ hmem
-  · intro h p hp
-    exact h _ ((hS p).1 hp)
+    have hmem := (hS _).2 (by rwa [Φ.point_pointInv])
+    simpa [Φ.point_pointInv] using h _ hmem
+  · grind
 
-theorem continuousOn_iff {S S' : Set (KineticPoint d)} (hS : ∀ p, p ∈ S' ↔ Φ.point p ∈ S)
+theorem continuousOn_iff
     {u : KineticPoint d → ℝ} :
     ContinuousOn (fun p => u (Φ.point p)) S' ↔ ContinuousOn u S := by
   constructor
@@ -48,9 +51,11 @@ theorem continuousOn_iff {S S' : Set (KineticPoint d)} (hS : ∀ p, p ∈ S' ↔
     have := h.comp Φ.continuous_pointInv.continuousOn hmaps
     refine this.congr ?_
     intro p _
-    simp only [Function.comp_apply, Φ.point_pointInv]
+    simp [Φ.point_pointInv]
   · intro h
     exact h.comp Φ.continuous_point.continuousOn (fun p hp => (hS p).1 hp)
+
+end
 
 theorem contDiffOn_raw_iff {S S' : Set (ℝ × (PDE.Vec d × PDE.Vec d))}
     (hS : ∀ q, q ∈ S' ↔ Φ.raw q ∈ S) {g : ℝ × (PDE.Vec d × PDE.Vec d) → ℝ} :
@@ -62,7 +67,7 @@ theorem contDiffOn_raw_iff {S S' : Set (ℝ × (PDE.Vec d × PDE.Vec d))}
     have := h.comp Φ.contDiff_rawInv.contDiffOn hmaps
     refine this.congr ?_
     intro q _
-    simp only [Function.comp_apply, Φ.raw_rawInv]
+    simp [Φ.raw_rawInv]
   · intro h
     exact h.comp Φ.contDiff_raw.contDiffOn (fun q hq => (hS q).1 hq)
 
@@ -80,8 +85,6 @@ theorem isClassicalTerminalSolution_comp_point_iff
     IsClassicalTerminalSolution Ω' γ' (Φ.coefficient B) (Φ.drift b) τ F'
         (fun p => u (Φ.point p)) ↔
       IsClassicalTerminalSolution Ω γ B b (Φ.time τ) F u := by
-  have hopen := isOpen_evolutionPastInteriorRaw hΩ hγ (Φ.time τ)
-  -- the individual clause transports
   have c1 : (∃ C : ℝ, 0 ≤ C ∧ ∀ p ∈ evolutionPastClosedCylinder Ω' γ' τ,
         |u (Φ.point p)| ≤ C) ↔
       (∃ C : ℝ, 0 ≤ C ∧ ∀ p ∈ evolutionPastClosedCylinder Ω γ (Φ.time τ), |u p| ≤ C) := by
@@ -90,15 +93,13 @@ theorem isClassicalTerminalSolution_comp_point_iff
   have c2 : ContinuousOn (fun p => u (Φ.point p)) (evolutionPastClosedCylinder Ω' γ' τ) ↔
       ContinuousOn u (evolutionPastClosedCylinder Ω γ (Φ.time τ)) :=
     Φ.continuousOn_iff (h.mem_closedCylinder_iff τ)
-  have c3 : ContDiffOn ℝ (⊤ : ℕ∞) (fun q => rawLift (fun p => u (Φ.point p)) q)
-        (evolutionPastInteriorRaw Ω' γ' τ) ↔
-      ContDiffOn ℝ (⊤ : ℕ∞) (rawLift u) (evolutionPastInteriorRaw Ω γ (Φ.time τ)) :=
+  have c3 :=
     Φ.contDiffOn_raw_iff (g := rawLift u) (h.mem_interiorRaw_iff τ)
   have hnhds : ∀ p : KineticPoint d, p ∈ evolutionPastOpenCylinder Ω' γ' τ →
       evolutionPastInteriorRaw Ω γ (Φ.time τ) ∈
         nhds (rawPoint (Φ.point p)) := by
     intro p hp
-    refine hopen.mem_nhds ?_
+    refine (isOpen_evolutionPastInteriorRaw hΩ hγ (Φ.time τ)).mem_nhds ?_
     have := (h.mem_openCylinder_iff τ p).1 hp
     exact this
   have c4 : ContDiffOn ℝ (⊤ : ℕ∞) (rawLift u) (evolutionPastInteriorRaw Ω γ (Φ.time τ)) →
@@ -129,13 +130,12 @@ theorem isClassicalTerminalSolution_comp_point_iff
         F' (p.position, p.velocity) = F ((Φ.point p).position, (Φ.point p).velocity) := by
       intro p hp
       rw [hF]
-      have hpt : p.time = τ := hp.1
-      simp only [ambientEquiv_apply, point_position, point_velocity, hpt]
+      have hpt := hp.1
+      simp [KineticAffineScaling.point,hpt]
     rw [forall_congr' fun p => forall_congr' fun hp => by rw [hFp p hp]]
     exact Φ.forall_mem_iff
       (f := fun q => u q = F (q.position, q.velocity)) (h.mem_terminalClosure_iff τ)
-  have c6 : (∀ p ∈ evolutionLateralFrontier Ω' γ' τ, u (Φ.point p) = 0) ↔
-      ∀ p ∈ evolutionLateralFrontier Ω γ (Φ.time τ), u p = 0 :=
+  have c6 :=
     Φ.forall_mem_iff (f := fun q => u q = 0) (h.mem_lateralFrontier_iff τ)
   unfold IsClassicalTerminalSolution
   constructor

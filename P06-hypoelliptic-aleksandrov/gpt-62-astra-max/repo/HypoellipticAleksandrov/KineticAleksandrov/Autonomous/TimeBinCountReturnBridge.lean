@@ -11,18 +11,17 @@ open HypoellipticAleksandrov
 
 /-- Repack the scalar return comparison without changing its constant or data quantifiers. -/
 theorem return_time_ambient_of_scalar
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
     {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (hReturn : ∃ C : ℝ, 0 < C ∧ ∀ (A : SmoothAutonomous lam Lam) (F : BoundedBorel Z),
       (∀ z, 0 ≤ F z) → ∀ t s X v : ℝ,
       0 < t → 2 * t ≤ s → s ≤ 3 * t → |v| ≤ Real.sqrt t →
-      S hH hLE hlam hLam A t F (X, v) ≤ C * S hH hLE hlam hLam A s F (X, v)) :
+      S hlam hLam A t F (X, v) ≤ C * S hlam hLam A s F (X, v)) :
     ∃ C : ℝ, 0 < C ∧ ∀ (A : SmoothAutonomous lam Lam)
       (F : BoundedBorel (EvolutionAmbientState 1)), (∀ p, 0 ≤ F p) →
       ∀ (t s : NNReal) (z : Z), 0 < (t : ℝ) →
         2 * (t : ℝ) ≤ (s : ℝ) → (s : ℝ) ≤ 3 * (t : ℝ) →
         |z.2| ≤ Real.sqrt (t : ℝ) →
-        let E := fullSpaceEvolution hH hLE hlam hLam A
+        let E := fullSpaceEvolution hlam hLam A
         fullSpaceAction E F ⟨t, fun _ => z.1, fun _ => z.2⟩ ≤
           C * fullSpaceAction E F ⟨s, fun _ => z.1, fun _ => z.2⟩ := by
   obtain ⟨C, hC, h⟩ := hReturn

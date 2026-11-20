@@ -33,7 +33,7 @@ theorem stripHorizon_pos (H : Interval) (T : WithTop ℝ) (e : StripPole H T) :
   | top => exact ENNReal.zero_lt_top
   | coe t =>
     apply ENNReal.ofReal_pos.mpr
-    exact sub_pos.mpr (WithTop.coe_lt_coe.mp e.2.1)
+    aesop
 
 /-- The pole's native state, with physical velocity first. -/
 def stripPoleState (H : Interval) (T : WithTop ℝ) (e : StripPole H T) :
@@ -51,8 +51,7 @@ def elapsedPhysicalPoint (s : ℝ) {R : ℝ≥0∞}
 
 /-- The elapsed-to-physical coordinate map is Borel. -/
 theorem measurable_elapsedPhysicalPoint (s : ℝ) (R : ℝ≥0∞) :
-    Measurable (elapsedPhysicalPoint s (R := R)) := by
-  exact (KineticPoint.measurable_equivProd_symm 1).comp
+    Measurable (elapsedPhysicalPoint s (R := R)) := (KineticPoint.measurable_equivProd_symm 1).comp
     ((measurable_const.add (measurable_subtype_coe.comp measurable_fst)).prodMk
       ((measurable_snd.comp measurable_snd).prodMk
         (measurable_fst.comp measurable_snd)))
@@ -65,10 +64,9 @@ def stripGreenOfKernel (H : Interval) (K : MovingFiberKernel (intervalDomain H) 
 
 /-- The canonical autonomous Green measure uses the unique autonomous evolution. -/
 def stripGreen
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
     {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : SmoothAutonomous lam Lam) (H : Interval) (T : WithTop ℝ)
     (e : StripPole H T) : Measure Point :=
-  stripGreenOfKernel H (stripEvolution hH hLE hlam hLam A H).2 T e
+  stripGreenOfKernel H (stripEvolution hlam hLam A H).2 T e
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

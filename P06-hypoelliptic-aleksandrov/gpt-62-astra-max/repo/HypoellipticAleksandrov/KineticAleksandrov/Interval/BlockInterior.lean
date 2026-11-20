@@ -24,8 +24,6 @@ open HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 
 /-- Interior cancellation is uniform over interval location and length. -/
 theorem interval_interior_block
-    (hH : HormanderHypoellipticityStatement)
-    (hLE : LiebermanEllipsoidDirichletStatement)
     (lam Lam m Lb : ℝ) (hlam : 0 < lam) (hlamLam : lam ≤ Lam)
     (hm : 0 < m) (hmLb : m ≤ Lb) :
     ∃ δ : ℝ, 0 < δ ∧ δ < 1 ∧
@@ -47,7 +45,7 @@ theorem interval_interior_block
       ∀ (hL : σ ≤ σ + blockTime m Lb) (ν : ComplexMeasure (PDE.Vec 1)),
       IsFourierProjection K (movingQuery σ (σ + blockTime m Lb) hL v 0 hv) ξ ν →
       TV ν ≤ 1 - δ := by
-  let hEvol := exists_terminalEvolution_of_classical hLE hH
+  let hEvol := exists_terminalEvolution_of_classical
   have hd : 1 ≤ (1 : ℕ) := by norm_num
   have hLb : 0 < Lb := hm.trans_le hmLb
   obtain ⟨Cstar, hC, hcorr⟩ := corridors_retained_dominated 1 hd lam Lam hlam hlamLam
@@ -197,6 +195,5 @@ theorem interval_interior_block
   have hcancel := (block_interior_cancellation ξ 0 M F1 F2 Θ (blockMass Cstar m Lb)
     h q0 _ _ hMone hFsum hmap1 hmap2 hmass hΦ hf1 hf2 ν hphaseν).2
   exact hcancel.trans (sub_le_sub_left (min_le_left δ0 (1 / 2)) 1)
-
 
 end HypoellipticAleksandrov.KineticAleksandrov.Interval

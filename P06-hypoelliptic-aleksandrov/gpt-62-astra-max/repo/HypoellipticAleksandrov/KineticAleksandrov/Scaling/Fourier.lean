@@ -39,9 +39,6 @@ variable {d : ℕ} {Φ : KineticAffineScaling d} {Ω Ω' : Set (PDE.Vec d)}
 def positionEquiv (Φ : KineticAffineScaling d) : PDE.Vec d ≃ᵐ PDE.Vec d :=
   Φ.positionHomeo.toMeasurableEquiv
 
-@[simp] theorem positionEquiv_apply (Φ : KineticAffineScaling d) (Y : PDE.Vec d) :
-    Φ.positionEquiv Y = Φ.position Y := rfl
-
 /-- The constant phase `exp (-i a (τ' - τ) ξ · w)` of the source's Lemma 2.5. -/
 def fourierShiftPhase (Φ : KineticAffineScaling d) (τ τ' : ℝ) (ξ : PDE.Vec d) : ℂ :=
   Complex.exp (-Complex.I * ((Φ.a * (τ' - τ) * PDE.vecDot ξ Φ.w : ℝ) : ℂ))
@@ -62,11 +59,9 @@ theorem fourierPhase_comp (Φ : KineticAffineScaling d) (τ τ' : ℝ) (ξ Z : P
   congr 1
   have hdiff : Φ.transportInv τ' x.2 - Z =
       Φ.e⁻¹ • ((x.2 - Φ.transport τ Z) - (Φ.a * τ' - Φ.a * τ) • Φ.w) := by
-    have hZ : Z = Φ.transportInv τ (Φ.transport τ Z) := (Φ.transportInv_transport τ Z).symm
-    conv_lhs => rw [hZ]
+    conv_lhs => rw [((Φ.transportInv_transport τ Z).symm)]
     unfold transportInv transport
     rw [← smul_sub]
-    congr 1
     module
   have hreal : PDE.vecDot (Φ.e • ξ) (Φ.transportInv τ' x.2 - Z) =
       PDE.vecDot ξ (x.2 - Φ.transport τ Z) - Φ.a * (τ' - τ) * PDE.vecDot ξ Φ.w := by
@@ -90,14 +85,14 @@ theorem isFourierProjection_pushKernel (h : Φ.MapsDomain Ω γ Ω' γ') (K : Mo
     ν E = Φ.fourierShiftPhase q'.1.1 q'.1.2.1 ξ * ν' (Φ.position ⁻¹' E) := by
   have hE' : MeasurableSet (Φ.position ⁻¹' E) := Φ.positionEquiv.measurable hE
   rw [hν E hE, hν' _ hE', pushKernel_master_apply, setIntegral_map_equiv]
-  have hset : (Φ.ambientEquiv q'.1.2.1).symm ⁻¹' ((Φ.position ⁻¹' E) ×ˢ (univ : Set (PDE.Vec d))) =
-      E ×ˢ (univ : Set (PDE.Vec d)) := by
+  have hset : (Φ.ambientEquiv q'.1.2.1).symm ⁻¹' ((Φ.position ⁻¹' E) ×ˢ univ) =
+      E ×ˢ univ := by
     ext x
     simp only [mem_preimage, mem_prod, mem_univ, and_true, ambientEquiv_symm_apply,
       Φ.position_positionInv]
   rw [hset, ← integral_const_mul]
   refine setIntegral_congr_fun (hE.prod MeasurableSet.univ) fun x _ => ?_
-  exact Φ.fourierPhase_comp q'.1.1 q'.1.2.1 ξ q'.1.2.2.2 x
+  apply Φ.fourierPhase_comp
 
 /-- **Total variation** (companion paper, (2.12)): under the hypotheses of
 `isFourierProjection_pushKernel`, `‖ν‖_TV = ‖ν'‖_TV`. -/
@@ -118,7 +113,7 @@ theorem totalVariation_fourier_pushKernel (h : Φ.MapsDomain Ω γ Ω' γ')
     variation_map_equiv_univ Φ.positionEquiv ν']
   have : ‖Φ.fourierShiftPhase q'.1.1 q'.1.2.1 ξ‖₊ = 1 := by
     rw [← NNReal.coe_inj]
-    exact Φ.norm_fourierShiftPhase _ _ _
+    apply Φ.norm_fourierShiftPhase
   rw [this, one_smul]
 
 /-- **Fourier projections of any two realizations** (companion paper, Lemma 2.5 and

@@ -1,117 +1,63 @@
 module
-
-public import HypoellipticAleksandrov.KineticAleksandrov.SourceProblem.LocalizedAdmissibility
+public import HypoellipticAleksandrov.KineticAleksandrov.Occupation.LocalizedKrylovGeometry
+public import HypoellipticAleksandrov.KineticAleksandrov.Occupation.WholeSpaceCoefficient
 public import HypoellipticAleksandrov.KineticAleksandrov.SourceProblem.InteriorEstimate
 
-/-!
-# The localized bound `0 ≤ V ≤ C R^(d/(d+1)) ‖F‖_{L^{d+1}}` (companion paper, Proposition 4.2)
+/-! # The backward estimate on a ball by reflection and parabolic scaling
 
-The upper bound uses the interior Aleksandrov estimate applied to the reflected and rescaled
-solution
-of `LocalizedKrylov.lean`; the Jacobian of the scaling is `R^(d+2)`, giving the factor
-`R^(d/(d+1))`.  The estimate holds on the whole closed cylinder: the open cylinder by Krylov,
-the rest by continuity of `V`.
--/
-
+Only an interior differential inequality and a sign on the backward boundary are needed;
+there is no local boundary value problem to solve. -/
 @[expose] public section
-
 noncomputable section
-
 namespace HypoellipticAleksandrov.KineticAleksandrov.Occupation
-
-open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic MeasureTheory Set Filter
+open Parabolic MeasureTheory Set Filter SectionTwo
 open scoped Topology MatrixOrder Matrix.Norms.Elementwise ENNReal
-
 variable {d : ℕ}
 
-/-- The localized bound with the `L^{d+1}` norm of `F` over the source cylinder itself. -/
-theorem localizedBound_cylinder_direct
-    (hd : 0 < d) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam) :
-    ∃ C : ℝ, 0 ≤ C ∧
-      ∀ (B : CoefficientField d) (_ : ∀ r v, (B r v).IsSymm) (_ : IsSmoothCoefficient B)
-        (_ : ∀ r v, lam • (1 : PDE.Mat d) ≤ B r v)
-        (_ : ∀ r v, B r v ≤ Lam • (1 : PDE.Mat d))
-        (F : TimeVelocity d → ℝ) (_ : ∀ z, 0 ≤ F z) (_ : ContDiff ℝ (⊤ : ℕ∞) F)
-        (_ : HasCompactSupport F) (_ : tsupport F ⊆ Set.Ioo (0 : ℝ) 1 ×ˢ Set.univ)
-        (α : ℝ) (_ : 0 ≤ α) (_ : α < 1) (vStar : PDE.Vec d) (R : ℝ) (_ : 0 < R)
-        (_ : R ^ 2 = max 1 (4 * d * Lam))
-        (V : TimeVelocity d → ℝ)
-        (_ : IsClassicalBackwardDirichletSolution α 1 (PDE.euclideanBall vStar R) B
-          (fun _ _ => 0) (fun _ _ => 0) (fun r v => -F (r, v)) (fun _ => 0) (fun _ => 0) V),
-        ∀ z ∈ scalarParabolicClosedCylinder α 1 (PDE.euclideanBall vStar R),
-          0 ≤ V z ∧ V z ≤ C * R ^ ((d : ℝ) / ((d : ℝ) + 1)) *
-            parabolicLpNormOn d F
-              (scalarParabolicOpenCylinder α 1 (PDE.euclideanBall vStar R)) := by
-  obtain ⟨C, hC0, hK⟩ :=
-    LsuFree.parabolic_aleksandrov_direct d hd lam Lam hlam hLam
-  refine ⟨C, hC0, ?_⟩
-  intro B hsymm hsmooth hlow hup F hF0 hFs hFc hFsupp α hα0 hα1 vStar R hR hRsq V hV
-  obtain ⟨hInterior, hValue, hcoef, hsy, hbd, hpos, hle, hmem, hpde, -, hzero, hnorm, hnonneg⟩ :=
-    localizedKrylov_admissible_direct hd hlam hLam hsymm hsmooth hlow hup hF0 hFs hFc hFsupp
-      hα0 hα1 hR hRsq hV
-  set Qk := krylovCylinder (localHeight α R) (localHeight α R) (0 : PDE.Vec d) with hQk
-  set QV := scalarParabolicOpenCylinder α 1 (PDE.euclideanBall vStar R) with hQV
-  set M : ℝ := C * R ^ ((d : ℝ) / ((d : ℝ) + 1)) *
-    parabolicLpNormOn d F QV with hM
-  -- Krylov's estimate on the open cylinder
-  have hqk := hK (localHeight α R) (0 : PDE.Vec d) (localHeight α R) hpos hle
-    (localizedCoefficient R vStar B) (localizedSource R vStar F) (localizedScaled R vStar V)
-    hcoef hsy hbd hmem hInterior hValue
-    (ae_restrict_of_forall_mem (isOpen_krylovCylinder _ _ _).measurableSet
-      (fun z hz => (hpde z hz).le))
-    (fun z hz => (hzero z hz).le)
-  have hopen : ∀ w ∈ QV, V w ≤ M := by
+theorem backward_ball_estimate (hd : 0 < d) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam) :
+    ∃ C : ℝ, 0 ≤ C ∧ ∀ {B : CoefficientField d}, IsSectionTwoCoefficient lam Lam B →
+    ∀ {F : TimeVelocity d → ℝ}, Continuous F → MemLp F (parabolicExponent d) volume →
+    ∀ {α R : ℝ}, 0 ≤ α → α < 1 → 1 ≤ R → ∀ (v : PDE.Vec d) (V : TimeVelocity d → ℝ),
+    let Ω := PDE.euclideanBall v R
+    ContinuousOn V (scalarParabolicClosedCylinder α 1 Ω) → IsScalarC12On V (scalarParabolicOpenCylinder α 1 Ω) →
+    (∀ z ∈ scalarParabolicOpenCylinder α 1 Ω, -F z ≤ scalarParabolicOperator B (fun _ _ => 0) V z) →
+    (∀ z ∈ scalarParabolicTerminalFace 1 Ω ∪ scalarParabolicLateralFace α 1 Ω, V z ≤ 0) →
+    ∀ z ∈ scalarParabolicClosedCylinder α 1 Ω, V z ≤ C * R ^ ((d : ℝ) / (d+1 : ℝ)) * parabolicLpNorm d F := by
+  obtain ⟨C,hC,K⟩ := LsuFree.parabolic_aleksandrov_direct d hd lam Lam hlam hLam
+  refine ⟨C,hC,?_⟩
+  intro B hB F hF hm α R ha ht hR1 v V Ω hVc hV hop hb
+  have hR := zero_lt_one.trans_le hR1
+  let Q := scalarParabolicOpenCylinder α 1 Ω
+  have ho : IsOpen Q := isOpen_Ioo.prod (PDE.isOpen_euclideanBall v R)
+  let k := localHeight α R
+  let m := reflectScale R v
+  have hsub : krylovCylinder k k 0 ⊆ m ⁻¹' Q := fun z hz => (mem_krylovCylinder_iff_reflectScale hR z).1 hz
+  obtain ⟨reg,_⟩ := isScalarC12On_reflectScale ho hV hR v
+  have est := K k 0 k (localHeight_pos ht hR) (localHeight_le_one ha hR1)
+    (coefficientAt B ∘ m) (localizedSource R v F) (V ∘ m)
+    ((sectionTwoCoefficient_smooth hB).continuous.comp (continuous_reflectScale R v)).continuousOn
+    (fun z _ => hB.2.2.2.1 _ _) (fun z _ => ⟨hB.2.2.2.2.1 _ _, hB.2.2.2.2.2 _ _⟩)
+    (memLp_localizedSource hR hF hm)
+    ⟨reg.1.mono hsub, fun z hz => reg.timeSlice_differentiableAt (hsub hz),
+      fun z hz => reg.spatialSlice_contDiffAt (hsub hz), reg.continuousOn_scalarTimeDerivative.mono hsub,
+      reg.continuousOn_scalarSpatialGradient.mono hsub, reg.continuousOn_scalarSpatialHessian.mono hsub⟩
+    (hVc.comp (continuous_reflectScale R v).continuousOn (krylovClosedCylinder_subset_preimage hR))
+    (ae_restrict_of_forall_mem (isOpen_krylovCylinder _ _ _).measurableSet fun z hz => by
+      change scalarTimeDerivative (fun z => V (m z)) z - matrixContraction (coefficientAt B (m z)) _ ≤ R^2 * F (m z)
+      simp only [m, Function.comp_def]; rw [scaled_operator_eq ho hV hR v B (hsub hz)]
+      have e := hop (m z) (hsub hz)
+      simp [scalarParabolicOperator, PDE.vecDot, coefficientAt, m] at e ⊢
+      nlinarith only [mul_le_mul_of_nonneg_left e (sq_nonneg R)])
+    (fun z hz => hb _ (krylovParabolicBoundary_subset_preimage hR hz))
+  have hi : ∀ w ∈ Q, V w ≤ C * R ^ ((d : ℝ) / (d+1 : ℝ)) * parabolicLpNorm d F := by
     intro w hw
-    obtain ⟨z, hz, rfl⟩ := exists_mem_krylovCylinder hR hw
-    have h1 := hqk z hz
-    rw [hnorm] at h1
-    change V (reflectScale R vStar z) ≤ _ at h1
-    simpa only [hM, mul_assoc] using h1
-  -- extension to the closed cylinder by continuity
-  have hclosure : closure QV = scalarParabolicClosedCylinder α 1 (PDE.euclideanBall vStar R) := by
-    rw [hQV, scalarParabolicOpenCylinder, closure_prod_eq, closure_Ioo hα1.ne]
-    rfl
-  intro z hz
-  refine ⟨hnonneg z hz, ?_⟩
-  have hQK : QV ⊆ scalarParabolicClosedCylinder α 1 (PDE.euclideanBall vStar R) :=
-    subset_closure.trans hclosure.le
-  have hzc : z ∈ closure QV := by rw [hclosure]; exact hz
-  exact ContinuousWithinAt.closure_le hzc ((hV.1 z hz).mono hQK) continuousWithinAt_const hopen
-
-/-- The restricted `L^{d+1}` norm of a continuous compactly supported function is at most its
-global one. -/
-theorem parabolicLpNormOn_le_parabolicLpNorm_direct
-    {F : TimeVelocity d → ℝ} (hF : Continuous F)
-    (hFc : HasCompactSupport F) (S : Set (TimeVelocity d)) :
-    parabolicLpNormOn d F S ≤ parabolicLpNorm d F := by
-  have hfin : eLpNorm F (parabolicExponent d) volume ≠ ⊤ :=
-    (hF.memLp_of_hasCompactSupport (p := parabolicExponent d) (μ := volume) hFc).ne
-  exact ENNReal.toReal_mono hfin (eLpNorm_mono_measure F Measure.restrict_le_self)
-
-/-- Localized bound `0 ≤ V ≤ C R^(d/(d+1)) ‖F‖_{L^{d+1}}`, with the global `L^{d+1}` norm. -/
-theorem localizedBound_direct
-    (hd : 0 < d) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam) :
-    ∃ C : ℝ, 0 ≤ C ∧
-      ∀ (B : CoefficientField d) (_ : ∀ r v, (B r v).IsSymm) (_ : IsSmoothCoefficient B)
-        (_ : ∀ r v, lam • (1 : PDE.Mat d) ≤ B r v)
-        (_ : ∀ r v, B r v ≤ Lam • (1 : PDE.Mat d))
-        (F : TimeVelocity d → ℝ) (_ : ∀ z, 0 ≤ F z) (_ : ContDiff ℝ (⊤ : ℕ∞) F)
-        (_ : HasCompactSupport F) (_ : tsupport F ⊆ Set.Ioo (0 : ℝ) 1 ×ˢ Set.univ)
-        (α : ℝ) (_ : 0 ≤ α) (_ : α < 1) (vStar : PDE.Vec d) (R : ℝ) (_ : 0 < R)
-        (_ : R ^ 2 = max 1 (4 * d * Lam))
-        (V : TimeVelocity d → ℝ)
-        (_ : IsClassicalBackwardDirichletSolution α 1 (PDE.euclideanBall vStar R) B
-          (fun _ _ => 0) (fun _ _ => 0) (fun r v => -F (r, v)) (fun _ => 0) (fun _ => 0) V),
-        ∀ z ∈ scalarParabolicClosedCylinder α 1 (PDE.euclideanBall vStar R),
-          0 ≤ V z ∧ V z ≤ C * R ^ ((d : ℝ) / ((d : ℝ) + 1)) * parabolicLpNorm d F := by
-  obtain ⟨C, hC0, hbound⟩ := localizedBound_cylinder_direct hd hlam hLam
-  refine ⟨C, hC0, ?_⟩
-  intro B hsymm hsmooth hlow hup F hF0 hFs hFc hFsupp α hα0 hα1 vStar R hR hRsq V hV z hz
-  obtain ⟨h0, h1⟩ := hbound B hsymm hsmooth hlow hup F hF0 hFs hFc hFsupp α hα0 hα1 vStar R hR
-    hRsq V hV z hz
-  refine ⟨h0, h1.trans ?_⟩
-  exact mul_le_mul_of_nonneg_left
-    (parabolicLpNormOn_le_parabolicLpNorm_direct hFs.continuous hFc _)
-    (mul_nonneg hC0 (Real.rpow_nonneg hR.le _))
+    obtain ⟨z,hz,rfl⟩ := exists_mem_krylovCylinder hR hw
+    have hz' := est z hz
+    rw [parabolicLpNormOn_localizedSource hR hF] at hz'
+    rw [mul_assoc]; apply hz'.trans; gcongr
+    exact ENNReal.toReal_mono hm.ne (eLpNorm_mono_measure F Measure.restrict_le_self)
+  have eq : closure Q = scalarParabolicClosedCylinder α 1 Ω := by dsimp only [Q]; rw [scalarParabolicOpenCylinder, closure_prod_eq, closure_Ioo ht.ne]; rfl
+  intro w hw
+  exact ContinuousWithinAt.closure_le (eq.symm ▸ hw) ((hVc w hw).mono (subset_closure.trans eq.le)) continuousWithinAt_const hi
 
 end HypoellipticAleksandrov.KineticAleksandrov.Occupation

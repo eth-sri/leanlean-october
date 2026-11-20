@@ -12,15 +12,18 @@ namespace HypoellipticAleksandrov.KineticAleksandrov
 open HypoellipticAleksandrov.Parabolic MeasureTheory Set
 open scoped ENNReal
 
+variable {d : ℕ} {D : Set (KineticPoint d)} (hD : IsOpen D)
+
 /-- Backward cylinders are open in the existing physical coordinate topology. -/
-theorem isOpen_backwardCylinder {d : ℕ} (P₀ : KineticPoint d) (R : ℝ) (hR : 0 < R) :
+theorem isOpen_backwardCylinder (P₀ : KineticPoint d) (R : ℝ) (hR : 0 < R) :
     IsOpen (backwardCylinder P₀ R) := by
   have ho := isOpen_forwardCylinder (kineticReflection P₀) R hR
   rw [← kineticReflection_image_backwardCylinder P₀ R hR] at ho
   exact (kineticReflectionHomeomorph d).isOpen_image.mp ho
 
+include hD in
 /-- Local continuity of the solution suffices for its positive-set source localisation. -/
-theorem borelSource_memLp {d : ℕ} {D : Set (KineticPoint d)} (hD : IsOpen D)
+theorem borelSource_memLp
     (localised : Bool) (u f : KineticPoint d → ℝ) (hu : ContinuousOn u D)
     {p : ℝ≥0∞} (hf : MemLp (fun P => max (f P) 0) p (volume.restrict D)) :
     MemLp (borelSource localised u f) p (volume.restrict D) := by
@@ -35,8 +38,19 @@ theorem borelSource_memLp {d : ℕ} {D : Set (KineticPoint d)} (hD : IsOpen D)
         ite_true]
     exact (hf.indicator hS).ae_eq heq
 
+include hD in
+/-- Dropping the localizing indicator can only enlarge a finite source norm. -/
+theorem unlocalize_source_norm
+    {u f : KineticPoint d → ℝ} (hu : ContinuousOn u D) {p : ℝ≥0∞}
+    (hf : MemLp (fun P => max (f P) 0) p (volume.restrict D)) :
+    (eLpNorm ({P | 0 < u P}.indicator (fun P => max (f P) 0)) p (volume.restrict D)).toReal ≤
+      (eLpNorm (fun P => max (f P) 0) p (volume.restrict D)).toReal := by
+  apply ENNReal.toReal_mono hf.eLpNorm_lt_top.ne
+  exact eLpNorm_mono (borelSource_memLp hD true u f hu hf).aestronglyMeasurable (fun P =>
+    norm_indicator_le_norm_self _ _)
+
 /-- The operator change is precisely minus the coefficient Hessian contraction. -/
-theorem borel_backwardOperator_sub {d : ℕ} (C A : CoefficientField d)
+theorem borel_backwardOperator_sub (C A : CoefficientField d)
     (u : KineticPoint d → ℝ) (P : KineticPoint d) :
     backwardOperatorOfTimeVelocityCoefficient C u P -
       backwardOperatorOfTimeVelocityCoefficient A u P =

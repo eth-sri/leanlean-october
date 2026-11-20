@@ -26,44 +26,53 @@ namespace PDE
 def vecDot {d : ℕ} (x y : Vec d) : ℝ :=
   ∑ i, x i * y i
 
+section
+variable {d : ℕ} (x : Vec d)
+
+include x in
 /-- The square of the Euclidean norm on native project vectors. -/
-def vecNormSq {d : ℕ} (x : Vec d) : ℝ :=
+def vecNormSq : ℝ :=
   vecDot x x
 
+include x in
 /-- The Euclidean norm on native project vectors. -/
-noncomputable def vecEuclideanNorm {d : ℕ} (x : Vec d) : ℝ :=
+noncomputable def vecEuclideanNorm : ℝ :=
   Real.sqrt (vecNormSq x)
 
-theorem vecDot_comm {d : ℕ} (x y : Vec d) :
+theorem vecDot_comm (x y : Vec d) :
     vecDot x y = vecDot y x := by
   unfold vecDot
   refine Finset.sum_congr rfl ?_
   intro i _hi
   ring
 
-theorem vecNormSq_eq_sum_sq {d : ℕ} (x : Vec d) :
+theorem vecNormSq_eq_sum_sq :
     vecNormSq x = ∑ i, x i ^ 2 := by
   simp [vecNormSq, vecDot, pow_two]
 
-theorem vecNormSq_nonneg {d : ℕ} (x : Vec d) :
+theorem vecNormSq_nonneg :
     0 ≤ vecNormSq x := by
   rw [vecNormSq_eq_sum_sq]
   exact Finset.sum_nonneg fun i _hi => sq_nonneg (x i)
 
-theorem sq_apply_le_vecNormSq {d : ℕ} (x : Vec d) (i : Fin d) :
+end
+
+variable {d : ℕ} (c : ℝ) (x : Vec d) (i : Fin d)
+
+theorem sq_apply_le_vecNormSq :
     x i ^ 2 ≤ vecNormSq x := by
   rw [vecNormSq_eq_sum_sq]
   exact Finset.single_le_sum
     (fun j _hj => sq_nonneg (x j))
     (Finset.mem_univ i)
 
-theorem sq_vecDot_le_vecNormSq_mul_vecNormSq {d : ℕ} (x y : Vec d) :
+theorem sq_vecDot_le_vecNormSq_mul_vecNormSq (x y : Vec d) :
     vecDot x y ^ 2 ≤ vecNormSq x * vecNormSq y := by
   simpa [vecDot, vecNormSq, pow_two] using
     (Finset.sum_mul_sq_le_sq_mul_sq
       (s := Finset.univ) (f := x) (g := y))
 
-theorem vecNormSq_eq_zero {d : ℕ} {x : Vec d}
+theorem vecNormSq_eq_zero {x : Vec d}
     (h : vecNormSq x = 0) :
     x = 0 := by
   funext i
@@ -71,7 +80,7 @@ theorem vecNormSq_eq_zero {d : ℕ} {x : Vec d}
     simpa [h] using sq_apply_le_vecNormSq x i
   exact sq_eq_zero_iff.mp (le_antisymm hi (sq_nonneg (x i)))
 
-theorem vecNormSq_eq_zero_iff {d : ℕ} {x : Vec d} :
+theorem vecNormSq_eq_zero_iff {x : Vec d} :
     vecNormSq x = 0 ↔ x = 0 := by
   constructor
   · exact vecNormSq_eq_zero
@@ -79,7 +88,7 @@ theorem vecNormSq_eq_zero_iff {d : ℕ} {x : Vec d} :
     rw [hx]
     simp [vecNormSq, vecDot]
 
-theorem vecNormSq_smul {d : ℕ} (c : ℝ) (x : Vec d) :
+theorem vecNormSq_smul :
     vecNormSq (c • x) = c ^ 2 * vecNormSq x := by
   rw [vecNormSq_eq_sum_sq, vecNormSq_eq_sum_sq]
   calc
@@ -91,16 +100,16 @@ theorem vecNormSq_smul {d : ℕ} (c : ℝ) (x : Vec d) :
     _ = c ^ 2 * ∑ i, x i ^ 2 := by
       rw [Finset.mul_sum]
 
-theorem vecNormSq_add_expand {d : ℕ} (x y : Vec d) :
+theorem vecNormSq_add_expand (x y : Vec d) :
     vecNormSq (x + y) =
       vecNormSq x + 2 * vecDot x y + vecNormSq y := by
   simp only [vecNormSq, vecDot, Pi.add_apply]
-  rw [Finset.sum_congr rfl (fun i (_hi : i ∈ Finset.univ) =>
+  rw [Finset.sum_congr rfl (fun i _hi =>
     show (x i + y i) * (x i + y i) =
       x i * x i + 2 * (x i * y i) + y i * y i by ring)]
   rw [Finset.sum_add_distrib, Finset.sum_add_distrib, ← Finset.mul_sum]
 
-theorem vecNormSq_add_le {d : ℕ} (x y : Vec d) :
+theorem vecNormSq_add_le (x y : Vec d) :
     vecNormSq (x + y) ≤
       2 * (vecNormSq x + vecNormSq y) := by
   rw [vecNormSq_eq_sum_sq, vecNormSq_eq_sum_sq,
@@ -117,7 +126,7 @@ theorem vecNormSq_add_le {d : ℕ} (x y : Vec d) :
     _ = 2 * (∑ i, x i ^ 2 + ∑ i, y i ^ 2) := by
       rw [Finset.sum_add_distrib]
 
-theorem vecNormSq_weighted_add_le {d : ℕ}
+theorem vecNormSq_weighted_add_le
     {a b : ℝ} (ha : 0 ≤ a) (hb : 0 ≤ b) (hab : a + b = 1)
     (v w : Vec d) :
     vecNormSq (a • v + b • w) ≤
@@ -138,28 +147,25 @@ theorem vecNormSq_weighted_add_le {d : ℕ}
         b * (∑ i : Fin d, w i * w i) := by
       rw [Finset.sum_add_distrib, Finset.mul_sum, Finset.mul_sum]
 
-theorem vecNormSq_neg {d : ℕ} (x : Vec d) :
+theorem vecNormSq_neg :
     vecNormSq (-x) = vecNormSq x := by
   rw [← neg_one_smul ℝ x, vecNormSq_smul]
   norm_num
 
-theorem vecNormSq_sub_comm {d : ℕ} (x y : Vec d) :
+theorem vecNormSq_sub_comm (x y : Vec d) :
     vecNormSq (x - y) = vecNormSq (y - x) := by
   have hxy : x - y = -(y - x) := by
-    ext i
-    simp only [Pi.sub_apply, Pi.neg_apply]
-    ring
+    simp
   rw [hxy, vecNormSq_neg]
 
-theorem vecEuclideanNorm_nonneg {d : ℕ} (x : Vec d) :
+theorem vecEuclideanNorm_nonneg :
     0 ≤ vecEuclideanNorm x :=
   Real.sqrt_nonneg _
 
-theorem vecEuclideanNorm_sq {d : ℕ} (x : Vec d) :
-    vecEuclideanNorm x ^ 2 = vecNormSq x := by
-  exact Real.sq_sqrt (vecNormSq_nonneg x)
+theorem vecEuclideanNorm_sq :
+    vecEuclideanNorm x ^ 2 = vecNormSq x := Real.sq_sqrt (vecNormSq_nonneg x)
 
-theorem vecEuclideanNorm_eq_zero_iff {d : ℕ} {x : Vec d} :
+theorem vecEuclideanNorm_eq_zero_iff {x : Vec d} :
     vecEuclideanNorm x = 0 ↔ x = 0 := by
   constructor
   · intro h
@@ -170,40 +176,17 @@ theorem vecEuclideanNorm_eq_zero_iff {d : ℕ} {x : Vec d} :
     rw [hx]
     simp [vecEuclideanNorm, vecNormSq, vecDot]
 
-theorem vecEuclideanNorm_pos_iff {d : ℕ} {x : Vec d} :
+theorem vecEuclideanNorm_pos_iff {x : Vec d} :
     0 < vecEuclideanNorm x ↔ x ≠ 0 := by
   rw [lt_iff_le_and_ne, ne_eq, eq_comm,
     vecEuclideanNorm_eq_zero_iff]
   exact and_iff_right (vecEuclideanNorm_nonneg x)
 
-theorem abs_apply_le_vecEuclideanNorm {d : ℕ}
-    (x : Vec d) (i : Fin d) :
+theorem abs_apply_le_vecEuclideanNorm :
     |x i| ≤ vecEuclideanNorm x := by
-  unfold vecEuclideanNorm
   exact Real.abs_le_sqrt (sq_apply_le_vecNormSq x i)
 
-/-- The Euclidean norm is bounded by the coordinate `ℓ¹` norm. -/
-theorem vecEuclideanNorm_le_sum_abs {d : ℕ} (x : Vec d) :
-    vecEuclideanNorm x ≤ ∑ i : Fin d, |x i| := by
-  have hsumNonneg : 0 ≤ ∑ i : Fin d, |x i| :=
-    Finset.sum_nonneg fun i _hi => abs_nonneg (x i)
-  have hsq :
-      vecNormSq x ≤ (∑ i : Fin d, |x i|) ^ 2 := by
-    rw [vecNormSq_eq_sum_sq]
-    simpa only [sq_abs] using
-      (Finset.sum_sq_le_sq_sum_of_nonneg
-        (s := Finset.univ) (f := fun i : Fin d => |x i|)
-        (fun i _hi => abs_nonneg (x i)))
-  calc
-    vecEuclideanNorm x =
-        Real.sqrt (vecNormSq x) :=
-      rfl
-    _ ≤ Real.sqrt ((∑ i : Fin d, |x i|) ^ 2) :=
-      Real.sqrt_le_sqrt hsq
-    _ = ∑ i : Fin d, |x i| :=
-      Real.sqrt_sq hsumNonneg
-
-theorem abs_vecDot_le_vecEuclideanNorm_mul {d : ℕ}
+theorem abs_vecDot_le_vecEuclideanNorm_mul
     (x y : Vec d) :
     |vecDot x y| ≤ vecEuclideanNorm x * vecEuclideanNorm y := by
   calc
@@ -216,38 +199,29 @@ theorem abs_vecDot_le_vecEuclideanNorm_mul {d : ℕ}
       Real.sqrt_mul (vecNormSq_nonneg x) _
     _ = vecEuclideanNorm x * vecEuclideanNorm y := rfl
 
-theorem vecEuclideanNorm_smul {d : ℕ} (c : ℝ) (x : Vec d) :
+theorem vecEuclideanNorm_smul :
     vecEuclideanNorm (c • x) = |c| * vecEuclideanNorm x := by
   rw [vecEuclideanNorm, vecEuclideanNorm, vecNormSq_smul]
   rw [Real.sqrt_mul (sq_nonneg c), Real.sqrt_sq_eq_abs]
 
-theorem vecEuclideanNorm_neg {d : ℕ} (x : Vec d) :
+theorem vecEuclideanNorm_neg :
     vecEuclideanNorm (-x) = vecEuclideanNorm x := by
   rw [← neg_one_smul ℝ x, vecEuclideanNorm_smul]
   norm_num
 
-theorem vecEuclideanNorm_sub_comm {d : ℕ} (x y : Vec d) :
+theorem vecEuclideanNorm_sub_comm (x y : Vec d) :
     vecEuclideanNorm (x - y) = vecEuclideanNorm (y - x) := by
   unfold vecEuclideanNorm
   rw [vecNormSq_sub_comm]
 
-theorem vecEuclideanNorm_add_le {d : ℕ} (x y : Vec d) :
+theorem vecEuclideanNorm_add_le (x y : Vec d) :
     vecEuclideanNorm (x + y) ≤
       vecEuclideanNorm x + vecEuclideanNorm y := by
-  have hdot :
-      vecDot x y ≤ vecEuclideanNorm x * vecEuclideanNorm y :=
-    (le_abs_self _).trans (abs_vecDot_le_vecEuclideanNorm_mul x y)
   have hsq :
       vecNormSq (x + y) ≤
         (vecEuclideanNorm x + vecEuclideanNorm y) ^ 2 := by
-    have hx :
-        vecEuclideanNorm x ^ 2 = vecNormSq x :=
-      vecEuclideanNorm_sq x
-    have hy :
-        vecEuclideanNorm y ^ 2 = vecNormSq y :=
-      vecEuclideanNorm_sq y
     rw [vecNormSq_add_expand]
-    nlinarith [hdot, hx, hy]
+    nlinarith [((le_abs_self _).trans (abs_vecDot_le_vecEuclideanNorm_mul x y)), (vecEuclideanNorm_sq x), (vecEuclideanNorm_sq y)]
   calc
     vecEuclideanNorm (x + y)
         = Real.sqrt (vecNormSq (x + y)) := rfl
@@ -260,14 +234,13 @@ theorem vecEuclideanNorm_add_le {d : ℕ} (x y : Vec d) :
           (vecEuclideanNorm_nonneg x)
           (vecEuclideanNorm_nonneg y))
 
-theorem norm_le_vecEuclideanNorm {d : ℕ} (x : Vec d) :
+theorem norm_le_vecEuclideanNorm :
     ‖x‖ ≤ vecEuclideanNorm x := by
   rw [pi_norm_le_iff_of_nonneg (vecEuclideanNorm_nonneg x)]
   intro i
-  simpa only [Real.norm_eq_abs] using
-    abs_apply_le_vecEuclideanNorm x i
+  exact abs_apply_le_vecEuclideanNorm x i
 
-theorem vecNormSq_le_natCast_mul_norm_sq {d : ℕ} (x : Vec d) :
+theorem vecNormSq_le_natCast_mul_norm_sq :
     vecNormSq x ≤ (d : ℝ) * ‖x‖ ^ 2 := by
   rw [vecNormSq_eq_sum_sq]
   calc
@@ -275,19 +248,18 @@ theorem vecNormSq_le_natCast_mul_norm_sq {d : ℕ} (x : Vec d) :
       refine Finset.sum_le_sum ?_
       intro i _hi
       have hi : |x i| ≤ ‖x‖ := by
-        simpa [Real.norm_eq_abs] using norm_le_pi_norm x i
+        exact norm_le_pi_norm x i
       nlinarith [abs_nonneg (x i), norm_nonneg x, sq_abs (x i)]
-    _ = (d : ℝ) * ‖x‖ ^ 2 := by
-      simp [Finset.sum_const, nsmul_eq_mul]
+    _ = d * ‖x‖ ^ 2 := by
+      simp
 
-theorem vecEuclideanNorm_le_sqrt_natCast_mul_norm {d : ℕ}
-    (x : Vec d) :
+theorem vecEuclideanNorm_le_sqrt_natCast_mul_norm :
     vecEuclideanNorm x ≤ Real.sqrt d * ‖x‖ := by
   calc
     vecEuclideanNorm x = Real.sqrt (vecNormSq x) := rfl
-    _ ≤ Real.sqrt ((d : ℝ) * ‖x‖ ^ 2) :=
+    _ ≤ Real.sqrt (d * ‖x‖ ^ 2) :=
       Real.sqrt_le_sqrt (vecNormSq_le_natCast_mul_norm_sq x)
     _ = Real.sqrt d * ‖x‖ := by
-      rw [Real.sqrt_mul (Nat.cast_nonneg d), Real.sqrt_sq (norm_nonneg x)]
+      simp
 
 end PDE

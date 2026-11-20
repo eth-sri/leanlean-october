@@ -42,7 +42,7 @@ theorem map_bellmanRadialHaar_radialScale (r : ℝ) (hr : 0 < r) :
     change ENNReal.ofReal (r⁻¹ * s.val)⁻¹ = ENNReal.ofReal r * ENNReal.ofReal s.val⁻¹
     rw [mul_inv_rev, inv_inv, ← ENNReal.ofReal_mul hr.le, mul_comm]
   rw [he, withDensity_smul _ hf, smul_smul, ← ENNReal.ofReal_mul (inv_nonneg.mpr hr.le)]
-  simp only [inv_mul_cancel₀ hr.ne', ENNReal.ofReal_one, one_smul]
+  simp [inv_mul_cancel₀ hr.ne']
 
 /-- The ds/s measure in log radius. -/
 def bellmanLogRadialHaar : Measure ℝ :=
@@ -89,12 +89,9 @@ theorem bellmanRadialHaar_ne_zero : bellmanRadialHaar ≠ 0 := by
     withDensity_absolutelyContinuous' (by fun_prop) (ae_of_all _ fun s =>
       (ENNReal.ofReal_pos.mpr (inv_pos.mpr s.property)).ne')
   have hz : bellmanPositiveTimeVolume = 0 := by
-    rw [h] at hac
-    exact absolutelyContinuous_zero_iff.mp hac
+    aesop
   have hu := bellmanPositiveTimeVolume_univ
-  rw [hz] at hu
-  change (0 : ENNReal) = ⊤ at hu
-  exact ENNReal.zero_ne_top hu
+  aesop
 
 /-- The log-radius reference measure is nonzero. -/
 theorem bellmanLogRadialHaar_ne_zero : bellmanLogRadialHaar ≠ 0 :=

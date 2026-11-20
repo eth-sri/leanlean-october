@@ -31,16 +31,15 @@ theorem exists_boundedSourceSmoothApproximation
       (∀ n x, 0 ≤ f n x ∧ f n x ≤ M + 2) ∧
       ∀ᵐ x ∂μ, Tendsto (fun n => f n x) atTop (𝓝 (F x)) := by
   classical
-  let ε : ℕ → ℝ := fun n => 1 / ((n : ℝ) + 1)
-  have hεp (n : ℕ) : 0 < ε n := by dsimp [ε]; positivity
+  let ε : ℕ → ℝ := fun n => 1 / (n + 1)
+  have hεp (n : ℕ) : 0 < ε n := by positivity
   have hε1 (n : ℕ) : ε n ≤ 1 := by
     dsimp [ε]
     rw [div_le_iff₀ (by positivity)]
     simp
   have hε0 : Tendsto ε atTop (𝓝 0) := by
     simpa only [ε, one_div, Function.comp_def] using tendsto_inv_atTop_zero.comp
-      (tendsto_atTop_add_const_right _ 1 (tendsto_natCast_atTop_atTop :
-        Tendsto (fun n : ℕ => (n : ℝ)) atTop atTop))
+      (tendsto_atTop_add_const_right _ 1 tendsto_natCast_atTop_atTop)
   have hmem : MemLp F 1 μ := by
     apply memLp_one_iff_integrable.mpr
     refine ⟨hF.aestronglyMeasurable, ?_⟩
@@ -52,18 +51,17 @@ theorem exists_boundedSourceSmoothApproximation
   choose g hgc hgs hge using hex
   have hnorm : Tendsto (fun n => eLpNorm (g n - F) 1 μ) atTop (𝓝 0) := by
     have hεe : Tendsto (fun n => ENNReal.ofReal (ε n)) atTop (𝓝 0) := by
-      simpa only [ENNReal.ofReal_zero] using ENNReal.tendsto_ofReal hε0
+      simpa using ENNReal.tendsto_ofReal hε0
     apply tendsto_of_tendsto_of_tendsto_of_le_of_le tendsto_const_nhds hεe
       (fun _ => zero_le) (fun n => ?_)
     rw [eLpNorm_sub_comm]
-    exact hge n
+    apply hge
   obtain ⟨σ, hσ, hae⟩ := (tendstoInMeasure_of_tendsto_eLpNorm (by norm_num) hnorm
     ).exists_seq_tendsto_ae
   let G (n : ℕ) (x : E) : ℝ := max 0 (min M (g (σ n) x))
   have hGc (n : ℕ) : Continuous (G n) :=
     continuous_const.max (continuous_const.min (hgs (σ n)).continuous)
-  have hGb (n : ℕ) (x : E) : 0 ≤ G n x ∧ G n x ≤ M := by
-    exact ⟨le_max_left _ _, max_le hM (min_le_left _ _)⟩
+  have hGb (n : ℕ) (x : E) : 0 ≤ G n x ∧ G n x ≤ M := ⟨le_max_left _ _, max_le hM (min_le_left _ _)⟩
   have hGsup (n : ℕ) : support (G n) ⊆ support (g (σ n)) := by
     intro x hx
     contrapose! hx
@@ -72,7 +70,7 @@ theorem exists_boundedSourceSmoothApproximation
     rw [hx, min_eq_right hM, max_self]
   have hGcompact (n : ℕ) : HasCompactSupport (G n) :=
     (hgc (σ n)).mono (hGsup n)
-  have hsmooth (n : ℕ) := (hGc n).exists_contDiff_approx (⊤ : ℕ∞)
+  have hsmooth (n : ℕ) := (hGc n).exists_contDiff_approx ⊤
     (ε := fun _ => ε n) continuous_const (fun _ => hεp n)
   choose q hqs hqe hqsub using hsmooth
   have hqcompact (n : ℕ) : HasCompactSupport (q n) := (hGcompact n).mono (hqsub n)
@@ -87,7 +85,7 @@ theorem exists_boundedSourceSmoothApproximation
       (hρs n).2.1.mul_right, tsupport_mul_subset_left.trans (hρs n).2.2⟩
   · intro n x
     have hdist : |q n x - G n x| < ε n := by
-      simpa only [Real.dist_eq] using hqe n x
+      exact hqe n x
     have hpos : 0 ≤ q n x + ε n * χ n x := by
       by_cases hx : x ∈ tsupport (G n)
       · rw [hχone n x hx, mul_one]
@@ -113,26 +111,22 @@ theorem exists_boundedSourceSmoothApproximation
         simpa only [G, min_eq_right (hFb x).2, max_eq_right (hFb x).1] using hh
       have herror : Tendsto (fun n => q n x - G n x) atTop (𝓝 0) := by
         apply squeeze_zero_norm (fun n => ?_) hε0
-        simpa only [Real.norm_eq_abs, Real.dist_eq] using (hqe n x).le
+        exact (hqe n x).le
       have hqlim : Tendsto (fun n => q n x) atTop (𝓝 (F x)) := by
         have hh := herror.add hGlim
-        simpa only [zero_add, sub_add_cancel] using hh
+        simpa using hh
       have hχlim : Tendsto (fun n => ε n * χ n x) atTop (𝓝 0) := by
         apply squeeze_zero (fun n => mul_nonneg (hεp n).le (hχb n x).1)
           (fun n => by simpa using
             mul_le_mul_of_nonneg_left (hχb n x).2 (hεp n).le) hε0
-      have hlim := hqlim.add hχlim
       have heq : (fun n => f n x) =ᶠ[atTop] (fun n => q n x + ε n * χ n x) := by
         filter_upwards [hρone x hxU] with n hn
-        simp only [f, hn, one_mul]
+        simp [f, hn]
       have hlim' : Tendsto (fun n => q n x + ε n * χ n x) atTop (𝓝 (F x)) := by
-        simpa only [add_zero] using hlim
+        simpa only [add_zero] using (hqlim.add hχlim)
       exact hlim'.congr' heq.symm
     · have hz (n : ℕ) : f n x = 0 := by
-        have hρz : ρ n x = 0 := image_eq_zero_of_notMem_tsupport
-          (fun h => hxU ((hρs n).2.2 h))
-        simp only [f, hρz, zero_mul]
-      simpa only [hz, hFz x hxU] using (tendsto_const_nhds :
-        Tendsto (fun _ : ℕ => (0 : ℝ)) atTop (𝓝 0))
+        simp only [f, (image_eq_zero_of_notMem_tsupport (fun h => hxU ((hρs n).2.2 h))), zero_mul]
+      simpa only [hz, hFz x hxU] using tendsto_const_nhds
 
 end HypoellipticAleksandrov.KineticAleksandrov.SectionTwo

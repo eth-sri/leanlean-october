@@ -1,8 +1,9 @@
 module
 
-public import HypoellipticAleksandrov.KineticAleksandrov.MainAssembly
-public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.FinalAutonomous
-public import HypoellipticAleksandrov.KineticAleksandrov.Holder.Setting
+public import HypoellipticAleksandrov.Statements.KineticAleksandrovAutonomousLocalised
+public import HypoellipticAleksandrov.KineticAleksandrov.Holder.Assembly
+public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.AutonomousAdmissibilityGeometry
+public import Mathlib.Tactic
 
 /-!
 # Hölder continuity for autonomous coefficients (d = 1)
@@ -36,7 +37,20 @@ theorem kinetic_holder_autonomous
       ∀ P ∈ K, ∀ P' ∈ K,
         |u P - u P'| ≤ C * oscillationOn u (holderNeighbourhood R₀ K) *
           (quasiDistance P P' / R₀) ^ alpha := by
-  exact HypoellipticAleksandrov.KineticAleksandrov.kinetic_holder_autonomous_proof
-    lam Lam hlam hLam
+  have hp := (Autonomous.criticalP_bounds ⟨Lam / lam, (le_div_iff₀ hlam).2 (by simpa using hLam)⟩).2
+  change 1 + bellmanAdjointExponent _ _ < 4 at hp
+  obtain ⟨C₀, _, hest⟩ := kinetic_aleksandrov_autonomous_localised lam Lam 6 hlam hLam (hp.trans (by norm_num))
+  obtain ⟨α, C, hα, hα1, h⟩ := kinetic_holder_of_aleksandrov_aux 1 le_rfl lam Lam 6 C₀ hlam hLam (by norm_num)
+  refine ⟨α, C, hα, hα1, ?_⟩
+  intro a hm hb Ω hΩ u hbounded hu he
+  have hE := Autonomous.fullElliptic_of_bounds hm hb
+  apply h _ hE.1 hE.2.1 hE.2.2.1 hE.2.2.2 Ω hΩ u hbounded
+  refine admissible_of_localized_estimate hE ?_ hΩ hu ?_
+  · dsimp only [HasLocalizedEstimate]
+    intro P R hR f w hf hc hw hsub hLp
+    simp only [Nat.cast_one, mul_one, show (4 : ℝ) + 2 = 6 by norm_num] 
+    simp only [Autonomous.backwardOperator_autonomous] at hsub
+    exact hest P R hR a hm hb f w hf hc hw hsub hLp
+  · simpa only [Autonomous.backwardOperator_autonomous] using he
 
 end HypoellipticAleksandrov.KineticAleksandrov

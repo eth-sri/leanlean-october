@@ -36,8 +36,8 @@ theorem setIntegral_setIntegral_Icc_swap
     (hψ : ContinuousOn ψ (Icc r R)) :
     ∫ x in Icc r R, (∫ y in Icc r x, g y * ψ x) =
       ∫ y in Icc r R, (∫ x in Icc y R, g y * ψ x) := by
-  let I : Set ℝ := Icc r R
-  let μ : Measure ℝ := volume.restrict I
+  let I := Icc r R
+  let μ := volume.restrict I
   let T : Set (ℝ × ℝ) := {z | z.1 ≤ z.2}
   have hT : MeasurableSet T :=
     (isClosed_le continuous_fst continuous_snd).measurableSet
@@ -45,11 +45,8 @@ theorem setIntegral_setIntegral_Icc_swap
     simpa only [μ, I] using! hg
   have hψμ : Integrable ψ μ := by
     simpa only [μ, I] using! hψ.integrableOn_Icc
-  have hprod : Integrable (fun z : ℝ × ℝ => g z.1 * ψ z.2) (μ.prod μ) :=
+  have hprod :=
     hgμ.mul_prod hψμ
-  have htriangle : Integrable (T.indicator (fun z : ℝ × ℝ => g z.1 * ψ z.2))
-      (μ.prod μ) :=
-    hprod.indicator hT
   have hleft :
       (∫ x, ∫ y, T.indicator (fun z : ℝ × ℝ => g z.1 * ψ z.2) (y, x) ∂μ ∂μ) =
         ∫ x in Icc r R, (∫ y in Icc r x, g y * ψ x) := by
@@ -72,13 +69,7 @@ theorem setIntegral_setIntegral_Icc_swap
     change (∫ y, g y * ψ x ∂(volume.restrict I).restrict (Iic x)) = _
     rw [Measure.restrict_restrict measurableSet_Iic]
     have hIx : Iic x ∩ I = Icc r x := by
-      ext y
-      simp only [I, mem_inter_iff, mem_Icc, mem_Iic]
-      constructor
-      · intro hy
-        exact ⟨hy.2.1, hy.1⟩
-      · intro hy
-        exact ⟨hy.2, ⟨hy.1, hy.2.trans hx.2⟩⟩
+      grind
     rw [hIx]
   have hright :
       (∫ y, ∫ x, T.indicator (fun z : ℝ × ℝ => g z.1 * ψ z.2) (y, x) ∂μ ∂μ) =
@@ -102,20 +93,14 @@ theorem setIntegral_setIntegral_Icc_swap
     change (∫ x, g y * ψ x ∂(volume.restrict I).restrict (Ici y)) = _
     rw [Measure.restrict_restrict measurableSet_Ici]
     have hIy : Ici y ∩ I = Icc y R := by
-      ext x
-      simp only [I, mem_inter_iff, mem_Icc, mem_Ici]
-      constructor
-      · intro hx
-        exact ⟨hx.1, hx.2.2⟩
-      · intro hx
-        exact ⟨hx.1, ⟨hy.1.trans hx.1, hx.2⟩⟩
+      grind
     rw [hIy]
   calc
     ∫ x in Icc r R, (∫ y in Icc r x, g y * ψ x) =
         ∫ x, ∫ y, T.indicator (fun z : ℝ × ℝ => g z.1 * ψ z.2) (y, x) ∂μ ∂μ :=
       hleft.symm
     _ = ∫ y, ∫ x, T.indicator (fun z : ℝ × ℝ => g z.1 * ψ z.2) (y, x) ∂μ ∂μ :=
-      integral_integral_swap htriangle.swap
+      integral_integral_swap (hprod.indicator hT).swap
     _ = ∫ y in Icc r R, (∫ x in Icc y R, g y * ψ x) := hright
 
 /-- A compactly supported `C¹` test function has the expected derivative
@@ -126,8 +111,7 @@ theorem setIntegral_deriv_tail_eq_neg
     ∫ x in Icc y R, deriv φ x = -φ y := by
   have hRzero : φ R = 0 := by
     apply image_eq_zero_of_notMem_tsupport
-    intro hR
-    exact (not_lt_of_ge le_rfl) (hsupp hR).2
+    grind
   rw [integral_Icc_eq_integral_Ioc,
     ← intervalIntegral.integral_of_le hy.2,
     intervalIntegral.integral_deriv_of_contDiffOn_Icc hφ.contDiffOn hy.2,
@@ -161,17 +145,6 @@ theorem intervalPrimitive_scalar_weak_identity_Icc
         apply setIntegral_congr_fun measurableSet_Icc
         exact htail]
   rw [integral_neg]
-
-/-- The bounded scalar weak identity on the open interval.  Atomlessness of
-real volume makes the endpoint choice immaterial. -/
-theorem intervalPrimitive_scalar_weak_identity_Ioo
-    {a b : ℝ} {g : ℝ → ℝ}
-    (hg : IntegrableOn g (Icc a b) volume) {φ : ℝ → ℝ}
-    (hφ : ContDiff ℝ 1 φ) (hsupp : tsupport φ ⊆ Ioo a b) :
-    ∫ x in Ioo a b, intervalPrimitive a g x * deriv φ x =
-      -∫ x in Ioo a b, g x * φ x := by
-  simpa only [restrict_Ioo_eq_restrict_Icc] using
-    (intervalPrimitive_scalar_weak_identity_Icc hg hφ hsupp)
 
 end
 

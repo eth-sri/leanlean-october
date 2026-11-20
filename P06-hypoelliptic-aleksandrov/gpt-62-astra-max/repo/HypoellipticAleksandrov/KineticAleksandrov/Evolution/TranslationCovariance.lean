@@ -34,21 +34,24 @@ section Outside
 
 variable {n : ℕ} {Ω : Set (PDE.Vec n)} {γ : ℝ → PDE.Vec n} {τ : ℝ}
 
+section
+variable (σ : ℝ) (hU : MeasurableSet (evolutionStateSet Ω γ τ)) (h : PDE.Vec n)
+
 /-- The transported-coordinate shift of a fiber state is Borel. -/
-theorem measurable_evolutionStateShift' (σ : ℝ) (h : PDE.Vec n) :
+theorem measurable_evolutionStateShift' :
     Measurable (evolutionStateShift Ω γ σ h) :=
   ((measurable_ambientShift h).comp measurable_subtype_coe).subtype_mk
 
 /-- The preimage of the terminal fiber under the ambient shift is the terminal fiber. -/
-theorem preimage_ambientShift_evolutionStateSet (h : PDE.Vec n) :
+theorem preimage_ambientShift_evolutionStateSet :
     evolutionAmbientStateShift h ⁻¹' evolutionStateSet Ω γ τ = evolutionStateSet Ω γ τ := by
   ext x
   simp only [evolutionStateSet, evolutionAmbientStateShift, mem_preimage, mem_prod, mem_univ,
     and_true]
 
+include hU in
 /-- Pulling back along the fiber inclusion intertwines the ambient and the fiber shift. -/
-theorem comap_map_ambientShift (hU : MeasurableSet (evolutionStateSet Ω γ τ))
-    (h : PDE.Vec n) (ν : Measure (EvolutionAmbientState n)) :
+theorem comap_map_ambientShift (ν : Measure (EvolutionAmbientState n)) :
     Measure.comap ((↑) : EvolutionState Ω γ τ → EvolutionAmbientState n)
         (ν.map (evolutionAmbientStateShift h)) =
       (Measure.comap ((↑) : EvolutionState Ω γ τ → EvolutionAmbientState n) ν).map
@@ -62,7 +65,7 @@ theorem comap_map_ambientShift (hU : MeasurableSet (evolutionStateSet Ω γ τ))
   constructor
   · rintro ⟨a, ha, hax⟩
     have hxU : x ∈ evolutionStateSet Ω γ τ := by
-      have : evolutionAmbientStateShift h x ∈ evolutionStateSet Ω γ τ := hax ▸ a.2
+      have  := hax ▸ a.2
       rwa [← mem_preimage, preimage_ambientShift_evolutionStateSet] at this
     refine ⟨⟨x, hxU⟩, ?_, rfl⟩
     show evolutionStateShift Ω γ τ h ⟨x, hxU⟩ ∈ A
@@ -70,6 +73,8 @@ theorem comap_map_ambientShift (hU : MeasurableSet (evolutionStateSet Ω γ τ))
     rwa [this]
   · rintro ⟨a, ha, rfl⟩
     exact ⟨evolutionStateShift Ω γ τ h a, ha, rfl⟩
+
+end
 
 end Outside
 
@@ -127,8 +132,6 @@ theorem terminalMeasure_shift
     hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx
     (evolutionQueryOfState Ω γ σ τ hστ p)
   have hsh := measurable_ambientShift (n := n) h
-  have hU := measurableSet_evolutionStateSet_of_isOpen (γ := γ) (τ := τ)
-    (isOpen_of_isAdmissibleEvolutionDomain hΩ)
   refine terminalMeasure_eq_of_spec n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
     hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx
     (evolutionQueryOfState Ω γ σ τ hστ (evolutionStateShift Ω γ σ h p)) _ ?_ ?_ ?_
@@ -136,7 +139,7 @@ theorem terminalMeasure_shift
     exact hspec.1
   · show ((μ (evolutionQueryOfState Ω γ σ τ hστ p)).map (evolutionAmbientStateShift h)).restrict
         (evolutionStateSet Ω γ τ) = _
-    rw [Measure.restrict_map hsh hU, preimage_ambientShift_evolutionStateSet]
+    rw [Measure.restrict_map hsh (measurableSet_evolutionStateSet_of_isOpen (γ := γ) (τ := τ) (isOpen_of_isAdmissibleEvolutionDomain hΩ)), preimage_ambientShift_evolutionStateSet]
     exact congrArg (fun ν => ν.map (evolutionAmbientStateShift h)) hspec.2.1
   · intro F hF
     rw [integral_map hsh.aemeasurable F.measurable.aestronglyMeasurable]
@@ -152,12 +155,10 @@ theorem terminalFiberKernel_translation
     (σ τ : ℝ) (hστ : σ ≤ τ) (h : PDE.Vec n) (p : EvolutionState Ω γ σ) :
     Measure.map (evolutionStateShift Ω γ τ h) (κ σ τ hστ p) =
       κ σ τ hστ (evolutionStateShift Ω γ σ h p) := by
-  have hU := measurableSet_evolutionStateSet_of_isOpen (γ := γ) (τ := τ)
-    (isOpen_of_isAdmissibleEvolutionDomain hΩ)
   rw [terminalFiberKernel_apply, terminalFiberKernel_apply,
     ← terminalMeasure_shift n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
       hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx hBz σ τ hστ h p,
-    comap_map_ambientShift hU]
+    comap_map_ambientShift (measurableSet_evolutionStateSet_of_isOpen (γ := γ) (τ := τ) (isOpen_of_isAdmissibleEvolutionDomain hΩ))]
 
 /-- Translation covariance for every moving fiber kernel `K` whose master measures are the
 terminal measures `μ q`; the master kernel `K₀` is such a kernel by definition. -/
@@ -170,8 +171,7 @@ theorem terminalKernel_translation_of_master_eq
     K.fiberKernel (measurableSet_of_isAdmissibleEvolutionDomain hΩ)
       σ τ hστ (evolutionStateShift Ω γ σ h p) := by
   rw [MovingFiberKernel.fiberKernel_apply, MovingFiberKernel.fiberKernel_apply, hK, hK]
-  exact terminalFiberKernel_translation n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
-    hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx hBz σ τ hστ h p
+  apply terminalFiberKernel_translation <;> assumption
 
 end EvolutionData
 

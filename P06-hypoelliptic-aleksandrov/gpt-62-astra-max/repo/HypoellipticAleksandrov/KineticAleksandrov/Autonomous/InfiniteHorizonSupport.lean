@@ -1,3 +1,4 @@
 module
-public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.InfiniteHorizonRestriction
+public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.InfiniteHorizonMeasure
+public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.DomainDominationMeasure
 public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.ExitConeOneSign

@@ -21,37 +21,39 @@ theorem poleDensityExtend_measurable {G : GreenCarrier 1 → ℝ≥0∞} (hG : M
     Measurable (poleDensityExtend G) :=
   poleDensityElapsed_measurableEmbedding.measurable_extend hG measurable_const
 
+section
+variable (G : GreenCarrier 1 → ℝ≥0∞)
+
 /-- The extension equals the native density at every genuine elapsed point. -/
-theorem poleDensityExtend_apply (G : GreenCarrier 1 → ℝ≥0∞) (q : GreenCarrier 1) :
+theorem poleDensityExtend_apply (q : GreenCarrier 1) :
     poleDensityExtend G (elapsedPhysicalPoint 0 q) = G q :=
   poleDensityElapsed_measurableEmbedding.injective.extend_apply _ _ _
 
 /-- The physical zero extension has support only at strictly positive physical clock times. -/
-theorem poleDensityExtend_support (G : GreenCarrier 1 → ℝ≥0∞) :
+theorem poleDensityExtend_support :
     Function.support (poleDensityExtend G) ⊆ {p : Point | 0 < p.time} := by
   intro p hp
   by_contra ht
   apply hp
   exact Function.extend_apply' _ _ _ (fun h => ht (poleDensityElapsed_range ▸ h))
 
+end
+
+variable {G : GreenCarrier 1 → ℝ≥0∞} (hG : Measurable G)
+include hG
+
 /-- Exact zero extension preserves the full ambient physical Lebesgue norm. -/
-theorem poleDensityExtend_eLpNorm {G : GreenCarrier 1 → ℝ≥0∞} (hG : Measurable G)
+theorem poleDensityExtend_eLpNorm
     (q : ℝ≥0∞) :
     eLpNorm (poleDensityExtend G) q (volume : Measure Point) =
       eLpNorm G q (greenLebesgue 1) := by
-  have hr := eLpNorm_restrict_eq_of_support_subset (μ := (volume : Measure Point)) (p := q)
-    (poleDensityExtend_measurable hG).aestronglyMeasurable (poleDensityExtend_support G)
-  have hm := poleDensityElapsed_measurableEmbedding.eLpNorm_map_measure
-    (μ := greenLebesgue 1) (g := poleDensityExtend G) (p := q)
-  have heq : poleDensityExtend G ∘ elapsedPhysicalPoint 0 = G :=
-    funext (poleDensityExtend_apply G)
-  exact hr.symm.trans ((congrArg (fun μ : Measure Point =>
+  exact (eLpNorm_restrict_eq_of_support_subset (μ := (volume : Measure Point)) (p := q) (poleDensityExtend_measurable hG).aestronglyMeasurable (poleDensityExtend_support G)).symm.trans ((congrArg (fun μ : Measure Point =>
     eLpNorm (poleDensityExtend G) q μ) poleDensityElapsed_map_volume).symm.trans
-      (hm.trans (congrArg (fun f : GreenCarrier 1 → ℝ≥0∞ =>
-        eLpNorm f q (greenLebesgue 1)) heq)))
+      ((poleDensityElapsed_measurableEmbedding.eLpNorm_map_measure (μ := greenLebesgue 1) (g := poleDensityExtend G) (p := q)).trans (congrArg (fun f : GreenCarrier 1 → ℝ≥0∞ =>
+        eLpNorm f q (greenLebesgue 1)) (funext (poleDensityExtend_apply G)))))
 
 /-- Mapping a native density through the actual elapsed embedding yields its physical extension. -/
-theorem poleDensityExtend_map_withDensity {G : GreenCarrier 1 → ℝ≥0∞} (hG : Measurable G) :
+theorem poleDensityExtend_map_withDensity :
     ((greenLebesgue 1).withDensity G).map (elapsedPhysicalPoint 0) =
       (volume : Measure Point).withDensity (poleDensityExtend G) := by
   have hmap : ((greenLebesgue 1).withDensity G).map (elapsedPhysicalPoint 0) =
@@ -66,7 +68,7 @@ theorem poleDensityExtend_map_withDensity {G : GreenCarrier 1 → ℝ≥0∞} (h
     apply lintegral_congr
     intro q
     exact (poleDensityExtend_apply G q).symm
-  have hres : ((volume : Measure Point).restrict {p | 0 < p.time}).withDensity
+  have hres : (volume.restrict {p | 0 < p.time}).withDensity
       (poleDensityExtend G) = volume.withDensity (poleDensityExtend G) := by
     apply Measure.ext
     intro S hS
@@ -86,7 +88,7 @@ theorem poleDensityExtend_map_withDensity {G : GreenCarrier 1 → ℝ≥0∞} (h
             exact ht (poleDensityExtend_support G hn)
           simp [hp, ht, hz]
       · simp [hp]
-    exact congrArg (fun f : Point → ℝ≥0∞ => ∫⁻ p, f p ∂volume) hi
+    apply congrArg <;> assumption
 
   exact hmap.trans ((congrArg (fun μ : Measure Point => μ.withDensity (poleDensityExtend G))
     poleDensityElapsed_map_volume).trans hres)

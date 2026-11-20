@@ -16,14 +16,16 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Holder.Covering
 open Set MeasureTheory
 open scoped Topology
 
+variable {d : ℕ} {E : Set (KineticPoint d)}
+
 /-- Intersection volume minus the near-full threshold along the admissible path. -/
-def saturationGap {d : ℕ} (E : Set (KineticPoint d)) (eta : ℝ)
+def saturationGap (E : Set (KineticPoint d)) (eta : ℝ)
     (X : KineticPoint d) (r : ℝ) : ℝ :=
   (volume (E ∩ backwardCylinder (saturationCenter X r) r)).toReal-
     (1-eta)*(volume (backwardCylinder (saturationCenter X r) r)).toReal
 
 /-- The threshold gap is continuous at every positive radius. -/
-theorem continuousAt_saturationGap {d : ℕ} {E : Set (KineticPoint d)}
+theorem continuousAt_saturationGap
     (hE : volume E ≠ ⊤) (eta : ℝ) (X : KineticPoint d) {r : ℝ} (hr : 0 < r) :
     ContinuousAt (saturationGap E eta X) r := by
   have hV : ContinuousAt
@@ -40,7 +42,7 @@ theorem continuousAt_saturationGap {d : ℕ} {E : Set (KineticPoint d)}
     (continuous_saturationCenter X) hE hr).sub (continuousAt_const.mul hV)
 
 /-- Almost every point away from the spatial shell has an admissible critical cylinder. -/
-theorem ae_exists_critical_cylinder {d : ℕ} {E : Set (KineticPoint d)}
+theorem ae_exists_critical_cylinder
     (hE : NullMeasurableSet E volume) (hbounded : Bornology.IsBounded E)
     (hEQ : E ⊆ unitCylinder d) {eta R : ℝ} (heta : 0 < eta)
     (hR : 0 < R) (hR1 : R ≤ 1)
@@ -57,9 +59,8 @@ theorem ae_exists_critical_cylinder {d : ℕ} {E : Set (KineticPoint d)}
   intro hx
   obtain ⟨s, hs, hsmall⟩ := hd (eta/2) (half_pos heta)
   let a := min s R/2
-  have ha : 0 < a := half_pos (lt_min hs hR)
-  have has : a < s := (half_lt_self (lt_min hs hR)).trans_le (min_le_left _ _)
-  have haR : a < R := (half_lt_self (lt_min hs hR)).trans_le (min_le_right _ _)
+  have ha := half_pos (lt_min hs hR)
+  have has := (half_lt_self (lt_min hs hR)).trans_le (min_le_left _ _)
   have hpos : 0 < saturationGap E eta X a := by
     have hdense := hsmall a ha has
     have hvol := ENNReal.toReal_pos
@@ -71,22 +72,17 @@ theorem ae_exists_critical_cylinder {d : ℕ} {E : Set (KineticPoint d)}
     by_contra hn
     have hdense : (1-eta)*(volume (backwardCylinder (saturationCenter X R) R)).toReal ≤
         (volume (E ∩ backwardCylinder (saturationCenter X R) R)).toReal := by
-      change ¬ _ < 0 at hn
       dsimp [saturationGap] at hn
       linarith
-    have h := hcutoff (saturationCenter X R) R hR
-      (saturationCylinder_subset_unit (hEQ hXE) hR le_rfl hR1 hx) hdense
-    exact (lt_irrefl R) h
+    exact (lt_irrefl R) (hcutoff (saturationCenter X R) R hR (saturationCylinder_subset_unit (hEQ hXE) hR le_rfl hR1 hx) hdense)
   have hc : ContinuousOn (saturationGap E eta X) (Icc a R) := by
     intro r hr
     exact (continuousAt_saturationGap (volume_bounded_ne_top hbounded) eta X
       (ha.trans_le hr.1)).continuousWithinAt
-  obtain ⟨r, hr, heq⟩ := intermediate_value_Icc' haR.le hc ⟨hneg.le, hpos.le⟩
-  have hrpos : 0 < r := ha.trans_le hr.1
-  have hrR : r < R := lt_of_le_of_ne hr.2 (by
-    intro he
-    rw [he] at heq
-    linarith)
+  obtain ⟨r, hr, heq⟩ := intermediate_value_Icc' ((half_lt_self (lt_min hs hR)).trans_le (min_le_right _ _)).le hc ⟨hneg.le, hpos.le⟩
+  have hrpos := ha.trans_le hr.1
+  have hrR := lt_of_le_of_ne hr.2 (by
+    grind)
   refine ⟨saturationCenter X r, r, hrpos, hrR,
     self_mem_saturationCylinder (hEQ hXE) hrpos,
     saturationCylinder_subset_unit (hEQ hXE) hrpos hrR.le hR1 hx, ?_⟩

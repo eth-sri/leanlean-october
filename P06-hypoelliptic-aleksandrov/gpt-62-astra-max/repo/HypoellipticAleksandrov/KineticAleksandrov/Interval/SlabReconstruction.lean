@@ -20,21 +20,20 @@ theorem killed_slab_arith (a b : ℝ≥0) (M : ℝ≥0∞) {T k q : ℝ}
       ((b : ℝ≥0∞) * M * ENNReal.ofReal (T ^ slabBeta 1 (slabQ1 1 q))) =
     ((a ^ (q - 1) * b : ℝ≥0) : ℝ≥0∞) * M ^ q *
       ENNReal.ofReal (T ^ (3 - 2 * q) * Real.exp (-(k * (q - 1)) * T)) := by
-  have hqd : q < 1 + 1 / ((1 : ℕ) : ℝ) := by norm_num; exact hq2
+  have hqd : q < 1 + 1 / ((1 : ℕ)) := by norm_num; exact hq2
   have he := slab_exponent (d := 1) hq hqd
   norm_num only [Nat.cast_one, mul_one] at he
   have he' : (q - 1) * (slabBeta 1 (slabGamma 1 q) - 3 / 2) +
       slabBeta 1 (slabQ1 1 q) = 3 - 2 * q := by linarith
   have hq0 : 0 ≤ q - 1 := by linarith
-  let X : ℝ≥0∞ := (a : ℝ≥0∞) * M *
+  let X := a * M *
     ENNReal.ofReal (T ^ (slabBeta 1 (slabGamma 1 q) - 3 / 2))
-  let Y : ℝ≥0∞ := (b : ℝ≥0∞) * M * ENNReal.ofReal (T ^ slabBeta 1 (slabQ1 1 q))
-  let E : ℝ≥0∞ := ENNReal.ofReal (Real.exp (-k * T))
+  let Y := b * M * ENNReal.ofReal (T ^ slabBeta 1 (slabQ1 1 q))
+  let E := ENNReal.ofReal (Real.exp (-k * T))
   calc
     _ = (X * E) ^ (q - 1) * Y := by
       dsimp only [X, Y, E]
       rw [ENNReal.ofReal_mul (Real.rpow_nonneg hT.le _)]
-      congr 2
       ring
     _ = (X ^ (q - 1) * Y) * E ^ (q - 1) := by
       rw [ENNReal.mul_rpow_of_nonneg _ _ hq0]
@@ -44,7 +43,6 @@ theorem killed_slab_arith (a b : ℝ≥0) (M : ℝ≥0∞) {T k q : ℝ}
       rw [slab_arith a b M hT hq he', ENNReal.ofReal_rpow_of_nonneg
         (Real.exp_pos _).le hq0, ← Real.exp_mul,
         ENNReal.ofReal_mul (Real.rpow_nonneg hT.le _)]
-      rw [show -k * T * (q - 1) = -(k * (q - 1)) * T by ring]
       ring
 
 /-- The shared reconstruction proof with the interval killing height estimate. -/
@@ -72,18 +70,18 @@ theorem killed_slab_reconstruction {Ω : Set (PDE.Vec 1)} {γ : ℝ → PDE.Vec 
       ∫⁻ p in slabSet T, G p ^ q ∂greenLebesgue 1 ≤
         (slabConstant 1 q C : ℝ≥0∞) * μ univ ^ q *
           ENNReal.ofReal (T ^ (3 - 2 * q) * Real.exp (-(k * (q - 1)) * T)) := by
-  have hqd : q < 1 + 1 / ((1 : ℕ) : ℝ) := by norm_num; exact hq2
+  have hqd : q < 1 + 1 / ((1 : ℕ)) := by norm_num; exact hq2
   have hq0 : 0 ≤ q - 1 := by linarith
   obtain ⟨hqγ, hγ0⟩ := slab_q_lt_gamma (d := 1) hq hqd
   obtain ⟨hq1a, hq1b⟩ := slab_q1_bounds (d := 1) hq hqd
-  have hγ1 : 1 ≤ slabGamma 1 q := (slab_gamma_one_lt (d := 1) hq hqd).le
+  have hγ1 := (slab_gamma_one_lt (d := 1) hq hqd).le
   have hMfin : μ univ < ⊤ := measure_lt_top μ _
   have : IsFiniteMeasure (slabMeasure 1 T Γ) := ⟨by
     rw [slabMeasure_univ]
     exact (green_slab_le K σ μ Γ hΓ hT).trans_lt
       (ENNReal.mul_lt_top hMfin ENNReal.ofReal_lt_top)⟩
   have hgn := hgnorm (slabQ1 1 q) hq1a hq1b
-  have hgL : eLpNorm g (ENNReal.ofReal (slabQ1 1 q)) (slabBase 1 T) < ⊤ :=
+  have hgL :=
     hgn.trans_lt (ENNReal.mul_lt_top (ENNReal.mul_lt_top ENNReal.coe_lt_top hMfin)
       ENNReal.ofReal_lt_top)
   have hH : ENNReal.ofReal (((2 * Real.pi) ^ 1)⁻¹) *
@@ -101,9 +99,9 @@ theorem killed_slab_reconstruction {Ω : Set (PDE.Vec 1)} {γ : ℝ → PDE.Vec 
         (measurePreserving_slabRegroup 1 T).lintegral_comp_emb
           (slabRegroup 1).measurableEmbedding (fun y => G' y ^ q)
     _ ≤ _ := hbd
-    _ ≤ ((C (slabGamma 1 q) : ℝ≥0∞) * μ univ * ENNReal.ofReal
+    _ ≤ ((C (slabGamma 1 q)) * μ univ * ENNReal.ofReal
           (T ^ (slabBeta 1 (slabGamma 1 q) - 3 / 2) * Real.exp (-k * T))) ^ (q - 1) *
-        ((C (slabQ1 1 q) : ℝ≥0∞) * μ univ *
+        ((C (slabQ1 1 q)) * μ univ *
           ENNReal.ofReal (T ^ slabBeta 1 (slabQ1 1 q))) := by
         apply mul_le_mul' (ENNReal.rpow_le_rpow _ hq0) hgn
         simpa only [pow_one] using hheight

@@ -1,6 +1,6 @@
 module
 
-public import Mathlib.Topology.MetricSpace.Isometry
+public import HypoellipticAleksandrov.Geometry.Coordinates
 public import PDEFoundation.Ambient.Basic
 
 /-!
@@ -29,34 +29,13 @@ the explicit `PDEFoundation` API.
 
 namespace HypoellipticAleksandrov
 
-/-- A point of kinetic spacetime in dimension `d`. -/
-@[ext]
-structure KineticPoint (d : ℕ) where
-  /-- Time coordinate. -/
-  time : ℝ
-  /-- Position coordinate. -/
-  position : PDE.Vec d
-  /-- Velocity coordinate. -/
-  velocity : PDE.Vec d
+export KineticAleksandrovChallenge (KineticPoint)
 
-/-- The explicit coordinate equivalence with the standard nested product carrier. -/
-def KineticPoint.equivProd (d : ℕ) :
-    KineticPoint d ≃ ℝ × (PDE.Vec d × PDE.Vec d) where
-  toFun z := (z.time, (z.position, z.velocity))
-  invFun z := ⟨z.1, z.2.1, z.2.2⟩
-  left_inv z := by
-    ext <;> rfl
-  right_inv z := by
-    rcases z with ⟨t, x, v⟩
-    rfl
+attribute [ext] KineticAleksandrovChallenge.KineticPoint
 
-/-- The standard product metric transported to the explicit coordinate carrier.
-
-This is only topology and uniformity infrastructure, not manuscript round
-Euclidean geometry. -/
-instance (d : ℕ) : MetricSpace (KineticPoint d) :=
-  MetricSpace.induced (KineticPoint.equivProd d)
-    (KineticPoint.equivProd d).injective inferInstance
+namespace KineticPoint
+export KineticAleksandrovChallenge.KineticPoint (time position velocity mk ext equivProd)
+end KineticPoint
 
 /-- The coordinate equivalence is an isometry for the transported standard product metric. -/
 def KineticPoint.isometryEquivProd (d : ℕ) :
@@ -71,17 +50,22 @@ def KineticPoint.homeomorphProd (d : ℕ) :
     KineticPoint d ≃ₜ ℝ × (PDE.Vec d × PDE.Vec d) :=
   (KineticPoint.isometryEquivProd d).toHomeomorph
 
+section
+variable {d : ℕ}
+
 /-- The time projection is continuous for the standard product topology. -/
-theorem continuous_time {d : ℕ} : Continuous (@KineticPoint.time d) :=
+theorem continuous_time : Continuous (@KineticPoint.time d) :=
   continuous_fst.comp (KineticPoint.homeomorphProd d).continuous
 
 /-- The position projection is continuous for the standard product topology. -/
-theorem continuous_position {d : ℕ} : Continuous (@KineticPoint.position d) :=
+theorem continuous_position : Continuous (@KineticPoint.position d) :=
   continuous_snd.fst.comp (KineticPoint.homeomorphProd d).continuous
 
 /-- The velocity projection is continuous for the standard product topology. -/
-theorem continuous_velocity {d : ℕ} : Continuous (@KineticPoint.velocity d) :=
+theorem continuous_velocity : Continuous (@KineticPoint.velocity d) :=
   continuous_snd.snd.comp (KineticPoint.homeomorphProd d).continuous
+
+end
 
 /-- Assemble a continuous kinetic point from continuous coordinate functions. -/
 theorem KineticPoint.continuous_mk

@@ -62,21 +62,19 @@ theorem terminalOperators_comp_smooth
   · subst τ
     rw [hself]
     rfl
-  have hrt : r < τ := lt_of_le_of_ne hrτ heq
   obtain ⟨C, hC0, hCF⟩ := F.exists_bound
   obtain ⟨u, hu, hCu, _⟩ := hEx τ F hF
-  have hC := hCu C hC0 hCF
   have hrep (s : ℝ) (hst : s ≤ τ) (p : EvolutionState Ω γ s) :
       P₀ s τ hst (terminalStateDatum F) p = u ⟨s, p.1.1, p.1.2⟩ := by
     rw [terminalOperators_apply_smooth]
     exact terminalValue_eq_of_solution n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
       hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx
       s τ hst p F hF u hu
-  let ε : ℕ → ℝ := fun j => 1 / ((j : ℝ) + 1)
-  have hε (j : ℕ) : 0 < ε j := by dsimp [ε]; positivity
+  let ε : ℕ → ℝ := fun j => 1 / (j + 1)
+  have hε (j : ℕ) : 0 < ε j := by positivity
   have hεlim : Tendsto ε atTop (𝓝 0) := tendsto_one_div_add_atTop_nhds_zero_nat
   have hex (j : ℕ) := hu.exists_compact_slice_approximation
-    (isOpen_of_isAdmissibleEvolutionDomain hΩ) hrt hC0 hC (hε j)
+    (isOpen_of_isAdmissibleEvolutionDomain hΩ) (lt_of_le_of_ne hrτ heq) hC0 (hCu C hC0 hCF) (hε j)
   choose G hG hGC hGerr using hex
   have hvex (j : ℕ) := hEx r (G j) (hG j)
   choose v hv hvbound hvuniq using hvex
@@ -91,16 +89,14 @@ theorem terminalOperators_comp_smooth
     exact hGerr j q hq
   apply BoundedBorel.ext
   intro p
-  have hp : (⟨σ, p.1.1, p.1.2⟩ : KineticPoint n) ∈
-      evolutionPastClosedCylinder Ω γ r := mk_mem_evolutionPastClosedCylinder hσr p
   have hvalues : Tendsto (fun j => v j ⟨σ, p.1.1, p.1.2⟩) atTop
       (𝓝 (u ⟨σ, p.1.1, p.1.2⟩)) := by
     apply tendsto_iff_norm_sub_tendsto_zero.mpr
     simp only [Real.norm_eq_abs, abs_sub_comm]
-    apply squeeze_zero (fun j => abs_nonneg _) (fun j => herr j _ hp)
+    apply squeeze_zero (fun j => abs_nonneg _) (fun j => herr j _ (mk_mem_evolutionPastClosedCylinder hσr p))
     simpa only [zero_mul] using hεlim.mul_const
       (growthBarrier (growthConstant n Lam (PDE.vecEuclideanNorm (b 0)) L_b)
-        r (⟨σ, p.1.1, p.1.2⟩ : KineticPoint n))
+        r (⟨σ, p.1.1, p.1.2⟩))
   have hpoint (x : EvolutionState Ω γ r) :
       Tendsto (fun j => G j x.1) atTop (𝓝 (u ⟨r, x.1.1, x.1.2⟩)) := by
     apply tendsto_iff_norm_sub_tendsto_zero.mpr
@@ -108,7 +104,7 @@ theorem terminalOperators_comp_smooth
     apply squeeze_zero (fun j => abs_nonneg _)
       (fun j => hGerr j ⟨r, x.1.1, x.1.2⟩ ⟨rfl, subset_closure x.2.1⟩)
     simpa only [zero_mul] using hεlim.mul_const
-      (1 + radialSq (⟨r, x.1.1, x.1.2⟩ : KineticPoint n))
+      (1 + radialSq (⟨r, x.1.1, x.1.2⟩))
   have := isFiniteKernel_terminalFiberKernel n hn lam Lam m L_b
     hlam hlamLam hm hmLb Ω γ B b hΩ hγ hB_smooth hB_symm hB_ell
     hb_smooth hb_lipschitz hb_coercive hEx σ r hσr
@@ -117,7 +113,7 @@ theorem terminalOperators_comp_smooth
     (fun j => ((G j).measurable.comp measurable_subtype_coe).aestronglyMeasurable)
     (integrable_const C)
     (fun j => Eventually.of_forall fun x => by
-      simpa only [Real.norm_eq_abs, Function.comp_apply] using hGC j x.1)
+      exact hGC j x.1)
     (Eventually.of_forall hpoint)
   have hlim : Tendsto (fun j => v j ⟨σ, p.1.1, p.1.2⟩) atTop
       (𝓝 (∫ x : EvolutionState Ω γ r, u ⟨r, x.1.1, x.1.2⟩ ∂(κ σ r hσr p))) := by
@@ -128,10 +124,9 @@ theorem terminalOperators_comp_smooth
         σ r hσr p (G j) (hG j) (v j) (hv j), ← terminalOperators_apply_smooth,
         terminalOperators_apply]
       rfl
-    simpa only [heval, Function.comp_apply] using hint
+    simpa [heval] using hint
   rw [hrep, terminalOperators_apply]
-  have heq := tendsto_nhds_unique hvalues hlim
-  exact heq.trans (integral_congr_ae (Eventually.of_forall fun x => (hrep r hrτ x).symm))
+  exact (tendsto_nhds_unique hvalues hlim).trans (integral_congr_ae (Eventually.of_forall fun x => (hrep r hrτ x).symm))
 
 end EvolutionData
 

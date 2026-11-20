@@ -53,12 +53,7 @@ theorem bellman_vague_limit_degree (beta : ℕ → ℝ) (betaInf : ℝ)
   apply Measure.ext_of_integral_eq_on_compactlySupported
   intro f
   rw [D.measurableEmbedding.integral_map, integral_smul_measure]
-  have hleft := hv (fun q => f (D q)) (f.continuous.comp D.continuous)
-    (f.hasCompactSupport.comp_homeomorph D)
-  have hcoef : Tendsto (fun n => r ^ (beta n - 4)) atTop (𝓝 (r ^ (betaInf - 4))) :=
-    (Real.continuous_const_rpow hr.ne').continuousAt.tendsto.comp
-      (hbeta.sub_const 4)
-  have hright := hcoef.mul (hv f f.continuous f.hasCompactSupport)
+  have hright := ((Real.continuous_const_rpow hr.ne').continuousAt.tendsto.comp (hbeta.sub_const 4)).mul (hv f f.continuous f.hasCompactSupport)
   have he (n : ℕ) : (∫ q, f (D q) ∂mu n) = r ^ (beta n - 4) * ∫ q, f q ∂mu n := by
     have hm := (hd n).map_dilation r hr
     change Measure.map D (mu n) = ENNReal.ofReal (r ^ (beta n - 4)) • mu n at hm
@@ -66,6 +61,6 @@ theorem bellman_vague_limit_degree (beta : ℕ → ℝ) (betaInf : ℝ)
       ENNReal.toReal_ofReal (Real.rpow_nonneg hr.le _), smul_eq_mul]
   rw [show c.toReal = r ^ (betaInf - 4) from
     ENNReal.toReal_ofReal (Real.rpow_nonneg hr.le _), smul_eq_mul]
-  exact tendsto_nhds_unique hleft (by simpa only [he] using hright)
+  exact tendsto_nhds_unique (hv (fun q => f (D q)) (f.continuous.comp D.continuous) (f.hasCompactSupport.comp_homeomorph D)) (by simpa [he] using hright)
 
 end HypoellipticAleksandrov.KineticAleksandrov

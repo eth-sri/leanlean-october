@@ -12,20 +12,25 @@ open MeasureTheory Set
 
 variable {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
 
+variable (hΩa : IsAdmissibleEvolutionDomain Ω) (hΩ : MeasurableSet Ω)
+    (B : FullKineticCoefficient d) (b : PDE.Vec d → PDE.Vec d) (S : TerminalOperatorFamily Ω γ)
+    (K : MovingFiberKernel Ω γ) (hreal : RealizesTerminalEvolution Ω γ hΩ B b S K)
+    (g : KineticPoint d → ℝ) (hg : Continuous g) (hc : HasCompactSupport g)
+    (hs : ContDiff ℝ (⊤ : ℕ∞) (fun q : ℝ × EvolutionAmbientState d =>
+      g ⟨q.1, q.2.1, q.2.2⟩))
+    (T : ℝ) (hU : tsupport g ⊆ evolutionPastOpenCylinder Ω γ T) (r : ℝ)
+
+include hg hc in
 /-- A continuous compactly supported kinetic source as bounded Borel data. -/
-def duhamelSourceBorel (g : KineticPoint d → ℝ) (hg : Continuous g)
-    (hc : HasCompactSupport g) : BoundedBorel (KineticPoint d) :=
+def duhamelSourceBorel : BoundedBorel (KineticPoint d) :=
   ⟨g, hg.measurable, by
     obtain ⟨C, hC⟩ := hg.bounded_above_of_compact_support hc
     refine ⟨max C 0, le_max_right _ _, fun p => ?_⟩
     simpa only [Real.norm_eq_abs] using (hC p).trans (le_max_left _ _)⟩
 
+include hs hU in
 /-- A smooth source supported in the past cylinder gives smooth compact terminal slices. -/
-theorem isSmoothCompactTerminalDatum_duhamelSlice (g : KineticPoint d → ℝ)
-    (hg : Continuous g) (hc : HasCompactSupport g)
-    (hs : ContDiff ℝ (⊤ : ℕ∞) (fun q : ℝ × EvolutionAmbientState d =>
-      g ⟨q.1, q.2.1, q.2.2⟩)) (T : ℝ)
-    (hU : tsupport g ⊆ evolutionPastOpenCylinder Ω γ T) (r : ℝ) :
+theorem isSmoothCompactTerminalDatum_duhamelSlice :
     IsSmoothCompactTerminalDatum Ω γ r (duhamelSlice (duhamelSourceBorel g hg hc) r) := by
   let f : EvolutionAmbientState d → ℝ := fun w => g ⟨r, w.1, w.2⟩
   let P : KineticPoint d → EvolutionAmbientState d := fun p => (p.position, p.velocity)
@@ -43,17 +48,11 @@ theorem isSmoothCompactTerminalDatum_duhamelSlice (g : KineticPoint d → ℝ)
     refine ⟨?_, mem_univ _⟩
     have hm := (hU hp).2
     change p.time = r at hpr
-    simpa only [hpr] using hm
+    simpa [hpr] using hm
 
+include hreal hs hU in
 /-- The supplied terminal evolution identifies every source slice with a classical solution. -/
-theorem exists_duhamelSlice_solution (hΩ : MeasurableSet Ω)
-    (B : FullKineticCoefficient d) (b : PDE.Vec d → PDE.Vec d)
-    (S : TerminalOperatorFamily Ω γ) (K : MovingFiberKernel Ω γ)
-    (hreal : RealizesTerminalEvolution Ω γ hΩ B b S K)
-    (g : KineticPoint d → ℝ) (hg : Continuous g) (hc : HasCompactSupport g)
-    (hs : ContDiff ℝ (⊤ : ℕ∞) (fun q : ℝ × EvolutionAmbientState d =>
-      g ⟨q.1, q.2.1, q.2.2⟩)) (T : ℝ)
-    (hU : tsupport g ⊆ evolutionPastOpenCylinder Ω γ T) (r : ℝ) :
+theorem exists_duhamelSlice_solution :
     ∃ V : KineticPoint d → ℝ,
       IsClassicalTerminalSolution Ω γ B b r
         (duhamelSlice (duhamelSourceBorel g hg hc) r) V ∧
@@ -67,9 +66,9 @@ theorem exists_duhamelSlice_solution (hΩ : MeasurableSet Ω)
   exact (duhamelSourceIntegral_eq_evolution hΩ B b S K hreal
     (duhamelSourceBorel g hg hc) s r hsr p).symm
 
+include hΩa in
 /-- On the closed source cylinder the zero-extended integrand is the classical slice solution. -/
-theorem duhamelIntegrand_eq_slice_solution (hΩa : IsAdmissibleEvolutionDomain Ω)
-    (K : MovingFiberKernel Ω γ) (g : KineticPoint d → ℝ) (r : ℝ)
+theorem duhamelIntegrand_eq_slice_solution
     (V : KineticPoint d → ℝ)
     (hlat : ∀ p ∈ evolutionLateralFrontier Ω γ r, V p = 0)
     (hV : ∀ (s : ℝ) (hsr : s ≤ r) (p : EvolutionState Ω γ s),
@@ -87,15 +86,9 @@ theorem duhamelIntegrand_eq_slice_solution (hΩa : IsAdmissibleEvolutionDomain �
       exact ⟨hp.2, hm⟩
     exact (hlat p ⟨hp.1, hf⟩).symm
 
+include hΩa hreal hg hc hs hU in
 /-- Source slices are continuous on their closed past cylinders. -/
-theorem continuousOn_duhamelIntegrand (hΩa : IsAdmissibleEvolutionDomain Ω)
-    (hΩ : MeasurableSet Ω) (B : FullKineticCoefficient d) (b : PDE.Vec d → PDE.Vec d)
-    (S : TerminalOperatorFamily Ω γ) (K : MovingFiberKernel Ω γ)
-    (hreal : RealizesTerminalEvolution Ω γ hΩ B b S K)
-    (g : KineticPoint d → ℝ) (hg : Continuous g) (hc : HasCompactSupport g)
-    (hs : ContDiff ℝ (⊤ : ℕ∞) (fun q : ℝ × EvolutionAmbientState d =>
-      g ⟨q.1, q.2.1, q.2.2⟩)) (T : ℝ)
-    (hU : tsupport g ⊆ evolutionPastOpenCylinder Ω γ T) (r : ℝ) :
+theorem continuousOn_duhamelIntegrand :
     ContinuousOn (fun p => duhamelIntegrand K g p r)
       (evolutionPastClosedCylinder Ω γ r) := by
   obtain ⟨V, hV, hVe⟩ := exists_duhamelSlice_solution hΩ B b S K hreal g hg hc hs T hU r

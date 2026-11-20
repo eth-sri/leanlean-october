@@ -55,21 +55,16 @@ theorem bellman_pairs_annular_normalization (R : ℝ) (hR : 1 ≤ R)
   let M : ℝ≥0 := ⟨R, zero_le_one.trans hR⟩
   refine ⟨C + M * C, ?_⟩
   intro n
-  have hm : nu n K ≤ (C : ℝ≥0∞) + M * C :=
-    (hC n).trans (le_add_right le_rfl)
-  have hh := smul_le_smul_left (ENNReal.ofReal (c n)) (hp n).2.2.2.2.1
   have he : (ENNReal.ofReal (c n) • eta n) ≤ ENNReal.ofReal R • nu n := by
-    simpa only [nu, smul_smul, mul_comm] using hh
+    simpa only [nu, smul_smul, mul_comm] using (smul_le_smul_left (ENNReal.ofReal (c n)) (hp n).2.2.2.2.1)
   have heK := Measure.le_iff.mp he K hK.measurableSet
   rw [Measure.smul_apply, smul_eq_mul] at heK
-  have heM : ENNReal.ofReal R = (M : ℝ≥0∞) :=
-    ENNReal.ofReal_eq_coe_nnreal (zero_le_one.trans hR)
-  rw [heM] at heK
+  rw [(ENNReal.ofReal_eq_coe_nnreal (zero_le_one.trans hR))] at heK
   constructor
-  · simpa only [ENNReal.coe_add, ENNReal.coe_mul] using hm
-  · calc (ENNReal.ofReal (c n) • eta n) K ≤ (M : ℝ≥0∞) * nu n K := heK
-      _ ≤ (M : ℝ≥0∞) * C := mul_le_mul_right (hC n) _
-      _ ≤ (C : ℝ≥0∞) + M * C := le_add_left le_rfl
-      _ = _ := by simp only [ENNReal.coe_add, ENNReal.coe_mul]
+  · simpa only [ENNReal.coe_add, ENNReal.coe_mul] using ((hC n).trans (le_add_right le_rfl))
+  · calc (ENNReal.ofReal (c n) • eta n) K ≤ M * nu n K := heK
+      _ ≤ M * C := mul_le_mul_right (hC n) _
+      _ ≤ C + M * C := le_add_left le_rfl
+      _ = _ := by simp
 
 end HypoellipticAleksandrov.KineticAleksandrov

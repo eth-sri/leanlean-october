@@ -26,7 +26,6 @@ theorem bellmanRadialWeight_map_scale (β r : ℝ) (hr : 0 < r) :
       ENNReal.ofReal_mul (Real.rpow_nonneg (inv_nonneg.mpr hr.le) _)]
     have hp : (r⁻¹) ^ (3 - β) = r ^ (β - 3) := by
       rw [← Real.rpow_neg_eq_inv_rpow]
-      congr 1
       ring
     rw [hp]
     rfl
@@ -34,7 +33,6 @@ theorem bellmanRadialWeight_map_scale (β r : ℝ) (hr : 0 < r) :
     ← ENNReal.ofReal_mul (inv_nonneg.mpr hr.le)]
   have hp : r⁻¹ * r ^ (β - 3) = r ^ (β - 4) := by
     rw [← Real.rpow_neg_one, ← Real.rpow_add hr]
-    congr 1
     ring
   rw [hp]
 

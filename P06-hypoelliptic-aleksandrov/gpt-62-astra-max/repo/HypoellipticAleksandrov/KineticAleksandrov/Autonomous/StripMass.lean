@@ -11,10 +11,12 @@ open Set MeasureTheory HypoellipticAleksandrov
 open HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 open scoped ENNReal
 
+variable {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam) (A : SmoothAutonomous lam Lam)
+    (H : Interval) (K : MovingFiberKernel (intervalDomain H) (fun _ => 0)) (T : ℝ)
+    (e : StripPole H (T : WithTop ℝ))
+
 /-- Finite time bounds the actual killed Green measure, without a normalization factor. -/
-theorem stripGreenOfKernel_finite_time_mass (H : Interval)
-    (K : MovingFiberKernel (intervalDomain H) (fun _ => 0))
-    (T : ℝ) (e : StripPole H (T : WithTop ℝ)) :
+theorem stripGreenOfKernel_finite_time_mass :
     stripGreenOfKernel H K T e univ ≤ ENNReal.ofReal (T - e.1.time) := by
   have hR : 0 < T - e.1.time := sub_pos.mpr (WithTop.coe_lt_coe.mp e.2.1)
   rw [stripGreenOfKernel, Measure.map_apply (measurable_elapsedPhysicalPoint _ _)
@@ -25,12 +27,8 @@ theorem stripGreenOfKernel_finite_time_mass (H : Interval)
   simpa only [Measure.dirac_apply_of_mem (mem_univ _), one_mul] using! h
 
 /-- The finite-time mass bound for the unique autonomous killed family. -/
-theorem stripGreen_finite_time_mass
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (H : Interval) (T : ℝ)
-    (e : StripPole H (T : WithTop ℝ)) :
-    stripGreen hH hLE hlam hLam A H T e univ ≤ ENNReal.ofReal (T - e.1.time) :=
+theorem stripGreen_finite_time_mass :
+    stripGreen hlam hLam A H T e univ ≤ ENNReal.ofReal (T - e.1.time) :=
   stripGreenOfKernel_finite_time_mass H _ T e
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

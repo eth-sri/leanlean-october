@@ -37,10 +37,7 @@ theorem nonpos_on_inset_maximumClosedTube_of_strict {d : ℕ}
     (hlateral : ∀ p ∈ maximumClosedTube Ω γ a b,
       p.position ∈ frontier (movingDomain Ω γ p.time) → u p ≤ 0) :
     ∀ q ∈ maximumClosedTube Ω γ α b, u q ≤ 0 := by
-  have hsub : maximumClosedTube Ω γ α b ⊆ maximumClosedTube Ω γ a b := by
-    intro p hp
-    exact ⟨⟨haα.le.trans hp.1.1, hp.1.2⟩, hp.2⟩
-  have htSub : Icc α b ⊆ Icc a b := Icc_subset_Icc_left haα.le
+  have hsub : maximumClosedTube Ω γ α b ⊆ maximumClosedTube Ω γ a b := fun p hp => ⟨⟨haα.le.trans hp.1.1, hp.1.2⟩, hp.2⟩
   have hcontrol' : IsTransportIndependentOn u (maximumClosedTube Ω γ α b) ∨
       IsUniformlyNegAtInfinityOn u (maximumClosedTube Ω γ α b) := by
     rcases hcontrol with hi | hn
@@ -52,11 +49,10 @@ theorem nonpos_on_inset_maximumClosedTube_of_strict {d : ℕ}
   intro q hq
   by_contra hnot
   obtain ⟨p, hp, hpos, hmax⟩ := exists_positive_isMaxOn_maximumClosedTube hcΩ
-    (hγ.mono htSub) (hu.mono hsub) hcontrol' hq (lt_of_not_ge hnot)
+    (hγ.mono (Icc_subset_Icc_left haα.le)) (hu.mono hsub) hcontrol' hq (lt_of_not_ge hnot)
   have hpFull := hsub hp
-  have hpt : p.time < b := lt_of_le_of_ne hp.1.2 (by
-    intro heq
-    exact (not_le_of_gt hpos) (hterminal p hpFull heq))
+  have hpt := lt_of_le_of_ne hp.1.2 (by
+    grind)
   have hpv : p.position ∈ movingDomain Ω γ p.time := by
     by_contra hv
     have hfront : p.position ∈ frontier (movingDomain Ω γ p.time) := by
@@ -66,10 +62,8 @@ theorem nonpos_on_inset_maximumClosedTube_of_strict {d : ℕ}
   have hpOpen : p ∈ maximumOpenTube Ω γ a b :=
     ⟨⟨haα.trans_le hp.1.1, hpt⟩, hpv⟩
   obtain ⟨hut, huv, huz⟩ := hreg p hpOpen
-  have hγp : ContinuousAt γ p.time :=
-    (hγ p.time hpFull.1).continuousAt (Icc_mem_nhds hpOpen.1.1 hpOpen.1.2)
   exact (not_le_of_gt (hstrict p hpOpen))
-    (transportedForwardOperator_nonpos_at_tube_max hΩ hγp ⟨hp.1.1, hpt⟩ hpv
+    (transportedForwardOperator_nonpos_at_tube_max hΩ ((hγ p.time hpFull.1).continuousAt (Icc_mem_nhds hpOpen.1.1 hpOpen.1.2)) ⟨hp.1.1, hpt⟩ hpv
       hmax hut huv huz (hB p hpOpen))
 
 end HypoellipticAleksandrov.KineticAleksandrov.Decay

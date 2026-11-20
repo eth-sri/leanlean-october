@@ -1,12 +1,8 @@
 module
 
-public import HypoellipticAleksandrov.KineticAleksandrov.MainAssembly
-public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.FinalAutonomous
-public import HypoellipticAleksandrov.KineticAleksandrov.Geometry
-public import HypoellipticAleksandrov.KineticAleksandrov.Operator
-public import HypoellipticAleksandrov.KineticAleksandrov.Bellman.Exponent
-public import HypoellipticAleksandrov.Geometry.KineticPointMeasure
-public import Mathlib.MeasureTheory.Function.LpSeminorm.Basic
+public import HypoellipticAleksandrov.Statements.KineticAleksandrovAutonomousLocalised
+public import HypoellipticAleksandrov.KineticAleksandrov.Maximum.BorelSource
+public import Mathlib.Tactic
 
 /-!
 # Kinetic Aleksandrov estimate for autonomous coefficients (d = 1)
@@ -47,7 +43,12 @@ theorem kinetic_aleksandrov_autonomous
             C * R ^ (2 - 6 / p) *
               (eLpNorm (fun P => max (f P) 0) (ENNReal.ofReal p)
                 (volume.restrict (backwardCylinder P₀ R))).toReal := by
-  exact HypoellipticAleksandrov.KineticAleksandrov.kinetic_aleksandrov_autonomous_proof
-    lam Lam p hlam hLam hp
+  obtain ⟨C, hC, h⟩ := kinetic_aleksandrov_autonomous_localised lam Lam p hlam hLam hp
+  refine ⟨C, hC, ?_⟩
+  intro P₀ R hR a hm hb f u hf hc hu hsub hLp P hP
+  apply (h P₀ R hR a hm hb f u hf hc hu hsub hLp P hP).trans
+  apply add_le_add le_rfl
+  apply mul_le_mul_of_nonneg_left _ (by positivity)
+  exact unlocalize_source_norm (isOpen_backwardCylinder P₀ R hR) hu.continuousOn hLp
 
 end HypoellipticAleksandrov.KineticAleksandrov

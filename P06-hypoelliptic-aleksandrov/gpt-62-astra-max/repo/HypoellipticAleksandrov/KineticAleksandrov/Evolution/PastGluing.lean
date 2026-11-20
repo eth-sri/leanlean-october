@@ -34,12 +34,8 @@ include hΩ hγ hlam hB hb hε0 hε1 hu
 theorem pastGluedFunction_eq {a : ℝ} (haτ : a < τ) {p : KineticPoint n}
     (hp : p ∈ evolutionPastClosedCylinder Ω γ τ) (ha : a < p.time) :
     pastGluedFunction τ u p = u a p := by
-  have ht : min (p.time - 1) (τ - 1) < τ :=
-    lt_of_le_of_lt (min_le_right _ _) (sub_lt_self _ zero_lt_one)
-  have hs : min (p.time - 1) (τ - 1) < p.time :=
-    lt_of_le_of_lt (min_le_left _ _) (sub_lt_self _ zero_lt_one)
   exact finite_classical_unique hΩ hγ hlam hB hb hε0 hε1
-    (hu _ ht) (hu a haτ) p hp hs ha
+    (hu _ (lt_of_le_of_lt (min_le_right _ _) (sub_lt_self _ zero_lt_one))) (hu a haτ) p hp (lt_of_le_of_lt (min_le_left _ _) (sub_lt_self _ zero_lt_one)) ha
 
 /-- Gluing preserves the uniform global bound, continuity, smoothness, equation and traces. -/
 theorem pastGluedFunction_isClassical {C : ℝ} (hC : 0 ≤ C)
@@ -49,14 +45,12 @@ theorem pastGluedFunction_isClassical {C : ℝ} (hC : 0 ≤ C)
   have hboundG : ∀ p ∈ evolutionPastClosedCylinder Ω γ τ,
       |pastGluedFunction τ u p| ≤ C := by
     intro p hp
-    have ht : min (p.time - 1) (τ - 1) < τ :=
-      lt_of_le_of_lt (min_le_right _ _) (sub_lt_self _ zero_lt_one)
-    exact hbound _ ht p ⟨(min_le_left _ _).trans (sub_le_self _ zero_le_one), hp⟩
+    exact hbound _ (lt_of_le_of_lt (min_le_right _ _) (sub_lt_self _ zero_lt_one)) p ⟨(min_le_left _ _).trans (sub_le_self _ zero_le_one), hp⟩
   refine ⟨⟨⟨C, hC, hboundG⟩, ?_, ?_, ?_, ?_, ?_⟩, hboundG⟩
   · intro p hp
     let a := p.time - 1
     have ha : a < p.time := sub_lt_self _ zero_lt_one
-    have haτ : a < τ := ha.trans_le hp.1
+    have haτ := ha.trans_le hp.1
     have hs : movingClosedSlab Ω γ a τ ∈ 𝓝[evolutionPastClosedCylinder Ω γ τ] p := by
       have ht : ∀ᶠ q : KineticPoint n in 𝓝 p, a < q.time :=
         (isOpen_lt continuous_const continuous_time).mem_nhds ha
@@ -67,29 +61,23 @@ theorem pastGluedFunction_isClassical {C : ℝ} (hC : 0 ≤ C)
     · have ht : ∀ᶠ q : KineticPoint n in 𝓝 p, a < q.time :=
         (isOpen_lt continuous_const continuous_time).mem_nhds ha
       filter_upwards [ht.filter_mono nhdsWithin_le_nhds, self_mem_nhdsWithin] with q hq hqp
-      exact pastGluedFunction_eq hΩ hγ hlam hB hb hε0 hε1 u hu haτ hqp hq
-    · exact pastGluedFunction_eq hΩ hγ hlam hB hb hε0 hε1 u hu haτ hp ha
+      apply_rules [pastGluedFunction_eq]
+    · apply_rules [pastGluedFunction_eq]
   · intro q hq
     let a := q.1 - 1
     have ha : a < q.1 := sub_lt_self _ zero_lt_one
-    have haτ : a < τ := ha.trans hq.1
-    have hmem : q ∈ evolutionFiniteInteriorRaw Ω γ a τ := ⟨ha, hq⟩
-    have hn := (isOpen_evolutionFiniteInteriorRaw hΩ hγ a τ).mem_nhds hmem
-    have hc := (hu a haτ).2.2.1.contDiffAt hn
-    apply ContDiffAt.contDiffWithinAt (hc.congr_of_eventuallyEq ?_)
+    have haτ := ha.trans hq.1
+    have hn := (isOpen_evolutionFiniteInteriorRaw hΩ hγ a τ).mem_nhds ⟨ha, hq⟩
+    apply ContDiffAt.contDiffWithinAt (((hu a haτ).2.2.1.contDiffAt hn).congr_of_eventuallyEq ?_)
     filter_upwards [hn] with r hr
     exact pastGluedFunction_eq hΩ hγ hlam hB hb hε0 hε1 u hu haτ
       ⟨hr.2.1.le, subset_closure hr.2.2⟩ hr.1
   · intro p hp
     let a := p.time - 1
     have ha : a < p.time := sub_lt_self _ zero_lt_one
-    have haτ : a < τ := ha.trans hp.1
+    have haτ := ha.trans hp.1
     have he : pastGluedFunction τ u =ᶠ[𝓝 p] u a := by
-      have ht : ∀ᶠ q : KineticPoint n in 𝓝 p, a < q.time ∧ q.time < τ :=
-        ((isOpen_lt continuous_const continuous_time).inter
-          (isOpen_lt continuous_time continuous_const)).mem_nhds ⟨ha, hp.1⟩
-      have hd := (isOpen_setOf_mem_movingDomain hΩ hγ).mem_nhds hp.2
-      filter_upwards [ht, hd] with q hqt hqd
+      filter_upwards [(((isOpen_lt continuous_const continuous_time).inter (isOpen_lt continuous_time continuous_const)).mem_nhds ⟨ha, hp.1⟩), ((isOpen_setOf_mem_movingDomain hΩ hγ).mem_nhds hp.2)] with q hqt hqd
       exact pastGluedFunction_eq hΩ hγ hlam hB hb hε0 hε1 u hu haτ
         ⟨hqt.2.le, subset_closure hqd⟩ hqt.1
     rw [viscousTransportedOperator_congr_germ B b ε he]
@@ -102,7 +90,7 @@ theorem pastGluedFunction_isClassical {C : ℝ} (hC : 0 ≤ C)
     exact (hu _ haτ).2.2.2.2.1 p hp
   · intro p hp
     have ha : p.time - 1 < p.time := sub_lt_self _ zero_lt_one
-    have haτ : p.time - 1 < τ := ha.trans_le hp.1
+    have haτ := ha.trans_le hp.1
     have hpc : p ∈ evolutionPastClosedCylinder Ω γ τ :=
       ⟨hp.1, frontier_subset_closure hp.2⟩
     rw [pastGluedFunction_eq hΩ hγ hlam hB hb hε0 hε1 u hu haτ hpc ha]
@@ -133,14 +121,13 @@ theorem exists_viscous_terminalSolution_of_finiteSlabs {n : ℕ}
         ∀ p ∈ movingClosedSlab Ω γ a τ, |u p| ≤ C := by
     intro a
     by_cases ha : a < τ
-    · obtain ⟨u, hu⟩ := hfinite a ha
-      exact ⟨u, fun _ => hu⟩
+    · grind
     · exact ⟨fun _ => 0, fun h => (ha h).elim⟩
   choose u hu using hex
   obtain ⟨hg, hgb⟩ := pastGluedFunction_isClassical hΩ hγ hlam hB hb hε0 hε1 u
     (fun a ha => (hu a ha).1) hC (fun a ha => (hu a ha).2)
   refine ⟨pastGluedFunction τ u, hg, hgb, ?_⟩
   intro v hv
-  exact classical_unique hΩ hγ hlam hB hb hε0 hε1 hv hg
+  apply_rules [classical_unique]
 
 end HypoellipticAleksandrov.KineticAleksandrov

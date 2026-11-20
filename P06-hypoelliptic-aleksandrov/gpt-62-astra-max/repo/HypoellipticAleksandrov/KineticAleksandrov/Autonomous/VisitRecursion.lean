@@ -72,17 +72,4 @@ instance visitBeta_isFiniteMeasure (P : Point) (I : Interval) (Sin Sout : Set Po
   dsimp only [visitBeta]
   infer_instance
 
-/-- A finite partial sum of entrance measures, including the initial visit once. -/
-def visitPartialStarts (P : Point) (I : Interval) (Sin Sout : Set Point)
-    (exitActive exitWaiting : Kernel Point Point) (N : ℕ) : Measure Point :=
-  ∑ n ∈ Finset.range N, visitGamma P I Sin Sout exitActive exitWaiting n
-
-/-- Every finite partial visit sum is finite; total visit mass is a separate later result. -/
-instance visitPartialStarts_isFiniteMeasure (P : Point) (I : Interval) (Sin Sout : Set Point)
-    (exitActive exitWaiting : Kernel Point Point)
-    [IsFiniteKernel exitActive] [IsFiniteKernel exitWaiting] (N : ℕ) :
-    IsFiniteMeasure (visitPartialStarts P I Sin Sout exitActive exitWaiting N) := by
-  dsimp only [visitPartialStarts]
-  infer_instance
-
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

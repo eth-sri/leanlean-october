@@ -22,8 +22,6 @@ theorem returnCylinder_distance (z p : Point) (ell : ℝ) (hell : 0 < ell)
     ((p.time - z.time) • (p.velocity - z.velocity))
   rw [PDE.vecEuclideanNorm_neg, PDE.vecEuclideanNorm_smul, ← hinv] at hxi
   have hmul := mul_le_mul ht hv (PDE.vecEuclideanNorm_nonneg _) (sq_nonneg ell)
-  have hxinv : PDE.vecEuclideanNorm (relativePosition p z) ≤ 2 * ell ^ 3 := by
-    nlinarith
   have hmax : max (PDE.vecEuclideanNorm (relativePosition z p))
       (PDE.vecEuclideanNorm (relativePosition p z)) ≤ (2 * ell) ^ 3 := by
     apply max_le <;> nlinarith [pow_pos hell 3]
@@ -40,7 +38,6 @@ theorem returnCylinder_distance (z p : Point) (ell : ℝ) (hell : 0 < ell)
     exact (Real.sqrt_le_iff).mpr ⟨hell.le, ht⟩
   unfold quasiDistance
   rw [PDE.vecEuclideanNorm_sub_comm z.velocity p.velocity]
-  dsimp only [relativePosition] at hroot
   exact (add_le_add (add_le_add htime hv) hroot).trans_eq (by ring)
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

@@ -10,18 +10,22 @@ namespace HypoellipticAleksandrov.Parabolic
 
 open Set
 
-private theorem normSq_lt_quarter_of_mem_halfBall {d : ℕ} {w : PDE.Vec d}
-    (hw : w ∈ PDE.euclideanBall (0 : PDE.Vec d) (1 / 2 : ℝ)) :
+section
+variable {d : ℕ} {w : PDE.Vec d} (hw : w ∈ PDE.euclideanBall (0 : PDE.Vec d) (1 / 2 : ℝ))
+include hw
+
+private theorem normSq_lt_quarter_of_mem_halfBall :
     PDE.vecNormSq w < 1 / 4 := by
   norm_num [PDE.euclideanBall, PDE.euclideanSqDist] at hw ⊢
   exact hw
 
-private theorem coordinate_lt_half_of_mem_halfBall {d : ℕ} {w : PDE.Vec d}
-    (hw : w ∈ PDE.euclideanBall (0 : PDE.Vec d) (1 / 2 : ℝ)) (i : Fin d) :
+private theorem coordinate_lt_half_of_mem_halfBall (i : Fin d) :
     |w i| < 1 / 2 := by
   have hs := (PDE.sq_apply_le_vecNormSq w i).trans_lt
     (normSq_lt_quarter_of_mem_halfBall hw)
   apply abs_lt_of_sq_lt_sq (by nlinarith [hs]) (by norm_num)
+
+end
 
 /-- A fixed number of links reaches every upper point without crossing the terminal time. -/
 theorem unitCylinder_harnack_link_geometry
@@ -36,7 +40,7 @@ theorem unitCylinder_harnack_link_geometry
     let t : ℕ → ℝ := fun k => P.1 + (k : ℝ) * dt
     let v : ℕ → PDE.Vec d := fun k =>
       P.2 + ((k : ℝ) / (m : ℝ)) • (P'.2 - P.2)
-    0 < m ∧ 0 < r ∧ (t 0, v 0) = P ∧ (t m, v m) = P' ∧
+    r ≤ 1 ∧ 0 < r ∧ (t 0, v 0) = P ∧ (t m, v m) = P' ∧
     (∀ k < m, t (k + 1) = t k + r ^ 2) ∧
     (∀ k < m, parabolicClosedBox 2 r (t k - r ^ 2) (v k) ⊆
       Ioo (0 : ℝ) 1 ×ˢ PDE.euclideanBall (0 : PDE.Vec d) 1) ∧
@@ -47,7 +51,7 @@ theorem unitCylinder_harnack_link_geometry
   let t : ℕ → ℝ := fun k => P.1 + (k : ℝ) * dt
   let v : ℕ → PDE.Vec d := fun k =>
     P.2 + ((k : ℝ) / (m : ℝ)) • (P'.2 - P.2)
-  change 0 < m ∧ 0 < r ∧ (t 0, v 0) = P ∧ (t m, v m) = P' ∧ _
+  change r ≤ 1 ∧ 0 < r ∧ (t 0, v 0) = P ∧ (t m, v m) = P' ∧ _
   have hdreal : 1 ≤ (d : ℝ) := by exact_mod_cast hd
   have hm : 256 ≤ m := by dsimp [m]; omega
   have hmpos : 0 < (m : ℝ) := by exact_mod_cast lt_of_lt_of_le (by decide : 0 < 256) hm
@@ -97,7 +101,7 @@ theorem unitCylinder_harnack_link_geometry
       nlinarith
     apply (div_lt_iff₀ hmpos).mpr
     nlinarith
-  refine ⟨by omega, hr, ?_, ?_, fun k _ => htstep k, ?_, ?_⟩
+  refine ⟨by nlinarith only [hrsq, hdtSmall, sq_nonneg (r-1)], hr, ?_, ?_, fun k _ => htstep k, ?_, ?_⟩
   · simp [t, v]
   · apply Prod.ext
     · dsimp [t]

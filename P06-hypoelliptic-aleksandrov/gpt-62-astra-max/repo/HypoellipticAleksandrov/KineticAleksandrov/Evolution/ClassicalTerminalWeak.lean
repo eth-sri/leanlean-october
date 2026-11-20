@@ -12,8 +12,10 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov
 open HypoellipticAleksandrov Set MeasureTheory Evolution
 
+variable {n : ℕ} {Ω : Set (PDE.Vec n)} (hΩ : IsOpen Ω) {γ : ℝ → PDE.Vec n} (hγ : Continuous γ)
+
 /-- The exact product-coordinate interior is the image of the kinetic interior. -/
-theorem evolutionPastInteriorRaw_eq_image {n : ℕ} (Ω : Set (PDE.Vec n))
+theorem evolutionPastInteriorRaw_eq_image (Ω : Set (PDE.Vec n))
     (γ : ℝ → PDE.Vec n) (τ : ℝ) :
     evolutionPastInteriorRaw Ω γ τ =
       KineticPoint.equivProd n '' evolutionPastOpenCylinder Ω γ τ := by
@@ -24,16 +26,15 @@ theorem evolutionPastInteriorRaw_eq_image {n : ℕ} (Ω : Set (PDE.Vec n))
   · rintro ⟨p, hp, rfl⟩
     exact hp
 
+include hΩ hγ in
 /-- The past kinetic interior is open for an open domain and a continuous curve. -/
-theorem isOpen_evolutionPastOpenCylinder {n : ℕ} {Ω : Set (PDE.Vec n)} (hΩ : IsOpen Ω)
-    {γ : ℝ → PDE.Vec n} (hγ : Continuous γ) (τ : ℝ) :
-    IsOpen (evolutionPastOpenCylinder Ω γ τ) := by
-  exact (isOpen_evolutionPastInteriorRaw hΩ hγ τ).preimage
+theorem isOpen_evolutionPastOpenCylinder (τ : ℝ) :
+    IsOpen (evolutionPastOpenCylinder Ω γ τ) := (isOpen_evolutionPastInteriorRaw hΩ hγ τ).preimage
     (KineticPoint.homeomorphProd n).continuous
 
+include hΩ hγ in
 /-- A classical viscous terminal solution satisfies the literal weak adjoint equation. -/
-theorem classical_viscous_terminalSolution_isWeak {n : ℕ} {Ω : Set (PDE.Vec n)}
-    (hΩ : IsOpen Ω) {γ : ℝ → PDE.Vec n} (hγ : Continuous γ)
+theorem classical_viscous_terminalSolution_isWeak
     {B : FullKineticCoefficient n} (hB : IsSmoothFullKineticCoefficient B)
     (hBs : IsSymmetricFullKineticCoefficient B) {b : PDE.Vec n → PDE.Vec n}
     (hb : IsSmoothDrift b) {ε τ : ℝ} {F : BoundedBorel (EvolutionAmbientState n)}
@@ -63,6 +64,6 @@ theorem classical_viscous_terminalSolution_isWeak {n : ℕ} {Ω : Set (PDE.Vec n
     change viscousTransportedOperator B b ε u (evolutionHomeomorph n x) * ψ x = 0
     rw [hu.2.2.2.1 _ hx, zero_mul]
   rw [heq]
-  simp only [Function.comp_apply, zero_mul, integral_zero]
+  simp
 
 end HypoellipticAleksandrov.KineticAleksandrov

@@ -53,9 +53,6 @@ theorem constructionTerminalKernel_fiber_eq
     (constructionTerminalKernel n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
     hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx hJoint).fiberKernel
       (measurableSet_of_isAdmissibleEvolutionDomain hΩ) σ τ hστ = κ σ τ hστ := by
-  apply ProbabilityTheory.Kernel.ext
-  intro p
-  rw [MovingFiberKernel.fiberKernel_apply, terminalFiberKernel_apply]
   rfl
 
 end EvolutionData

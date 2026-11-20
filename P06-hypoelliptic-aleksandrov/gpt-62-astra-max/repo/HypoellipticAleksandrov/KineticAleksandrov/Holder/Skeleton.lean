@@ -58,9 +58,8 @@ theorem extendVelocity_lipschitz {d : ℕ} {x v : ℝ → PDE.Vec d} {H a b : �
     (hab : a ≤ b) (hH : 0 ≤ H) (hx : IsSkeleton x v H a b) (s t : ℝ) :
     PDE.vecEuclideanNorm
       (extendVelocity v a b hab s - extendVelocity v a b hab t) ≤ H * |s - t| := by
-  have hdist := (LipschitzWith.projIcc hab).dist_le_mul s t
-  have hproj : |(projIcc a b hab s : ℝ) - (projIcc a b hab t : ℝ)| ≤ |s - t| := by
-    simpa only [Subtype.dist_eq, Real.dist_eq, NNReal.coe_one, one_mul] using hdist
+  have hproj : |(projIcc a b hab s : ℝ) - (projIcc a b hab t)| ≤ |s - t| := by
+    simpa only [Subtype.dist_eq, Real.dist_eq, NNReal.coe_one, one_mul] using ((LipschitzWith.projIcc hab).dist_le_mul s t)
   exact (hx.2.2 _ (projIcc a b hab s).property _ (projIcc a b hab t).property).trans
     (mul_le_mul_of_nonneg_left hproj hH)
 

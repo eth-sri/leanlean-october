@@ -46,7 +46,6 @@ local notation "P₀" => terminalOperators n hn lam Lam m L_b hlam hlamLam hm hm
 The premises are the composition identity and the joint measurability of the master kernel;
 the marginal package is consumed directly. -/
 theorem construction_terminalEvolution_assembly
-    (hH : HormanderHypoellipticityStatement)
     (hComp : ∀ σ r τ hσr hrτ,
       P₀ σ τ (hσr.trans hrτ) = (P₀ σ r hσr).comp (P₀ r τ hrτ))
     (hKComp : ∀ σ r τ hσr hrτ,
@@ -117,38 +116,25 @@ theorem construction_terminalEvolution_assembly
   have hFiber (σ τ : ℝ) (hστ : σ ≤ τ) :
       K.fiberKernel (measurableSet_of_isAdmissibleEvolutionDomain hΩ) σ τ hστ =
         κ σ τ hστ :=
-    constructionTerminalKernel_fiber_eq n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
-      hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx hJoint σ τ hστ
+    by apply constructionTerminalKernel_fiber_eq <;> assumption
   have hComposition : K.HasComposition
       (measurableSet_of_isAdmissibleEvolutionDomain hΩ) := by
-    intro σ r τ hσr hrτ
-    rw [hFiber, hFiber, hFiber]
-    exact hKComp σ r τ hσr hrτ
+    exact hKComp
   have hBasic := terminalOperators_basic n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
       hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx
   refine ⟨P₀, K, ?_, hBasic.1, hBasic.2.1, hBasic.2.2.1, ?_, ?_,
     K.terminal_support, K.mass_le_one, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
-  · exact terminalOperators_classical n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
-      hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx
+  · apply terminalOperators_classical
   · exact hComp
   · intro σ τ hστ p f
-    rw [hFiber]
-    exact terminalOperators_apply n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
-      hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx σ τ hστ f p
+    apply terminalOperators_apply
   · exact K.jointlyMeasurable_apply
-  · exact K.fiberKernel_mass_le_one (measurableSet_of_isAdmissibleEvolutionDomain hΩ)
-  · intro σ
-    rw [hFiber]
-    exact hBasic.2.2.2 σ
+  · apply K.fiberKernel_mass_le_one
+  · exact hBasic.2.2.2
   · exact hComposition
-  · exact terminalKernel_translation_of_master_eq n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
-      hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx K hK
-  · exact terminalKernel_domain_domination_of_master_eq n hn lam Lam m L_b hlam hlamLam hm hmLb
-      Ω γ B b
-      hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx K hK
-  · exact terminalMarginal_properties_of_master_eq n hn lam Lam m L_b
-      hlam hlamLam hm hmLb Ω γ B b hΩ hγ hB_smooth hB_symm hB_ell hb_smooth
-      hb_lipschitz hb_coercive hEx hH K hK hComposition
+  · apply terminalKernel_translation_of_master_eq <;> assumption
+  · apply terminalKernel_domain_domination_of_master_eq <;> assumption
+  · apply terminalMarginal_properties_of_master_eq <;> assumption
 
 end EvolutionData
 end HypoellipticAleksandrov.KineticAleksandrov

@@ -26,10 +26,7 @@ theorem IsBellmanAdjointPair.smul {lam Lam beta : ℝ}
   rcases h with ⟨hm, he, hn, hlo, hhi, hstat, hdm, hde⟩
   refine ⟨hm.smul _ ENNReal.ofReal_ne_top, he.smul _ ENNReal.ofReal_ne_top, ?_, ?_, ?_,
     hstat.smul _, hdm.smul _, hde.smul _⟩
-  · have hcn : ENNReal.ofReal c ≠ 0 := ne_of_gt (ENNReal.ofReal_pos.mpr hc)
-    rcases hn with hn | hn
-    · exact Or.inl (fun hz => hn ((Measure.ennreal_smul_eq_zero.mp hz).resolve_left hcn))
-    · exact Or.inr (fun hz => hn ((Measure.ennreal_smul_eq_zero.mp hz).resolve_left hcn))
+  · aesop
   · simpa only [smul_smul, mul_comm] using smul_le_smul_left (ENNReal.ofReal c) hlo
   · simpa only [smul_smul, mul_comm] using smul_le_smul_left (ENNReal.ofReal c) hhi
 

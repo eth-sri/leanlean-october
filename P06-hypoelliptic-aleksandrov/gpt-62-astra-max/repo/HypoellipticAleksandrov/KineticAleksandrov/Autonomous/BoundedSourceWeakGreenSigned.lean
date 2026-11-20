@@ -35,9 +35,8 @@ theorem strip_duhamel_sub (H : Interval)
     funext r
     unfold duhamelIntegrand
     split
-    · unfold duhamelSourceIntegral
-      exact integral_sub (sourceSlice_integrable H K g _) (sourceSlice_integrable H K f _)
-    · simp only [sub_self]
+    · exact integral_sub (sourceSlice_integrable H K g _) (sourceSlice_integrable H K f _)
+    simp
   obtain ⟨Cg, hCg, hg⟩ := g.exists_bound
   obtain ⟨Cf, hCf, hf⟩ := f.exists_bound
   unfold duhamelPotential

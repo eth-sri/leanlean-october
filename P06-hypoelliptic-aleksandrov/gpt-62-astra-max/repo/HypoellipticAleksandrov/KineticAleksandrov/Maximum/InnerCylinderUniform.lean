@@ -24,10 +24,6 @@ theorem innerRetraction_uniformly_to_identity {d : ℕ}
   have hc : Continuous (Function.uncurry f) := by
     have ht : Continuous (fun q : ℝ × KineticPoint d => q.2.time) :=
       continuous_time.comp continuous_snd
-    have hx : Continuous (fun q : ℝ × KineticPoint d => q.2.position) :=
-      continuous_position.comp continuous_snd
-    have hv : Continuous (fun q : ℝ × KineticPoint d => q.2.velocity) :=
-      continuous_velocity.comp continuous_snd
     have hρ : Continuous (fun q : ℝ × KineticPoint d =>
         Real.sqrt (1 - 2 * q.1 / R^2)) :=
       Real.continuous_sqrt.comp (continuous_const.sub
@@ -38,23 +34,21 @@ theorem innerRetraction_uniformly_to_identity {d : ℕ}
       ((hρ.pow 2).mul (ht.sub continuous_const))
     exact KineticPoint.continuous_mk hs
       ((continuous_const.add ((hs.sub continuous_const).smul continuous_const)).add
-        ((hρ.pow 3).smul ((hx.sub continuous_const).sub
+        ((hρ.pow 3).smul (((continuous_position.comp continuous_snd).sub continuous_const).sub
           ((ht.sub continuous_const).smul continuous_const))))
-      (continuous_const.add (hρ.smul (hv.sub continuous_const)))
+      (continuous_const.add (hρ.smul ((continuous_velocity.comp continuous_snd).sub continuous_const)))
   have h0 : ∀ P, f 0 P = P := by
     intro P
     ext i <;> simp [f, relativePosition, relativeVelocity] <;> ring
   intro ε hε
   obtain ⟨v,hv,he⟩ := (isCompact_closure_forwardCylinder Z₀ R hR).mem_uniformity_of_prod
-    (s := univ) (q := (0 : ℝ)) hc.continuousOn (mem_univ 0)
+    (s := univ) (q := 0) hc.continuousOn (mem_univ 0)
     (Metric.dist_mem_uniformity hε)
-  have hv' : v ∈ nhds (0 : ℝ) := by simpa only [nhdsWithin_univ] using hv
+  have hv' : v ∈ nhds 0 := by simpa using hv
   obtain ⟨η,hη,hηv⟩ := Metric.mem_nhds_iff.mp hv'
   refine ⟨η,hη,?_⟩
   intro δ hδ0 hδlt hδη P hP
-  have hdv := hηv (show δ ∈ Metric.ball 0 η by simpa [Real.dist_eq,abs_of_pos hδ0])
-  have he' := he δ hdv P hP
-  change dist (f δ P) (f 0 P) < ε at he'
+  have he' := he δ (hηv (show δ ∈ Metric.ball 0 η by simpa [Real.dist_eq,abs_of_pos hδ0])) P hP
   rw [h0] at he'
   exact he'
 

@@ -20,8 +20,6 @@ open scoped ENNReal NNReal
 
 /-- The interval Green theorem: uniform density norm and finite infinite-horizon mass. -/
 theorem interval_green_density
-    (hH : HormanderHypoellipticityStatement)
-    (hLE : LiebermanEllipsoidDirichletStatement)
     (lam Lam m Lb length : ℝ) (hlam : 0 < lam) (hlamLam : lam ≤ Lam)
     (hm : 0 < m) (hmLb : m ≤ Lb) (hlength : 0 < length)
     (q : ℝ) (hq : 1 < q) (hq2 : q < (3 : ℝ) / 2) :
@@ -40,9 +38,9 @@ theorem interval_green_density
       Γ = (greenLebesgue 1).withDensity G ∧
       eLpNorm G (ENNReal.ofReal q) (greenLebesgue 1) ≤ ENNReal.ofReal C * μ univ ∧
       Γ univ < ⊤ := by
-  obtain ⟨C, k, hC, _hk, hnorm⟩ := interval_green_infinite_norm hH hLE
+  obtain ⟨C, k, hC, _hk, hnorm⟩ := interval_green_infinite_norm
     lam Lam m Lb length hlam hlamLam hm hmLb hlength q hq hq2
-  obtain ⟨_Cm, _hCm, hmass⟩ := interval_green_finite_mass hH hLE
+  obtain ⟨_Cm, _hCm, hmass⟩ := interval_green_finite_mass
     lam Lam m Lb length hlam hlength
   refine ⟨C, hC, ?_⟩
   intro a c hac B b hs hJ S K hr hlen σ μ _ Γ hΓ

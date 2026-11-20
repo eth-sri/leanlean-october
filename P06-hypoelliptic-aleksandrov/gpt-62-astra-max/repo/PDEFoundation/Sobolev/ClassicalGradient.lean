@@ -19,23 +19,23 @@ by the inherited product norm.
 
 namespace PDE
 
+variable {d : ℕ} (f : Vec d → ℝ) (x : Vec d)
+
+include f x in
 /-- The coordinate gradient of a scalar function, expressed in the native
 vector carrier. -/
-noncomputable def classicalGradient {d : ℕ}
-    (f : Vec d → ℝ) (x : Vec d) : Vec d :=
+noncomputable def classicalGradient : Vec d :=
   fun i => (fderiv ℝ f x) (basisVec i)
 
 @[simp]
-theorem classicalGradient_apply {d : ℕ}
-    (f : Vec d → ℝ) (x : Vec d) (i : Fin d) :
+theorem classicalGradient_apply (i : Fin d) :
     classicalGradient f x i =
       (fderiv ℝ f x) (basisVec i) :=
   rfl
 
 /-- A continuous linear functional on native vectors is reconstructed from
 its values on the coordinate basis. -/
-theorem ContinuousLinearMap.apply_eq_vecDot_basisValues
-    {d : ℕ} (L : Vec d →L[ℝ] ℝ) (v : Vec d) :
+theorem ContinuousLinearMap.apply_eq_vecDot_basisValues (L : Vec d →L[ℝ] ℝ) (v : Vec d) :
     L v = vecDot (fun i => L (basisVec i)) v := by
   calc
     L v = L (∑ i : Fin d, v i • basisVec i) := by
@@ -43,28 +43,15 @@ theorem ContinuousLinearMap.apply_eq_vecDot_basisValues
     _ = ∑ i : Fin d, v i * L (basisVec i) := by
       simp
     _ = ∑ i : Fin d, L (basisVec i) * v i := by
-      apply Finset.sum_congr rfl
-      intro i _hi
-      ring
+      grind
     _ = vecDot (fun i => L (basisVec i)) v := by
       rfl
 
 /-- Directional derivatives are Euclidean dot products with the coordinate
 gradient. -/
-theorem fderiv_apply_eq_vecDot_classicalGradient {d : ℕ}
-    (f : Vec d → ℝ) (x v : Vec d) :
+theorem fderiv_apply_eq_vecDot_classicalGradient (x v : Vec d) :
     (fderiv ℝ f x) v = vecDot (classicalGradient f x) v :=
   PDE.ContinuousLinearMap.apply_eq_vecDot_basisValues
     (fderiv ℝ f x) v
-
-/-- The coordinate gradient of a `C¹` function is continuous. -/
-theorem ContDiff.continuous_classicalGradient {d : ℕ}
-    {f : Vec d → ℝ} (hf : ContDiff ℝ 1 f) :
-    Continuous (classicalGradient f) := by
-  apply continuous_pi
-  intro i
-  exact
-    (hf.continuous_fderiv (by simp)).clm_apply
-      continuous_const
 
 end PDE

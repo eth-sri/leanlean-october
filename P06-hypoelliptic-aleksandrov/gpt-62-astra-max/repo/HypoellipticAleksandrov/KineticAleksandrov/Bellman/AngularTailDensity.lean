@@ -27,9 +27,7 @@ theorem bellmanAngularDensity_tail (β : ℝ) (μ : Measure BellmanPuncturedPlan
     exact (bellmanAngularTail_lintegral_finite β μ F hrep).ne
   have hfm := hf.aestronglyMeasurable.aemeasurable.ennreal_ofReal
   rw [hF, IntegrableOn, restrict_withDensity hS] at hi
-  have ht := (integrable_withDensity_iff_integrable_smul₀' hfm.restrict
-    (ae_of_all _ fun x => ENNReal.ofReal_lt_top)).mp hi
-  apply ht.congr
+  apply ((integrable_withDensity_iff_integrable_smul₀' hfm.restrict (ae_of_all _ fun x => ENNReal.ofReal_lt_top)).mp hi).congr
   filter_upwards [ae_restrict_of_ae hn] with x hx
   rw [ENNReal.toReal_ofReal hx, smul_eq_mul]
 

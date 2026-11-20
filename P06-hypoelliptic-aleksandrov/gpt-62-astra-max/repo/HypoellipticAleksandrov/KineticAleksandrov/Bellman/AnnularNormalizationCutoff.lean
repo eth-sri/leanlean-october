@@ -19,15 +19,14 @@ theorem exists_bellman_annular_cutoff :
       (∀ q, 1 ≤ bellmanGauge q → bellmanGauge q ≤ 2 → chi q = 1) ∧
       (∃ chi0 : ℝ → ℝ, ∀ q, chi q = chi0 (bellmanGauge q)) := by
   obtain ⟨psi, hp, _hpc, hps, hpr, hp1⟩ := SectionTwo.exists_smooth_cutoff
-    (C := Icc (1 : ℝ) 64) (V := Ioo (1 / 64 : ℝ) 4096) isCompact_Icc isOpen_Ioo
-    (by intro x hx; constructor <;> linarith only [hx.1, hx.2])
+    (C := Icc (1 : ℝ) 64) (V := Ioo (1 / 64) 4096) isCompact_Icc isOpen_Ioo
+    (by grind)
   let chi : (ℝ × ℝ) → ℝ := psi ∘ bellmanGaugePower
   have hs : tsupport chi ⊆ bellmanGaugePower ⁻¹' tsupport psi :=
     fun _ hq => tsupport_comp_subset_preimage psi bellmanGaugePower_continuous hq
   have hb : tsupport chi ⊆ {q | bellmanGaugePower q ≤ 4096} := by
-    intro q hq
-    exact (hps (hs hq)).2.le
-  have hcompact : HasCompactSupport chi :=
+    grind
+  have hcompact :=
     (bellmanGaugePower_sublevel_isCompact 4096 (by norm_num)).of_isClosed_subset
       (isClosed_tsupport chi) hb
   refine ⟨chi, hp.comp bellmanGaugePower_contDiff, hcompact, ?_,
@@ -37,18 +36,16 @@ theorem exists_bellman_annular_cutoff :
     have he := bellmanGauge_pow_six q
     constructor
     · by_contra h
-      have hh : bellmanGauge q ≤ 1 / 2 := le_of_not_gt h
-      have hx := pow_le_pow_left₀ (bellmanGauge_nonneg q) hh 6
+      have hx := pow_le_pow_left₀ (bellmanGauge_nonneg q) (le_of_not_gt h) 6
       rw [he] at hx
-      norm_num at hx
       linarith only [hn.1, hx]
-    · exact lt_of_pow_lt_pow_left₀ 6 (by norm_num : (0 : ℝ) ≤ 4) (by
+    · exact lt_of_pow_lt_pow_left₀ 6 (by norm_num) (by
         rw [he]
         norm_num
         exact hn.2)
   · intro q hq1 hq2
     apply hp1
-    have hl := pow_le_pow_left₀ (by norm_num : (0 : ℝ) ≤ 1) hq1 6
+    have hl := pow_le_pow_left₀ (by norm_num) hq1 6
     have hu := pow_le_pow_left₀ (bellmanGauge_nonneg q) hq2 6
     rw [bellmanGauge_pow_six] at hl hu
     norm_num at hl hu

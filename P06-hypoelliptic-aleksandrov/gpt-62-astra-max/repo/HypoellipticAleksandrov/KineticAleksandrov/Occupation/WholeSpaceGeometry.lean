@@ -14,7 +14,7 @@ open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic Set
 theorem radius_sq_le_frontier_sum {d : ℕ} (vStar : PDE.Vec d) (R : ℝ)
     {v : PDE.Vec d} (hv : v ∈ frontier (PDE.euclideanBall vStar R)) :
     R ^ 2 ≤ ∑ i, (v i - vStar i) ^ 2 := by
-  have hn : v ∉ PDE.euclideanBall vStar R :=
+  have hn :=
     (PDE.isOpen_euclideanBall vStar R).frontier_eq ▸ hv |>.2
   have hsq : ¬ PDE.euclideanSqDist v vStar < R ^ 2 := hn
   simpa [PDE.euclideanSqDist, PDE.vecNormSq_eq_sum_sq] using le_of_not_gt hsq
@@ -25,7 +25,7 @@ theorem occupationQuadratic_center_half {d : ℕ} {Lam α R : ℝ}
     (hRsq : R ^ 2 = max 1 (4 * d * Lam)) :
     (2 * d * Lam * (1 - α)) / R ^ 2 ≤ 1 / 2 := by
   apply (div_le_iff₀ (sq_pos_of_pos hR)).mpr
-  have hb : 4 * (d : ℝ) * Lam ≤ R ^ 2 := hRsq ▸ le_max_right _ _
+  have hb := hRsq ▸ le_max_right _ _
   have ha : 0 ≤ 2 * (d : ℝ) * Lam := by positivity
   nlinarith [mul_nonneg ha hα]
 

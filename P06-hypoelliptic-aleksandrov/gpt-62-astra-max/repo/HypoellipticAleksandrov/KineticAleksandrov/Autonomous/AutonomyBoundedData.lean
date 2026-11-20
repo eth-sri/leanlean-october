@@ -15,7 +15,7 @@ open scoped Topology
 
 /-- Every bounded smooth datum has a classical solution represented by the supplied kernel. -/
 theorem fullspace_bounded_smooth_solution
-    (hH : HormanderHypoellipticityStatement) {lam Lam : ℝ}
+    {lam Lam : ℝ}
     (hlam : 0 < lam) (hLam : lam ≤ Lam) (A : SmoothAutonomous lam Lam)
     (E : FullSpaceEvolution) (hE : IsFullSpaceEvolution A E)
     (τ : ℝ) (F : BoundedBorel (EvolutionAmbientState 1))
@@ -36,13 +36,11 @@ theorem fullspace_bounded_smooth_solution
       le_rfl zero_le_one
       ((isClassicalViscousTerminalSolution_zero_iff _ _ _ _ _ _ _).2 (hv N))
       (boundedConservationDatum_bound F hC N)
-  obtain ⟨u, hulim, hu⟩ := exists_bounded_fullspace_classical_limit hH hlam hLam A
+  obtain ⟨u, hulim, hu⟩ := exists_bounded_fullspace_classical_limit hlam hLam A
     τ F C hC0 hC v hv hb
   refine ⟨u, hu, ?_⟩
   intro q hqτ
   let p : KineticPoint 1 := ⟨q.1.1, q.1.2.2.1, q.1.2.2.2⟩
-  have hp : p ∈ evolutionPastClosedCylinder autonomousWholeDomain (fun _ => 0) τ :=
-    ⟨hqτ ▸ q.2.1, subset_closure q.2.2.1⟩
   have heq (N : ℕ) : v N p = ∫ x, boundedConservationDatum F N x ∂E.2.master q := by
     let s : EvolutionState autonomousWholeDomain (fun _ => 0) q.1.1 :=
       ⟨q.1.2.2, q.2.2⟩
@@ -62,18 +60,17 @@ theorem fullspace_bounded_smooth_solution
       (fun N => (boundedConservationDatum F N).measurable.aestronglyMeasurable)
       (integrable_const C) (fun N => Eventually.of_forall fun x => ?_)
       (Eventually.of_forall fun x => ?_)
-    · rw [Real.norm_eq_abs]
-      exact boundedConservationDatum_bound F hC N x
+    · exact boundedConservationDatum_bound F hC N x
     · obtain ⟨N₀, hN₀⟩ := exists_nat_ge (max ‖x.1‖ ‖x.2‖)
       refine tendsto_const_nhds.congr' ?_
       filter_upwards [eventually_ge_atTop N₀] with N hN
       have hn : (N₀ : ℝ) ≤ N := by exact_mod_cast hN
       change F x = F x * (zCutoffN 1 N x.1 * zCutoffN 1 N x.2)
-      have hy : ‖x.1‖ ≤ (N : ℝ) + 1 := by
-        have := le_max_left ‖x.1‖ ‖x.2‖; linarith
+      have hy : ‖x.1‖ ≤ N + 1 := by
+        grind
       have hz : ‖x.2‖ ≤ (N : ℝ) + 1 := by
-        have := le_max_right ‖x.1‖ ‖x.2‖; linarith
+        grind
       rw [zCutoffN_eq_one hy, zCutoffN_eq_one hz, mul_one, mul_one]
-  exact tendsto_nhds_unique ((hulim p hp).congr heq) ht
+  exact tendsto_nhds_unique ((hulim p ⟨hqτ ▸ q.2.1, subset_closure q.2.2.1⟩).congr heq) ht
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

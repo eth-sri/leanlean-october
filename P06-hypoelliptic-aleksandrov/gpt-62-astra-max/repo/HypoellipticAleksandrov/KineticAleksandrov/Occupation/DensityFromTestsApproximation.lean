@@ -57,8 +57,7 @@ theorem exists_continuous_test_approximation (η : Measure E)
     funext x
     by_cases hx : f x = 0
     · simp [hx]
-    · have hxK : x ∈ K := hfK hx
-      simp [h1 x hxK]
+    · simp [h1 x (hfK hx)]
   rw [heq]
   refine (eLpNorm_mono_ae (g := a - f)
     (hs.continuous.aestronglyMeasurable.mul (ha.aestronglyMeasurable.sub
@@ -66,7 +65,7 @@ theorem exists_continuous_test_approximation (η : Measure E)
   · change ‖χ x * (a x - f x)‖ ≤ ‖a x - f x‖
     rw [norm_mul, Real.norm_of_nonneg (h01 x).1]
     exact mul_le_of_le_one_left (norm_nonneg _) (h01 x).2
-  · simpa only [eLpNorm_sub_comm] using han
+  · simpa [eLpNorm_sub_comm] using han
 
 omit [NormedAddCommGroup E] [NormedSpace ℝ E] [FiniteDimensional ℝ E] [BorelSpace E] in
 /-- Finite-measure `Lp` convergence, for `p ≥ 1`, implies `L¹` convergence. -/

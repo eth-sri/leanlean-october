@@ -29,12 +29,10 @@ theorem mixture_density_eq_of_pairing {X : Type*} [MeasurableSpace X]
     have hi : (fun x => B.indicator (fun _ => 1) x * g x) = B.indicator g := by
       funext x
       by_cases hx : x ∈ B
-      · simp only [indicator_of_mem hx, one_mul]
-      · simp only [indicator_of_notMem hx, zero_mul]
+      · simp [indicator_of_mem hx]
+      · simp [indicator_of_notMem hx]
     rw [hi] at hh
-    simpa only [integral_indicator hB,
-      integral_const, smul_eq_mul, mul_one, Measure.real, Measure.restrict_apply hB,
-      Measure.restrict_apply MeasurableSet.univ, univ_inter] using hh
+    simpa [integral_indicator hB, integral_const, Measure.real, Measure.restrict_apply hB, Measure.restrict_apply MeasurableSet.univ, univ_inter] using hh
   calc
     mu B = ENNReal.ofReal (mu B).toReal :=
       (ENNReal.ofReal_toReal (measure_ne_top mu B)).symm
@@ -61,11 +59,8 @@ theorem mixture_density_bound_of_bounded_tests {E : Type*}
         (eLpNorm f (ENNReal.ofReal (q / (q - 1))) (m.restrict univ)).toReal := by
     intro f hf hfc _ hfn
     obtain ⟨M, hM⟩ := hfc.exists_bound_of_continuous hf.continuous
-    let F : BoundedBorel E := ⟨f, hf.continuous.measurable, max M 0,
-      le_max_right _ _, fun x => by
-        simpa only [Real.norm_eq_abs] using (hM x).trans (le_max_left M 0)⟩
     simpa only [Measure.restrict_univ] using
-      htest F (hf.continuous.memLp_of_hasCompactSupport hfc) hfn
+      htest ⟨f, hf.continuous.measurable, max M 0, le_max_right _ _, fun x => by simpa only [Real.norm_eq_abs] using (hM x).trans (le_max_left M 0)⟩ (hf.continuous.memLp_of_hasCompactSupport hfc) hfn
   obtain ⟨_, g, hgm, hgn, hgi, hgp, hgb, _, hpair⟩ :=
     Occupation.exists_density_of_smooth_tests m mu isOpen_univ (by simp) hq hC hs
   simp only [Measure.restrict_univ] at hgi hgp hgb hpair

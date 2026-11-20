@@ -121,10 +121,7 @@ theorem evolution_clauses_of_realization
   obtain ⟨S₀, K₀, hc, -, -, -, -, hi, -, -, -, -, he, hcomp, hcov, hdom, hpar⟩ :=
     hEvol n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b hΩ hγ hBs hBsym hBell
       hbs hbl hbc
-  have hr₀ : RealizesTerminalEvolution Ω γ
-      (measurableSet_of_isAdmissibleEvolutionDomain hΩ) B b S₀ K₀ :=
-    ⟨hc, hi, he, hcomp⟩
-  have hunique := terminalEvolution_unique Ω γ hΩ B b S S₀ K K₀ hreal hr₀
+  have hunique := terminalEvolution_unique Ω γ hΩ B b S S₀ K K₀ hreal ⟨hc, hi, he, hcomp⟩
   rw [hunique.2]
   exact ⟨hcov, hdom, hpar⟩
 

@@ -39,7 +39,7 @@ theorem exists_compactSupport_cutoff :
       ∀ x, Tendsto (fun j => φ j x) atTop (𝓝 1) := by
   let K : CompactExhaustion X := CompactExhaustion.choice X
   have hex : ∀ j, ∃ f : C(X, ℝ), EqOn f 1 (K j) ∧ IsCompact (tsupport f) ∧
-      tsupport f ⊆ interior (K (j + 1)) ∧ ∀ x, f x ∈ Icc (0 : ℝ) 1 := fun j =>
+      tsupport f ⊆ interior (K (j + 1)) ∧ ∀ x, f x ∈ Icc 0 1 := fun j =>
     exists_continuousMap_one_of_isCompact_subset_isOpen (K.isCompact j) isOpen_interior
       (K.subset_interior_succ j)
   choose f hf1 hfc hfs hf01 using hex
@@ -82,26 +82,22 @@ theorem measurable_measure_closed [PseudoMetrizableSpace X] (ν : α → Measure
     [∀ a, IsFiniteMeasure (ν a)]
     (H : ∀ f : C_c(X, ℝ), Measurable fun a => ∫ x, f x ∂ν a)
     {C : Set X} (hC : IsClosed C) : Measurable fun a => ν a C := by
-  have hlim : ∀ a, Tendsto (fun n => ∫⁻ x, (hC.apprSeq n x : ℝ≥0∞) ∂ν a) atTop (𝓝 (ν a C)) :=
-    fun a => HasOuterApproxClosed.tendsto_lintegral_apprSeq hC (ν a)
-  refine measurable_of_tendsto_metrizable (f := fun n a => ∫⁻ x, (hC.apprSeq n x : ℝ≥0∞) ∂ν a)
-    (fun n => ?_) (tendsto_pi_nhds.2 hlim)
-  have hcont : Continuous fun x => ((hC.apprSeq n x : ℝ≥0) : ℝ) :=
+  refine measurable_of_tendsto_metrizable (f := fun n a => ∫⁻ x, (hC.apprSeq n x) ∂ν a)
+    (fun n => ?_) (tendsto_pi_nhds.2 (fun a => HasOuterApproxClosed.tendsto_lintegral_apprSeq hC (ν a)))
+  have hcont : Continuous fun x => ((hC.apprSeq n x) : ℝ) :=
     NNReal.continuous_coe.comp (hC.apprSeq n).continuous
-  have hint := measurable_integral_of_continuous_bounded ν H _ hcont 1 fun x => by
-    rw [NNReal.abs_eq]; exact_mod_cast HasOuterApproxClosed.apprSeq_apply_le_one hC n x
-  have heq : ∀ a, ∫⁻ x, (hC.apprSeq n x : ℝ≥0∞) ∂ν a =
-      ENNReal.ofReal (∫ x, ((hC.apprSeq n x : ℝ≥0) : ℝ) ∂ν a) := by
+  have heq : ∀ a, ∫⁻ x, (hC.apprSeq n x) ∂ν a =
+      ENNReal.ofReal (∫ x, ((hC.apprSeq n x) : ℝ) ∂ν a) := by
     intro a
     rw [ofReal_integral_eq_lintegral_ofReal]
     · simp
-    · exact (integrable_const (1 : ℝ)).mono' hcont.aestronglyMeasurable
+    · exact (integrable_const 1).mono' hcont.aestronglyMeasurable
         (Filter.Eventually.of_forall fun x => by
           rw [Real.norm_eq_abs, NNReal.abs_eq]
           exact_mod_cast HasOuterApproxClosed.apprSeq_apply_le_one hC n x)
     · exact Filter.Eventually.of_forall fun x => NNReal.coe_nonneg _
   simp_rw [heq]
-  exact hint.ennreal_ofReal
+  exact (measurable_integral_of_continuous_bounded ν H _ hcont 1 fun x => by rw [NNReal.abs_eq]; exact_mod_cast HasOuterApproxClosed.apprSeq_apply_le_one hC n x).ennreal_ofReal
 
 /-- A subprobability-kernel-shaped family is measurable once all `C_c` integrals are. -/
 theorem measurable_of_integral_measurable [PseudoMetrizableSpace X] (ν : α → Measure X)
@@ -117,25 +113,23 @@ theorem measurable_integral_of_dense {P : Type*} (T : P → C_c(X, ℝ)) (ν : �
     (hdense : ∀ f : C_c(X, ℝ), ∀ ε : ℝ, 0 < ε → ∃ F, ∀ x, |T F x - f x| ≤ ε)
     (hT : ∀ F, Measurable fun a => ∫ x, T F x ∂ν a) (f : C_c(X, ℝ)) :
     Measurable fun a => ∫ x, f x ∂ν a := by
-  choose F hF using fun k : ℕ => hdense f (1 / ((k : ℝ) + 1)) (by positivity)
+  choose F hF using fun k : ℕ => hdense f (1 / (k + 1)) (by positivity)
   refine measurable_of_tendsto_metrizable (f := fun k a => ∫ x, T (F k) x ∂ν a) (fun k => hT _)
     (tendsto_pi_nhds.2 fun a => ?_)
-  have hbd : ∀ k, |∫ x, T (F k) x ∂ν a - ∫ x, f x ∂ν a| ≤ 1 / ((k : ℝ) + 1) := by
+  have hbd : ∀ k, |∫ x, T (F k) x ∂ν a - ∫ x, f x ∂ν a| ≤ 1 / (k + 1) := by
     intro k
     rw [← integral_sub (T (F k)).integrable f.integrable]
     have := norm_integral_le_of_norm_le_const (μ := ν a)
-      (f := fun x => T (F k) x - f x) (C := 1 / ((k : ℝ) + 1))
-      (Filter.Eventually.of_forall fun x => by simpa using hF k x)
+      (f := fun x => T (F k) x - f x) (C := 1 / (k + 1))
+      (Filter.Eventually.of_forall fun x => by exact hF k x)
     have hreal : (ν a).real univ ≤ 1 := by
-      rw [Measure.real]
       exact ENNReal.toReal_le_of_le_ofReal zero_le_one (by simpa using hmass a)
     calc |∫ x, (T (F k) x - f x) ∂ν a| = ‖∫ x, (T (F k) x - f x) ∂ν a‖ := (Real.norm_eq_abs _).symm
-      _ ≤ 1 / ((k : ℝ) + 1) * (ν a).real univ := this
-      _ ≤ 1 / ((k : ℝ) + 1) * 1 := mul_le_mul_of_nonneg_left hreal (by positivity)
-      _ = 1 / ((k : ℝ) + 1) := mul_one _
+      _ ≤ 1 / (k + 1) * (ν a).real univ := this
+      _ ≤ 1 / (k + 1) * 1 := mul_le_mul_of_nonneg_left hreal (by positivity)
+      _ = 1 / (k + 1) := mul_one _
   rw [tendsto_iff_dist_tendsto_zero]
   refine squeeze_zero (fun k => dist_nonneg) (fun k => ?_) tendsto_one_div_add_atTop_nhds_zero_nat
-  rw [Real.dist_eq]
-  exact hbd k
+  apply hbd
 
 end HypoellipticAleksandrov.KineticAleksandrov

@@ -10,14 +10,16 @@ public import Mathlib.Analysis.Calculus.FDeriv.CompCLM
 
 namespace HypoellipticAleksandrov.Parabolic
 
+variable {d : ℕ} {U : Set (TimeVelocity d)} {u : TimeVelocity d → ℝ} (hu : IsScalarC12On u U)
+    {z : TimeVelocity d}
+
 /-- The scalar Hessian equals the second derivative of the fixed-time slice. -/
 theorem scalarSpatialHessian_eq_secondFDeriv
-    {d : ℕ} {u : TimeVelocity d → ℝ} {z : TimeVelocity d}
     (hu : ContDiffAt ℝ 2 (fun y => u (z.1, y)) z.2) (i j : Fin d) :
     scalarSpatialHessian u z i j =
       fderiv ℝ (fderiv ℝ (fun y => u (z.1, y))) z.2 (PDE.basisVec i)
         (PDE.basisVec j) := by
-  have hd : DifferentiableAt ℝ (fderiv ℝ (fun y => u (z.1, y))) z.2 :=
+  have hd :=
     (hu.fderiv_right (m := 1) (by norm_num)).differentiableAt (by norm_num)
   unfold scalarSpatialHessian PDE.classicalGradient
   rw [fderiv_pi (fun k => hd.clm_apply (differentiableAt_const (PDE.basisVec k)))]
@@ -25,10 +27,9 @@ theorem scalarSpatialHessian_eq_secondFDeriv
   rw [fderiv_clm_apply hd (differentiableAt_const (PDE.basisVec j))]
   simp
 
+include hu in
 /-- Spatial C² slices give the exact scalar Hessian symmetry, without time regularity. -/
-theorem scalarSpatialHessian_isSymm_of_c12
-    {d : ℕ} {U : Set (TimeVelocity d)} {u : TimeVelocity d → ℝ}
-    (hu : IsScalarC12On u U) {z : TimeVelocity d} (hz : z ∈ U) :
+theorem scalarSpatialHessian_isSymm_of_c12 (hz : z ∈ U) :
     (scalarSpatialHessian u z).IsSymm := by
   have hs := hu.spatialSlice_contDiffAt hz
   ext i j

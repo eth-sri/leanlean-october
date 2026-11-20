@@ -24,7 +24,7 @@ theorem measurableSet_positionStartBox (c : Clock) (Y : ℝ) :
 theorem positionStartQuadratic_slab_mass_bound {lam Lam : ℝ}
     (hlam : 0 < lam) (hLam : lam ≤ Lam) :
     ∃ C : ℝ, 0 < C ∧
-    ∀ (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
+    ∀
       (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (s x a b : ℝ) (k : ℤ)
       (mu : Measure Point) [IsFiniteMeasure mu],
       |c.vbar| = 2 * c.r → closure c.active ⊆ J.carrier → a ≤ b →
@@ -32,13 +32,13 @@ theorem positionStartQuadratic_slab_mass_bound {lam Lam : ℝ}
       let Y := x + ((k : ℝ) + 1 / 2) * c.r ^ 3
       5 * c.r ^ 2 / 16 * enlargedPositionSlabMass mu c s x a b k ≤
         9 * c.r ^ 2 / 16 *
-          ((positionStartTerminalKernel hH hLE hlam hLam A c J (s + b) ∘ₘ mu)
+          ((positionStartTerminalKernel hlam hLam A c J (s + b) ∘ₘ mu)
             (positionStartBox c Y)).toReal +
-        C * ((coreAllTimeGreenKernel hH hLE hlam hLam A c ∘ₘ mu)
+        C * ((coreAllTimeGreenKernel hlam hLam A c ∘ₘ mu)
           ({q : Point | s + a < q.time ∧ q.time ≤ s + b} ∩ positionStartBox c Y)).toReal := by
   obtain ⟨C, hC, hbound⟩ := positionStartQuadratic_operator_bound hlam hLam
   refine ⟨C, hC, ?_⟩
-  intro hH hLE A c J s x a b k mu _ hc hJ hab hmu
+  intro A c J s x a b k mu _ hc hJ hab hmu
   dsimp only
   let Y := x + ((k : ℝ) + 1 / 2) * c.r ^ 3
   let f := fun q : Point => positionStartCutoff Y c.r c.positive (q.position 0) *
@@ -46,23 +46,23 @@ theorem positionStartQuadratic_slab_mass_bound {lam Lam : ℝ}
   let g := fun q : Point => forwardScalarOperator A.a f q
   let S := {q : Point | s + a < q.time ∧ q.time ≤ s + b}
   let W := positionStartBox c Y
-  let B := positionStartTerminalKernel hH hLE hlam hLam A c J (s + b) ∘ₘ mu
-  let D := positionStartTerminalKernel hH hLE hlam hLam A c J (s + a) ∘ₘ mu
-  let G := coreAllTimeGreenKernel hH hLE hlam hLam A c ∘ₘ mu
+  let B := positionStartTerminalKernel hlam hLam A c J (s + b) ∘ₘ mu
+  let D := positionStartTerminalKernel hlam hLam A c J (s + a) ∘ₘ mu
+  let G := coreAllTimeGreenKernel hlam hLam A c ∘ₘ mu
   have hS : MeasurableSet S :=
     (isOpen_lt continuous_const continuous_time).measurableSet.inter
       (isClosed_le continuous_time continuous_const).measurableSet
   have hW : MeasurableSet W := measurableSet_positionStartBox c Y
   have hactive := hmu.mono fun _ hp => enlarged_closedEntrance_subset_active c hp
   have hfB : Integrable f B := positionStartQuadratic_integrable c Y B
-    (positionStartTerminalMixture_ae_closedActive hH hLE hlam hLam A c J (s + b) mu)
+    (positionStartTerminalMixture_ae_closedActive hlam hLam A c J (s + b) mu)
   have hgG : Integrable g G := positionStartQuadratic_operator_integrable
-    hlam hLam A c Y hc G (positionStartAllTimeMixture_ae_active hH hLE hlam hLam A c mu)
+    hlam hLam A c Y hc G (positionStartAllTimeMixture_ae_active hlam hLam A c mu)
   have hterm : (∫ q, f q ∂B) ≤ 9 * c.r ^ 2 / 16 * (B W).toReal := by
     have hh : (∫ q, f q ∂B) ≤ ∫ q, W.indicator (fun _ => 9 * c.r ^ 2 / 16) q ∂B := by
       apply integral_mono_ae hfB ((integrable_const _).indicator hW)
       filter_upwards [positionStartTerminalMixture_ae_closedActive
-        hH hLE hlam hLam A c J (s + b) mu] with q hq
+        hlam hLam A c J (s + b) mu] with q hq
       have h := (positionStartQuadratic_box_bound c Y q hc hq).2
       change f q ≤ W.indicator (fun _ => 9 * c.r ^ 2 / 16) q
       by_cases hw : q ∈ W
@@ -79,7 +79,7 @@ theorem positionStartQuadratic_slab_mass_bound {lam Lam : ℝ}
     have hh : (∫ q in S, -g q ∂G) ≤ ∫ q in S, W.indicator (fun _ => C) q ∂G := by
       apply integral_mono_ae hgG.neg.restrict (((integrable_const C).indicator hW).restrict)
       have ha : ∀ᵐ q ∂G.restrict S, q.velocity 0 ∈ c.active :=
-        (positionStartAllTimeMixture_ae_active hH hLE hlam hLam A c mu).filter_mono
+        (positionStartAllTimeMixture_ae_active hlam hLam A c mu).filter_mono
           (ae_mono Measure.restrict_le_self)
       filter_upwards [ha] with q hq
       change -g q ≤ W.indicator (fun _ => C) q
@@ -96,10 +96,10 @@ theorem positionStartQuadratic_slab_mass_bound {lam Lam : ℝ}
       Measure.restrict_apply MeasurableSet.univ, univ_inter,
       Measure.restrict_apply hW, inter_comm, mul_comm] using hh
   have hi := positionStartQuadratic_integrated_slab_identity
-    hH hLE hlam hLam A c J Y (s + a) (s + b) hc hJ mu hactive (by linarith only [hab])
+    hlam hLam A c J Y (s + a) (s + b) hc hJ mu hactive (by linarith only [hab])
   have hlo := positionStartQuadratic_slab_lower mu c s x a b k hmu
   have hn := positionStartQuadratic_terminal_integral_nonneg
-    hH hLE hlam hLam A c J Y (s + a) mu
+    hlam hLam A c J Y (s + a) mu
   change (∫ q in S, f q ∂mu) = (∫ q, f q ∂B) - (∫ q, f q ∂D) -
     ∫ q in S, g q ∂G at hi
   change 5 * c.r ^ 2 / 16 * enlargedPositionSlabMass mu c s x a b k ≤

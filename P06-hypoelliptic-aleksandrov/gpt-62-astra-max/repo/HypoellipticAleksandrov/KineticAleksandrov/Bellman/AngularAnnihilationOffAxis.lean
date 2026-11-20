@@ -25,7 +25,6 @@ theorem adjoint_vanishes_off_position_axis (R β : ℝ) (hR : 1 ≤ R) (hβ : 3 
   have he : bellmanReflection ⁻¹' {q : BellmanPuncturedPlane | 0 < q.val.1} =
       {q : BellmanPuncturedPlane | q.val.1 < 0} := by
     ext q
-    change (0 < -q.val.1) ↔ q.val.1 < 0
     exact neg_pos
   rw [he] at hneg
   have hunion : {q : BellmanPuncturedPlane | q.val.1 ≠ 0} =

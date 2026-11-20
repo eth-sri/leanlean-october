@@ -25,16 +25,4 @@ theorem integral_square_eq_eLpNorm_two_sq {α : Type*} [MeasurableSpace α]
   exact (Real.rpow_inv_natCast_pow
     (integral_nonneg fun _ => sq_nonneg _) (by norm_num)).symm
 
-/-- A finite-measure carrier and a value bound give a literal uniform square integral. -/
-theorem integral_square_le_measure_mul_bound_sq {α : Type*} [MeasurableSpace α]
-    {μ : Measure α} [IsFiniteMeasure μ] (f : α → ℝ) (hf : MemLp f 2 μ)
-    (B : ℝ) (hB : 0 ≤ B) (hb : ∀ᵐ x ∂μ, |f x| ≤ B) :
-    (∫ x, f x ^ 2 ∂μ) ≤ (μ Set.univ).toReal * B ^ 2 := by
-  have hi : Integrable (fun x => f x ^ 2) μ := by
-    simpa only [Real.norm_eq_abs, sq_abs] using hf.integrable_norm_pow (by norm_num)
-  have hp : ∀ᵐ x ∂μ, f x ^ 2 ≤ B ^ 2 := hb.mono fun x hx => by
-    simpa only [sq_abs] using (sq_le_sq₀ (abs_nonneg _) hB).2 hx
-  have h := integral_mono_ae hi (integrable_const (B ^ 2)) hp
-  simpa only [integral_const, smul_eq_mul, measureReal_def] using h
-
 end HypoellipticAleksandrov.Parabolic.LocalHolder

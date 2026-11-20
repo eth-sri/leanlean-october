@@ -34,21 +34,19 @@ theorem parabolic_aleksandrov_direct
   obtain ⟨C, hC, hABP⟩ := parabolic_abp_unit_of_lower_ellipticity N hN lam hlam
   refine ⟨C, hC.le, ?_⟩
   intro t₀ v₀ h hh hh1 a f u ha _hsym hell hf hu huc hsub hb z hz
-  let Z : TimeVelocity N := (z.1 - (t₀ - h), z.2 - v₀)
-  have hZ : Z ∈ closedParabolicCylinder h (0 : PDE.Vec N) := by
-    refine ⟨⟨by dsimp [Z]; linarith [hz.1.1],
-      by dsimp [Z]; linarith [hz.1.2]⟩, ?_⟩
+  let Z := (z.1 - (t₀ - h), z.2 - v₀)
+  have hZ : Z ∈ closedParabolicCylinder h 0 := by
+    refine ⟨⟨by linarith [hz.1.1],
+      by linarith [hz.1.2]⟩, ?_⟩
     change PDE.euclideanSqDist (z.2 - v₀) 0 ≤ 1 ^ 2
-    have hv : PDE.euclideanSqDist z.2 v₀ ≤ 1 ^ 2 :=
-      (show PDE.euclideanSqDist z.2 v₀ < 1 ^ 2 from hz.2).le
-    simpa only [PDE.euclideanSqDist, Pi.sub_apply, sub_zero] using hv
+    simpa only [PDE.euclideanSqDist, Pi.sub_apply, sub_zero] using ((show PDE.euclideanSqDist z.2 v₀ < 1 ^ 2 from hz.2).le)
   have hmap : KrylovEstimate.innerMap t₀ h v₀ 1 Z = z := by
     apply Prod.ext
     · simp only [KrylovEstimate.innerMap, parabolicAffine, Z, one_pow,
         sub_self, zero_mul, zero_div, add_zero, one_mul]
       ring
     · simp only [KrylovEstimate.innerMap, parabolicAffine, Z, one_smul]
-      exact add_sub_cancel _ _
+      apply add_sub_cancel
   apply le_of_forall_pos_le_add
   intro ε hε
   let δ := ε / (C + 1)

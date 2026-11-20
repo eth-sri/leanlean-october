@@ -1,6 +1,6 @@
 module
 
-public import HypoellipticAleksandrov.Parabolic.LocalHolder.SourceComparisonEnergyPointwise
+public import HypoellipticAleksandrov.Parabolic.ScalarDirichletData
 
 /-! # Terminal continuity of signed source corrections
 

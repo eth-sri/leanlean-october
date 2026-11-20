@@ -23,22 +23,18 @@ theorem exists_bellman_functional_probability (L : C(X, ℝ) →L[ℝ] ℝ)
   let ell : C_c(X, ℝ) →ₚ[ℝ] ℝ :=
     { toFun := fun f => L f.toContinuousMap
       map_add' := fun f g => by
-        change L (f.toContinuousMap + g.toContinuousMap) = _
-        exact map_add L _ _
+        apply map_add
       map_smul' := fun c f => by
-        change L (c • f.toContinuousMap) = _
         exact map_smul L _ _
       monotone' := fun f g hfg => by
         have hp := hpos (g.toContinuousMap - f.toContinuousMap)
           (fun x => sub_nonneg.mpr (hfg x))
-        rw [map_sub] at hp
-        exact sub_nonneg.mp hp }
+        grind }
   let mu := RealRMK.rieszMeasure ell
   have ht (f : C(X, ℝ)) : ∫ x, f x ∂mu = L f := by
-    let fc : C_c(X, ℝ) := ⟨f, HasCompactSupport.of_compactSpace f⟩
-    exact RealRMK.integral_rieszMeasure ell fc
+    exact RealRMK.integral_rieszMeasure ell ⟨f, HasCompactSupport.of_compactSpace f⟩
   have hmass : mu.real univ = 1 := by
-    simpa only [ContinuousMap.one_apply, integral_const, smul_eq_mul, mul_one] using (ht 1).trans h1
+    simpa using (ht 1).trans h1
   exact ⟨mu, isProbabilityMeasure_iff_real.mpr hmass, ht⟩
 
 /-- A continuous subspace avoiding strict positivity has an annihilating probability. -/
@@ -48,6 +44,6 @@ theorem exists_bellman_subspace_probability (S : Submodule ℝ C(X, ℝ))
       ∀ f ∈ S, ∫ x, f x ∂mu = 0 := by
   obtain ⟨L, h1, hpos, hS⟩ := exists_bellman_positive_functional S hno
   obtain ⟨mu, hmu, ht⟩ := exists_bellman_functional_probability L h1 hpos
-  exact ⟨mu, hmu, fun f hf => (ht f).trans (hS f hf)⟩
+  grind
 
 end HypoellipticAleksandrov.KineticAleksandrov

@@ -28,15 +28,19 @@ namespace HypoellipticAleksandrov.KineticAleksandrov
 open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic Filter Set
 open scoped Topology MatrixOrder
 
+section
+variable {n : ℕ} {Ω : Set (PDE.Vec n)} {c : PDE.Vec n} {r₀ dstar : ℝ} {γ γ' : ℝ → PDE.Vec n}
+    {a b : ℝ} (h : ∀ σ ∈ Icc a b, γ' σ = γ σ)
+
 /-- The moving domain only depends on the value of the curve at the given time. -/
-theorem movingDomain_congr_of_eq {n : ℕ} {Ω : Set (PDE.Vec n)} {γ γ' : ℝ → PDE.Vec n} {σ : ℝ}
+theorem movingDomain_congr_of_eq {σ : ℝ}
     (h : γ' σ = γ σ) : movingDomain Ω γ' σ = movingDomain Ω γ σ := by
   unfold movingDomain
   rw [h]
 
+include h in
 /-- Curves agreeing on `[a, b]` have the same closed moving slab. -/
-theorem movingClosedSlab_congr {n : ℕ} {Ω : Set (PDE.Vec n)} {γ γ' : ℝ → PDE.Vec n} {a b : ℝ}
-    (h : ∀ σ ∈ Icc a b, γ' σ = γ σ) :
+theorem movingClosedSlab_congr :
     movingClosedSlab Ω γ' a b = movingClosedSlab Ω γ a b := by
   ext p
   constructor
@@ -47,9 +51,9 @@ theorem movingClosedSlab_congr {n : ℕ} {Ω : Set (PDE.Vec n)} {γ γ' : ℝ �
     refine ⟨h1, h2, ?_⟩
     rwa [movingDomain_congr_of_eq (h _ ⟨h1, h2⟩)]
 
+include h in
 /-- Curves agreeing on `[a, b]` have the same active moving slab. -/
-theorem movingActiveSlab_congr {n : ℕ} {Ω : Set (PDE.Vec n)} {γ γ' : ℝ → PDE.Vec n} {a b : ℝ}
-    (h : ∀ σ ∈ Icc a b, γ' σ = γ σ) :
+theorem movingActiveSlab_congr :
     movingActiveSlab Ω γ' a b = movingActiveSlab Ω γ a b := by
   ext p
   constructor
@@ -61,14 +65,14 @@ theorem movingActiveSlab_congr {n : ℕ} {Ω : Set (PDE.Vec n)} {γ γ' : ℝ �
     rwa [movingDomain_congr_of_eq (h _ ⟨h1, h2.le⟩)]
 
 /-- The squared distance to the moving centre only depends on the curve at the given time. -/
-theorem centreSq_congr_of_eq {n : ℕ} {c : PDE.Vec n} {γ γ' : ℝ → PDE.Vec n} {p : KineticPoint n}
+theorem centreSq_congr_of_eq {p : KineticPoint n}
     (h : γ' p.time = γ p.time) : centreSq c γ' p = centreSq c γ p := by
   unfold centreSq
   rw [h]
 
+include h in
 /-- Curves agreeing on `[a, b]` have the same closed collar region. -/
-theorem collarClosed_congr {n : ℕ} {c : PDE.Vec n} {r₀ dstar : ℝ} {γ γ' : ℝ → PDE.Vec n}
-    {a b : ℝ} (h : ∀ σ ∈ Icc a b, γ' σ = γ σ) :
+theorem collarClosed_congr :
     collarClosed c r₀ dstar γ' a b = collarClosed c r₀ dstar γ a b := by
   ext p
   unfold collarClosed
@@ -82,17 +86,24 @@ theorem collarClosed_congr {n : ℕ} {c : PDE.Vec n} {r₀ dstar : ℝ} {γ γ' 
     rwa [Set.mem_ofPred_eq, centreSq_congr_of_eq (h _ ⟨h1.1, h1.2.1⟩)]
 
 /-- The collar supersolution only depends on the curve at the time of the point. -/
-theorem collarSupersolution_congr_of_eq {n : ℕ} {c : PDE.Vec n} {r₀ dstar Lγ lam FB : ℝ}
+theorem collarSupersolution_congr_of_eq {r₀ dstar Lγ lam FB : ℝ}
     {γ γ' : ℝ → PDE.Vec n} {p : KineticPoint n} (h : γ' p.time = γ p.time) :
     collarSupersolution c r₀ dstar Lγ lam FB γ' p =
       collarSupersolution c r₀ dstar Lγ lam FB γ p := by
   unfold collarSupersolution collarBarrier
-  simp only [h]
+  simp [h]
 
+end
+
+variable {n : ℕ} {c : PDE.Vec n} {r₀ dstar : ℝ} (hd : 0 < dstar) (hdr : dstar < r₀)
+    {γ : ℝ → PDE.Vec n} (hγ : Continuous γ) (hγpw : IsContinuousPiecewiseC1 γ) {Lγ : ℝ}
+    (hLγ : 0 ≤ Lγ)
+include hd hdr hLγ
+
+include hγ in
 /-- Collar comparison on one smooth piece `[t₁, t₂]`, with the Lipschitz bound of the curve only
 on `[t₁, t₂]`. -/
-theorem collar_piece_of_lipschitzOn {n : ℕ} {c : PDE.Vec n} {r₀ dstar : ℝ} (hd : 0 < dstar)
-    (hdr : dstar < r₀) {γ : ℝ → PDE.Vec n} (hγ : Continuous γ) {Lγ : ℝ} (hLγ : 0 ≤ Lγ)
+theorem collar_piece_of_lipschitzOn
     {t₁ t₂ : ℝ} (hγL : CurveLipschitzOn γ Lγ (Icc t₁ t₂)) (ht : t₁ < t₂)
     (hdiff : ∀ σ ∈ Ioo t₁ t₂, DifferentiableAt ℝ γ σ)
     {lam Lam : ℝ} (hlam : 0 < lam) {B : FullKineticCoefficient n}
@@ -115,7 +126,7 @@ theorem collar_piece_of_lipschitzOn {n : ℕ} {c : PDE.Vec n} {r₀ dstar : ℝ}
   have hS := movingClosedSlab_congr (Ω := PDE.euclideanBall c r₀) hext
   have hA := movingActiveSlab_congr (Ω := PDE.euclideanBall c r₀) hext
   have hK := collarClosed_congr (c := c) (r₀ := r₀) (dstar := dstar) hext
-  have hdiff' : ∀ σ ∈ Ioo t₁ t₂, DifferentiableAt ℝ (slabExtension γ t₁ t₂) σ := fun σ hσ =>
+  have hdiff' := fun σ hσ =>
     (hdiff σ hσ).congr_of_eventuallyEq
       (Filter.eventuallyEq_of_mem (Icc_mem_nhds hσ.1 hσ.2) hext)
   have key := collar_piece hd hdr (continuous_slabExtension hγ t₁ t₂) hLγ
@@ -136,11 +147,10 @@ theorem collar_piece_of_lipschitzOn {n : ℕ} {c : PDE.Vec n} {r₀ dstar : ℝ}
   have := key p hp'
   rwa [collarSupersolution_congr_of_eq (hext _ ⟨hp.1.1, hp.1.2.1⟩)] at this
 
+include hγpw in
 /-- Collar comparison across the pieces of a piecewise `C¹` curve that is Lipschitz on the
 finite slab `[a, τ]` only. -/
-theorem collar_chain_of_lipschitzOn {n : ℕ} {c : PDE.Vec n} {r₀ dstar : ℝ} (hd : 0 < dstar)
-    (hdr : dstar < r₀) {γ : ℝ → PDE.Vec n} (hγpw : IsContinuousPiecewiseC1 γ) {Lγ : ℝ}
-    (hLγ : 0 ≤ Lγ) {a τ : ℝ} (hγL : CurveLipschitzOn γ Lγ (Icc a τ)) (haτ : a < τ)
+theorem collar_chain_of_lipschitzOn {a τ : ℝ} (hγL : CurveLipschitzOn γ Lγ (Icc a τ)) (haτ : a < τ)
     {lam Lam : ℝ} (hlam : 0 < lam) {B : FullKineticCoefficient n}
     (hB : HasEverywhereLoewnerBounds lam Lam B) {Lb : ℝ} {b : PDE.Vec n → PDE.Vec n}
     (hb : HasEuclideanLipschitzDrift Lb b) {ε : ℝ} (hε0 : 0 ≤ ε) (hε1 : ε ≤ 1)
@@ -157,7 +167,7 @@ theorem collar_chain_of_lipschitzOn {n : ℕ} {c : PDE.Vec n} {r₀ dstar : ℝ}
       v p ≤ collarSupersolution c r₀ dstar Lγ lam FB γ p) :
     ∀ p ∈ collarClosed c r₀ dstar γ a τ, v p ≤ collarSupersolution c r₀ dstar Lγ lam FB γ p := by
   obtain ⟨N, t, ht, h0, hl, hdiff⟩ := exists_partition_differentiableAt hγpw haτ
-  let motive : Fin (N + 2) → Prop := fun i =>
+  let motive := fun i =>
     ∀ p ∈ collarClosed c r₀ dstar γ (t i) τ, v p ≤ collarSupersolution c r₀ dstar Lγ lam FB γ p
   have hmain : ∀ i, motive i := by
     intro i
@@ -165,12 +175,10 @@ theorem collar_chain_of_lipschitzOn {n : ℕ} {c : PDE.Vec n} {r₀ dstar : ℝ}
     · intro p hp
       have hpτ : p.time = τ := by
         have h1 := hp.1.1
-        have h2 := hp.1.2.1
         rw [hl] at h1
-        exact le_antisymm h2 h1
+        exact le_antisymm (hp.1.2.1) h1
       exact htop p ⟨⟨by rw [hpτ]; exact haτ.le, hp.1.2.1, hp.1.2.2⟩, hp.2⟩ hpτ
     · intro i hprev p hp
-      have hlt : t i.castSucc < t i.succ := ht Fin.castSucc_lt_succ
       have ha : a ≤ t i.castSucc := by
         rw [← h0]
         exact ht.monotone (Fin.zero_le _)
@@ -179,10 +187,9 @@ theorem collar_chain_of_lipschitzOn {n : ℕ} {c : PDE.Vec n} {r₀ dstar : ℝ}
         exact ht.monotone (Fin.le_last _)
       by_cases hge : t i.succ ≤ p.time
       · exact hprev p ⟨⟨hge, hp.1.2.1, hp.1.2.2⟩, hp.2⟩
-      · have hlt' : p.time < t i.succ := not_le.mp hge
-        have hres := collar_piece_of_lipschitzOn hd hdr hγpw.1 hLγ
+      · have hres := collar_piece_of_lipschitzOn hd hdr hγpw.1 hLγ
           (fun s hs s' hs' => hγL s ⟨ha.trans hs.1, hs.2.trans hτ⟩ s'
-            ⟨ha.trans hs'.1, hs'.2.trans hτ⟩) hlt (hdiff i) hlam hB hb hε0 hε1 hFB
+            ⟨ha.trans hs'.1, hs'.2.trans hτ⟩) (ht Fin.castSucc_lt_succ) (hdiff i) hlam hB hb hε0 hε1 hFB
           (v := v)
           (by
             obtain ⟨M, hM⟩ := hbdd
@@ -193,7 +200,7 @@ theorem collar_chain_of_lipschitzOn {n : ℕ} {c : PDE.Vec n} {r₀ dstar : ℝ}
           (fun q hq => hlat q (movingClosedSlab_mono ha hτ hq))
           (fun q hq => hFBle q (movingClosedSlab_mono ha hτ hq))
           (fun q hq hqt => hprev q ⟨⟨hqt.ge, by rw [hqt]; exact hτ, hq.1.2.2⟩, hq.2⟩)
-        exact hres p ⟨⟨hp.1.1, hlt'.le, hp.1.2.2⟩, hp.2⟩
+        exact hres p ⟨⟨hp.1.1, (not_le.mp hge).le, hp.1.2.2⟩, hp.2⟩
   have h := hmain 0
   have h' : ∀ p ∈ collarClosed c r₀ dstar γ (t 0) τ,
       v p ≤ collarSupersolution c r₀ dstar Lγ lam FB γ p := h

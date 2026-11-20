@@ -19,10 +19,12 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Holder
 
 open Parabolic Scaling
 
+variable {d : ℕ} (A : FullKineticCoefficient d) {f : ℝ × (PDE.Vec d × PDE.Vec d) → ℝ}
+    (hf : ContDiff ℝ (⊤ : ℕ∞) f) (s : ℝ) (y V : PDE.Vec d)
+
+include hf in
 /-- Velocity translation leaves the velocity Hessian unchanged in moving coordinates. -/
-theorem movingLift_velocityHessian {d : ℕ}
-    {f : ℝ × (PDE.Vec d × PDE.Vec d) → ℝ}
-    (hf : ContDiff ℝ (⊤ : ℕ∞) f) (tminus : ℝ) (x v : ℝ → PDE.Vec d)
+theorem movingLift_velocityHessian (tminus : ℝ) (x v : ℝ → PDE.Vec d)
     (P : KineticPoint d) :
     kineticVelocityHessian (movingLift f tminus x v) P =
       kineticVelocityHessian
@@ -34,40 +36,35 @@ theorem movingLift_velocityHessian {d : ℕ}
   have hg : ContDiff ℝ (⊤ : ℕ∞) g := hf.comp
     (contDiff_const.prodMk (contDiff_const.prodMk contDiff_id))
   have hslice : (fun V : PDE.Vec d => movingLift f tminus x v ⟨P.time, P.position, V⟩) =
-      (fun V => g (-v s + (1 : ℝ) • V)) := by
+      (fun V => g (-v s + 1 • V)) := by
     funext V
     simp only [movingLift, movingCoordinates, s, y, g, one_smul]
-    congr 2
     abel_nf
   rw [kineticVelocityHessian_eq_sliceHessian, hslice,
     kineticVelocityHessian_eq_sliceHessian]
   have h := sliceHessian_affine (y₀ := -v s) (c := (1 : ℝ)) (Y := P.velocity)
     (hg.contDiffAt.of_le (by norm_cast))
-  simpa only [one_smul, one_pow, neg_add_eq_sub] using h
+  simpa [neg_add_eq_sub] using h
 
+include hf in
 /-- The source time slice is the raw time-direction derivative. -/
-theorem deriv_raw_time_slice {d : ℕ}
-    {f : ℝ × (PDE.Vec d × PDE.Vec d) → ℝ}
-    (hf : ContDiff ℝ (⊤ : ℕ∞) f) (s : ℝ) (y V : PDE.Vec d) :
+theorem deriv_raw_time_slice :
     deriv (fun r => f (r, (y, V))) s = fderiv ℝ f (s, (y, V)) (1, (0, 0)) := by
-  have hc := (hasDerivAt_id s).prodMk (hasDerivAt_const s (y, V))
-  exact ((hf.differentiable (by norm_num) _).hasFDerivAt.comp_hasDerivAt s hc).deriv
+  exact ((hf.differentiable (by norm_num) _).hasFDerivAt.comp_hasDerivAt s ((hasDerivAt_id s).prodMk (hasDerivAt_const s (y, V)))).deriv
 
+include hf in
 /-- The source position-line derivative is the raw transport-direction derivative. -/
-theorem deriv_raw_position_line {d : ℕ}
-    {f : ℝ × (PDE.Vec d × PDE.Vec d) → ℝ}
-    (hf : ContDiff ℝ (⊤ : ℕ∞) f) (s : ℝ) (y V : PDE.Vec d) :
+theorem deriv_raw_position_line :
     deriv (fun r : ℝ => f (s, (y + r • V, V))) 0 =
       fderiv ℝ f (s, (y, V)) (0, (V, 0)) := by
   have hx : HasDerivAt (fun r : ℝ => y + r • V) V 0 := by
     simpa using ((hasDerivAt_id (0 : ℝ)).smul_const V).const_add y
   have hc := (hasDerivAt_const 0 s).prodMk (hx.prodMk (hasDerivAt_const 0 V))
-  simpa only [Function.comp_def, zero_smul, add_zero] using
+  simpa [Function.comp_def] using
     ((hf.differentiable (by norm_num) _).hasFDerivAt.comp_hasDerivAt 0 hc).deriv
 
 /-- The complete source chain rule, with precisely the acceleration correction. -/
-theorem movingLift_backwardOperator {d : ℕ} (A : FullKineticCoefficient d)
-    {f : ℝ × (PDE.Vec d × PDE.Vec d) → ℝ} {x v : ℝ → PDE.Vec d}
+theorem movingLift_backwardOperator {x v : ℝ → PDE.Vec d}
     (hf : ContDiff ℝ (⊤ : ℕ∞) f) (hx : ContDiff ℝ (⊤ : ℕ∞) x)
     (hv : ContDiff ℝ (⊤ : ℕ∞) v) (hkin : ∀ s, HasDerivAt x (v s) s)
     (tminus : ℝ) (P : KineticPoint d) :
@@ -106,6 +103,6 @@ theorem movingLift_backwardOperator {d : ℕ} (A : FullKineticCoefficient d)
     simp [rawPoint]
   rw [hvel]
   rw [← map_add]
-  simp only [movingCoordinates, s, y, V, Prod.mk_add_mk, zero_add, add_zero]
+  aesop
 
 end HypoellipticAleksandrov.KineticAleksandrov.Holder

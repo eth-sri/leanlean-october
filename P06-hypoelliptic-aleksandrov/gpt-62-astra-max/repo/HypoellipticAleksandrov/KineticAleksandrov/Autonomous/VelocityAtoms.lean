@@ -12,15 +12,14 @@ open Set MeasureTheory HypoellipticAleksandrov
 
 /-- Capacity implies that every exact velocity slice has zero occupation mass. -/
 theorem stripGreen_velocity_slice_zero
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
     {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : SmoothAutonomous lam Lam) (H : Interval) (T : ℝ)
     (e : StripPole H (T : WithTop ℝ)) (v : ℝ) :
-    stripGreen hH hLE hlam hLam A H T e {p | p.velocity 0 = v} = 0 := by
-  let Γ := stripGreen hH hLE hlam hLam A H T e
+    stripGreen hlam hLam A H T e {p | p.velocity 0 = v} = 0 := by
+  let Γ := stripGreen hlam hLam A H T e
   have hfin : IsFiniteMeasure Γ := by dsimp only [Γ, stripGreen]; infer_instance
   let S : Set Point := {p | p.velocity 0 = v}
-  let C : ℝ := (H.hi - H.lo) / lam
+  let C := (H.hi - H.lo) / lam
   have hC : 0 < C := div_pos (sub_pos.mpr H.ordered) hlam
   by_contra hz
   have hm : 0 < (Γ S).toReal :=
@@ -34,10 +33,8 @@ theorem stripGreen_velocity_slice_zero
     change v - d < p.velocity 0 ∧ p.velocity 0 < v + d
     rw [hp]
     constructor <;> linarith
-  have hcap := (measure_mono hsub).trans (strip_capacity hH hLE hlam hLam A H T e E)
-  have hr := ENNReal.toReal_mono ENNReal.ofReal_ne_top hcap
+  have hr := ENNReal.toReal_mono ENNReal.ofReal_ne_top ((measure_mono hsub).trans (strip_capacity hlam hLam A H T e E))
   rw [ENNReal.toReal_ofReal (by
-    change 0 ≤ C * ((v + d) - (v - d))
     exact mul_nonneg hC.le (by linarith))] at hr
   change (Γ S).toReal ≤ C * ((v + d) - (v - d)) at hr
   have he : C * ((v + d) - (v - d)) = (Γ S).toReal / 2 := by

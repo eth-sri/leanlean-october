@@ -24,13 +24,19 @@ open scoped Topology
 variable {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
 variable (K : MovingFiberKernel Ω γ)
 
-/-- The slice integrand has the terminal value `g(r,v)` as a left limit at interior points. -/
-theorem slice_leftLimit {B : CoefficientField d} (hΩa : IsAdmissibleEvolutionDomain Ω)
-    (hγ : Continuous γ)
+variable {B : CoefficientField d} (hΩa : IsAdmissibleEvolutionDomain Ω) (hγ : Continuous γ)
     (hP : SectionTwo.HasParabolicMarginalBundle Ω γ
       (measurableSet_of_isAdmissibleEvolutionDomain hΩa) (zIndependentCoefficient B) K)
     (g : TimeVelocity d → ℝ) (hgs : ContDiff ℝ (⊤ : ℕ∞) g) (hgc : HasCompactSupport g) (T : ℝ)
-    (hgU : tsupport g ⊆ duhamelFiber Ω γ T) (r : ℝ) (v : PDE.Vec d)
+    (hgU : tsupport g ⊆ duhamelFiber Ω γ T) (C : ℝ)
+    (hub : ∀ p r, |parabolicDuhamelIntegrand K
+        (measurableSet_of_isAdmissibleEvolutionDomain hΩa) g p r| ≤ C)
+    {ψ : EvolutionVec d → ℝ} (hψ : Continuous ψ)
+    (hψs : tsupport ψ ⊆ evolutionToTimeVelocity d ⁻¹' duhamelFiber Ω γ T) (r : ℝ)
+include hγ hP hgs hgc hgU
+
+/-- The slice integrand has the terminal value `g(r,v)` as a left limit at interior points. -/
+theorem slice_leftLimit (v : PDE.Vec d)
     (hv : (r, v) ∈ duhamelFiber Ω γ T) :
     Tendsto (fun t : ℝ => parabolicDuhamelIntegrand K
         (measurableSet_of_isAdmissibleEvolutionDomain hΩa) g (t, v) r) (𝓝[<] r)
@@ -39,32 +45,20 @@ theorem slice_leftLimit {B : CoefficientField d} (hΩa : IsAdmissibleEvolutionDo
   have hU := isOpen_duhamelFiber (isOpen_of_isAdmissibleEvolutionDomain hΩa) hγ T
   have hcl : (r, v) ∈ sliceClosedCylinder Ω γ r := ⟨le_rfl, subset_closure hv.2⟩
   have hev : ∀ᶠ t in 𝓝[<] r, (t, v) ∈ sliceClosedCylinder Ω γ r := by
-    have hn : ∀ᶠ t in 𝓝 r, (t, v) ∈ duhamelFiber Ω γ T :=
-      (continuous_id.prodMk continuous_const).continuousAt.eventually (hU.mem_nhds hv)
-    filter_upwards [hn.filter_mono nhdsWithin_le_nhds, self_mem_nhdsWithin] with t ht ht2
+    filter_upwards [((continuous_id.prodMk continuous_const).continuousAt.eventually (hU.mem_nhds hv)).filter_mono nhdsWithin_le_nhds, self_mem_nhdsWithin] with t ht ht2
     exact ⟨le_of_lt ht2, subset_closure ht.2⟩
-  have hcw : ContinuousWithinAt V (sliceClosedCylinder Ω γ r) (r, v) := hVc _ hcl
   have hmap : Tendsto (fun t : ℝ => (t, v)) (𝓝[<] r) (𝓝[sliceClosedCylinder Ω γ r] (r, v)) := by
     refine tendsto_nhdsWithin_iff.2 ⟨?_, hev⟩
     exact ((continuous_id.prodMk continuous_const).tendsto r).mono_left nhdsWithin_le_nhds
-  have h1 := hcw.tendsto.comp hmap
+  have h1 := (hVc _ hcl).tendsto.comp hmap
   rw [hterm v (hcl.2)] at h1
   refine h1.congr' ?_
   filter_upwards [hev] with t ht
   exact (hVeq (t, v) ht).symm
 
+include hub hψ hψs in
 /-- The left limit of `u_r ψ` at `σ = r` is `g(r,v) ψ(r,v,z)`. -/
-theorem slice_terminal_limit {B : CoefficientField d} (hΩa : IsAdmissibleEvolutionDomain Ω)
-    (hγ : Continuous γ)
-    (hP : SectionTwo.HasParabolicMarginalBundle Ω γ
-      (measurableSet_of_isAdmissibleEvolutionDomain hΩa) (zIndependentCoefficient B) K)
-    (g : TimeVelocity d → ℝ) (hgs : ContDiff ℝ (⊤ : ℕ∞) g) (hgc : HasCompactSupport g) (T : ℝ)
-    (hgU : tsupport g ⊆ duhamelFiber Ω γ T) (C : ℝ)
-    (hub : ∀ p r, |parabolicDuhamelIntegrand K
-        (measurableSet_of_isAdmissibleEvolutionDomain hΩa) g p r| ≤ C)
-    {ψ : EvolutionVec d → ℝ} (hψ : Continuous ψ)
-    (hψs : tsupport ψ ⊆ evolutionToTimeVelocity d ⁻¹' duhamelFiber Ω γ T)
-    (r : ℝ) (w : PDE.Vec d × PDE.Vec d) :
+theorem slice_terminal_limit (w : PDE.Vec d × PDE.Vec d) :
     Tendsto (fun t : ℝ => parabolicDuhamelIntegrand K
         (measurableSet_of_isAdmissibleEvolutionDomain hΩa) g (t, w.1) r * ψ (packQ d (t, w)))
       (𝓝[<] r) (𝓝 (g (r, w.1) * ψ (packQ d (r, w)))) := by
@@ -79,8 +73,7 @@ theorem slice_terminal_limit {B : CoefficientField d} (hΩa : IsAdmissibleEvolut
     refine squeeze_zero_norm (fun t => ?_) hb
     rw [Real.norm_eq_abs, abs_mul]
     exact mul_le_mul_of_nonneg_right (hub _ _) (abs_nonneg _)
-  · have hsupp : packQ d (r, w) ∈ tsupport ψ := subset_closure h0
-    have hfib := hψs hsupp
+  · have hfib := hψs (subset_closure h0)
     have hv : (r, w.1) ∈ duhamelFiber Ω γ T := by
       simpa only [mem_preimage, evolutionToTimeVelocity_packQ] using hfib
     exact (slice_leftLimit K hΩa hγ hP g hgs hgc T hgU r w.1 hv).mul hψt

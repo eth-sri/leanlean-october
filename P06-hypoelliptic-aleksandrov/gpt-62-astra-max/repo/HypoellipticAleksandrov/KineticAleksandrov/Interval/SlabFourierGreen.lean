@@ -30,14 +30,14 @@ theorem intervalExtension_isGreenMeasure {a c : ℝ}
     unfold elapsedKernel
     infer_instance
   have hf : Measurable (fun q :
-      (EvolutionState (wholeSpace 1) (fun _ => (0 : PDE.Vec 1)) σ × ElapsedTime ⊤) ×
+      (EvolutionState (wholeSpace 1) (fun _ => 0) σ × ElapsedTime ⊤) ×
         EvolutionAmbientState 1 => F (q.1.2, q.2)) := hF.comp (by fun_prop)
   have hi : Measurable (fun q :
-      EvolutionState (wholeSpace 1) (fun _ => (0 : PDE.Vec 1)) σ × ElapsedTime ⊤ =>
+      EvolutionState (wholeSpace 1) (fun _ => 0) σ × ElapsedTime ⊤ =>
       ∫⁻ w, F (q.2, w) ∂elapsedKernel Kw σ ⊤ q) :=
     hf.lintegral_kernel_prod_right'
   have hm : Measurable (fun p :
-      EvolutionState (wholeSpace 1) (fun _ => (0 : PDE.Vec 1)) σ =>
+      EvolutionState (wholeSpace 1) (fun _ => 0) σ =>
       ∫⁻ t : ElapsedTime ⊤, ∫⁻ w, F (t, w) ∂Kw.master (elapsedQuery σ p t)
         ∂elapsedVolume ⊤) := hi.lintegral_prod_right'
   rw [lintegral_map hm (measurable_intervalStateInclusion σ), hΓ F hF]

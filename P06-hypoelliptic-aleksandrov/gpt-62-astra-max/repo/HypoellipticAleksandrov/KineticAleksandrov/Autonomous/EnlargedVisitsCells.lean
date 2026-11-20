@@ -23,28 +23,37 @@ def enlargedTimeBin (r s : ℝ) (j : ℕ) : Set ℝ :=
 def enlargedPositionCell (r x : ℝ) (k : ℤ) : Set ℝ :=
   Ico (x + (k : ℝ) * r ^ 3) (x + ((k : ℝ) + 1) * r ^ 3)
 
+section
+variable (nu : Measure Point) (c : Clock) (s x : ℝ) (j : ℕ) (k : ℤ)
+include c
+
+include s x j k in
 /-- A full time-position starting cell, with no velocity restriction. -/
-def enlargedStartCell (c : Clock) (s x : ℝ) (j : ℕ) (k : ℤ) : Set Point :=
+def enlargedStartCell : Set Point :=
   {p | p.time ∈ enlargedTimeBin c.r s j ∧
     p.position 0 ∈ enlargedPositionCell c.r x k}
 
+include nu s x j k in
 /-- The real starting mass in a time-position cell. -/
-def enlargedStartCellMass (nu : Measure Point) (c : Clock) (s x : ℝ)
-    (j : ℕ) (k : ℤ) : ℝ := (nu (enlargedStartCell c s x j k)).toReal
+def enlargedStartCellMass : ℝ := (nu (enlargedStartCell c s x j k)).toReal
 
+include nu s x j k in
 /-- The position-resolved visit mass, retaining the source entrance support explicitly. -/
-def enlargedPositionVisitMass (nu : Measure Point) (c : Clock) (s x : ℝ)
-    (j : ℕ) (k : ℤ) : ℝ :=
+def enlargedPositionVisitMass : ℝ :=
   (nu (enlargedStartCell c s x j k ∩ {p | p.velocity 0 ∈ closure c.entrance})).toReal
 
+include nu in
 /-- The source time count, summed over all positions. -/
-def enlargedTimeVisitMass (nu : Measure Point) (c : Clock) (s : ℝ) (j : ℕ) : ℝ :=
+def enlargedTimeVisitMass (s : ℝ) (j : ℕ) : ℝ :=
   (nu {p | p.time ∈ enlargedTimeBin c.r s j ∧
     p.velocity 0 ∈ closure c.entrance}).toReal
 
+include s x j k in
 /-- The output cell includes precisely the active velocity interval. -/
-def enlargedOutputCell (c : Clock) (s x : ℝ) (j : ℕ) (k : ℤ) : Set Point :=
+def enlargedOutputCell : Set Point :=
   enlargedStartCell c s x j k ∩ {p | p.velocity 0 ∈ c.active}
+
+end
 
 /-- Every source time bin is measurable. -/
 theorem measurableSet_enlargedTimeBin (r s : ℝ) (j : ℕ) :
@@ -58,23 +67,24 @@ theorem measurableSet_enlargedTimeBin (r s : ℝ) (j : ℕ) :
 theorem measurableSet_enlargedPositionCell (r x : ℝ) (k : ℤ) :
     MeasurableSet (enlargedPositionCell r x k) := measurableSet_Ico
 
+variable (nu : Measure Point) (c : Clock) (s x : ℝ) (j : ℕ) (k : ℤ)
+
 /-- Starting cells are measurable in the physical spacetime carrier. -/
-theorem measurableSet_enlargedStartCell (c : Clock) (s x : ℝ) (j : ℕ) (k : ℤ) :
+theorem measurableSet_enlargedStartCell :
     MeasurableSet (enlargedStartCell c s x j k) :=
   ((measurableSet_enlargedTimeBin c.r s j).preimage continuous_time.measurable).inter
     ((measurableSet_enlargedPositionCell c.r x k).preimage
       ((continuous_apply 0).comp continuous_position).measurable)
 
 /-- Output cells are measurable in physical spacetime. -/
-theorem measurableSet_enlargedOutputCell (c : Clock) (s x : ℝ) (j : ℕ) (k : ℤ) :
+theorem measurableSet_enlargedOutputCell :
     MeasurableSet (enlargedOutputCell c s x j k) :=
   (measurableSet_enlargedStartCell c s x j k).inter
     (isOpen_Ioo.measurableSet.preimage
       ((continuous_apply 0).comp continuous_velocity).measurable)
 
 /-- Entrance-supported measures have the same cell masses with or without that restriction. -/
-theorem enlargedPositionVisitMass_eq_startCellMass (nu : Measure Point) (c : Clock)
-    (s x : ℝ) (j : ℕ) (k : ℤ)
+theorem enlargedPositionVisitMass_eq_startCellMass
     (hnu : ∀ᵐ p ∂nu, p.velocity 0 ∈ closure c.entrance) :
     enlargedPositionVisitMass nu c s x j k = enlargedStartCellMass nu c s x j k := by
   have heq : nu.restrict {p | p.velocity 0 ∈ closure c.entrance} = nu :=

@@ -30,7 +30,6 @@ theorem finiteOnCompacts_add (ν μ : Measure E) [IsFiniteMeasureOnCompacts ν]
     [IsFiniteMeasureOnCompacts μ] : IsFiniteMeasureOnCompacts (ν + μ) := by
   constructor
   intro K hK
-  rw [Measure.add_apply]
   exact ENNReal.add_lt_top.2 ⟨hK.measure_lt_top, hK.measure_lt_top⟩
 
 /-- Compact measurable tests inherit the sharp norm bound from positive smooth tests. -/
@@ -44,10 +43,9 @@ theorem abs_integral_le_of_smooth_tests_compact (ν μ : Measure E)
     (hKU : K ⊆ U) (hfK : Function.support f ⊆ K) :
     |∫ x, f x ∂μ| ≤ C * (eLpNorm f p (ν.restrict U)).toReal := by
   have : IsFiniteMeasureOnCompacts (ν + μ) := finiteOnCompacts_add ν μ
-  let ε : ℕ → ℝ≥0∞ := fun n => ENNReal.ofReal (1 / ((n : ℝ) + 1))
+  let ε : ℕ → ℝ≥0∞ := fun n => ENNReal.ofReal (1 / (n + 1))
   have hεpos (n : ℕ) : ε n ≠ 0 := by
-    dsimp [ε]
-    exact ne_of_gt (ENNReal.ofReal_pos.mpr (by positivity))
+    positivity
   have hεlim : Tendsto ε atTop (𝓝 0) := by
     simpa only [ε, Function.comp_def, ENNReal.ofReal_zero] using
       ENNReal.continuous_ofReal.continuousAt.tendsto.comp
@@ -68,21 +66,13 @@ theorem abs_integral_le_of_smooth_tests_compact (ν μ : Measure E)
       (Eventually.of_forall fun _ => bot_le) ?_
     exact Eventually.of_forall fun n =>
       (eLpNorm_mono_measure _ hνsum).trans (hgn n)
-  have hLpμ : MemLp f p μ := hfp.mono_measure hμsum
   have hL1 := tendsto_eLpNorm_one_of_finite μ hp
-    (fun n => (hgc n).aestronglyMeasurable.sub hLpμ.aestronglyMeasurable) herrμ
-  have hi : Tendsto (fun n => ∫ x, g n x ∂μ) atTop (𝓝 (∫ x, f x ∂μ)) :=
-    tendsto_integral_of_L1' f
-      (Eventually.of_forall fun n => (hgc n).integrable_of_hasCompactSupport
-        (hgcompact n)) hL1
-  have hLpν : MemLp f p (ν.restrict U) := hfp.mono_measure hνsum
+    (fun n => (hgc n).aestronglyMeasurable.sub (hfp.mono_measure hμsum).aestronglyMeasurable) herrμ
+  have hLpν := hfp.mono_measure hνsum
   have hn := PDE.tendsto_eLpNorm_of_tendsto_sub hp
     (fun n => (hgc n).aestronglyMeasurable) hLpν.aestronglyMeasurable
     hLpν.eLpNorm_ne_top herrν
-  have hnr : Tendsto (fun n => (eLpNorm (g n) p (ν.restrict U)).toReal)
-      atTop (𝓝 (eLpNorm f p (ν.restrict U)).toReal) :=
-    (ENNReal.continuousAt_toReal hLpν.eLpNorm_ne_top).tendsto.comp hn
-  exact le_of_tendsto_of_tendsto' hi.abs (tendsto_const_nhds.mul hnr)
+  exact le_of_tendsto_of_tendsto' (tendsto_integral_of_L1' f (Eventually.of_forall fun n => (hgc n).integrable_of_hasCompactSupport (hgcompact n)) hL1).abs (tendsto_const_nhds.mul ((ENNReal.continuousAt_toReal hLpν.eLpNorm_ne_top).tendsto.comp hn))
     (fun n => abs_integral_le_of_smooth_tests ν μ hU hp hpt hC htest
       (hgc n) (hgcompact n) (hgU n))
 
@@ -93,16 +83,12 @@ theorem memLp_of_bounded_compact_support (η : Measure E) [IsFiniteMeasureOnComp
     (hfK : Function.support f ⊆ K) {M : ℝ} (hM : ∀ x, |f x| ≤ M)
     (p : ℝ≥0∞) : MemLp f p η := by
   have : IsFiniteMeasure (η.restrict K) := ⟨by
-    simpa only [Measure.restrict_apply_univ] using hK.measure_lt_top⟩
+    simpa using hK.measure_lt_top⟩
   have hfp : MemLp f p (η.restrict K) :=
     MemLp.of_bound hf.aestronglyMeasurable M
-      (Eventually.of_forall fun x => by simpa only [Real.norm_eq_abs] using hM x)
+      (Eventually.of_forall fun x => by exact hM x)
   have heq : K.indicator f = f := by
-    ext x
-    by_cases hx : x ∈ K
-    · exact indicator_of_mem hx f
-    · rw [indicator_of_notMem hx]
-      exact (Function.notMem_support.mp (fun h => hx (hfK h))).symm
+    simp_all
   rw [← heq]
   exact (memLp_indicator_iff_restrict hK.measurableSet).2 hfp
 

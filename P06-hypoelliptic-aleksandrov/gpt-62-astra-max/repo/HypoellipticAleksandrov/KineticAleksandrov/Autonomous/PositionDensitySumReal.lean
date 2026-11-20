@@ -42,7 +42,6 @@ theorem position_density_real {X : Type*} [MeasurableSpace X]
 
 /-- The actual active mixture has a real density with precisely the source power bound. -/
 theorem position_density_sum (hpush : PushforwardStatement) (htail : RestartTailStatement)
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
     {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (q : ℝ) (hq : 1 < q ∧ q < 3 / 2) :
     ∃ C : ℝ, 0 < C ∧ ∀ (A : SmoothAutonomous lam Lam)
@@ -50,23 +49,23 @@ theorem position_density_sum (hpush : PushforwardStatement) (htail : RestartTail
       (nu : Measure Point) [IsFiniteMeasure nu],
       (∀ᵐ e ∂nu, s ≤ e.time ∧ e.velocity 0 ∈ c.active) →
       ∃ G : Point → ℝ, Measurable G ∧ (∀ z, 0 ≤ G z) ∧
-        enlargedActiveGreen hH hLE hlam hLam A c nu =
+        enlargedActiveGreen hlam hLam A c nu =
           volume.withDensity (fun z => ENNReal.ofReal (G z)) ∧
         MemLp G (ENNReal.ofReal q) volume ∧
         (∫⁻ z, ‖G z‖ₑ ^ q ∂volume) ≤ ENNReal.ofReal (C * c.r ^ (6 - 4 * q)) *
           ∑' a : ℕ × ℤ, nu (enlargedStartCell c s x a.1 a.2) ^ q := by
-  obtain ⟨C, hC, hd⟩ := position_density_power_sum hpush htail hH hLE hlam hLam q hq
+  obtain ⟨C, hC, hd⟩ := position_density_power_sum hpush htail hlam hLam q hq
   refine ⟨C, hC, ?_⟩
   intro A c hc s x nu hfinite hnu
   have hq0 : 0 < q := by linarith [hq.1]
-  let F := positionMixtureDensity hH hLE hlam hLam A c nu
-  have hF := measurable_positionMixtureDensity hH hLE hlam hLam A c nu
-  have hm := withDensity_positionMixtureDensity hpush hH hLE hlam hLam A c nu
-  have : IsFiniteMeasure (enlargedActiveGreen hH hLE hlam hLam A c nu) := by
+  let F := positionMixtureDensity hlam hLam A c nu
+  have hF := measurable_positionMixtureDensity hlam hLam A c nu
+  have hm := withDensity_positionMixtureDensity hpush hlam hLam A c nu
+  have : IsFiniteMeasure (enlargedActiveGreen hlam hLam A c nu) := by
     unfold enlargedActiveGreen
     infer_instance
   obtain ⟨hG, hG0, hGd, hGi⟩ := position_density_real volume
-    (enlargedActiveGreen hH hLE hlam hLam A c nu) F hF hm q
+    (enlargedActiveGreen hlam hLam A c nu) F hF hm q
   have hbound := hd A c hc s x nu hnu
   have hsum := enlargedStartCell_power_sum_le nu c s x q hq.1.le
     (hnu.mono (fun _ h => h.1))
@@ -77,7 +76,7 @@ theorem position_density_sum (hpush : PushforwardStatement) (htail : RestartTail
     exact hbound.trans_lt (ENNReal.mul_lt_top ENNReal.ofReal_lt_top hsumfinite)
   refine ⟨fun z => (F z).toReal, hG, hG0, hGd, ?_, ?_⟩
   · change eLpNorm (fun z => (F z).toReal) (ENNReal.ofReal q) volume < ⊤
-    rw [eLpNorm_eq_lintegral_rpow_enorm_toReal 
+    rw [eLpNorm_eq_lintegral_rpow_enorm_toReal
       (ne_of_gt (ENNReal.ofReal_pos.mpr hq0)) ENNReal.ofReal_ne_top
       hG.aestronglyMeasurable, ENNReal.toReal_ofReal (by linarith : 0 ≤ q)]
     exact ENNReal.rpow_lt_top_of_nonneg (one_div_nonneg.mpr hq0.le) hi.ne

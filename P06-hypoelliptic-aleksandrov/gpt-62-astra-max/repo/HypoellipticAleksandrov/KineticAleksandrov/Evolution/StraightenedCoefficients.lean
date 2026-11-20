@@ -55,21 +55,24 @@ section Premises
 
 variable {n : ℕ} {lam Lam : ℝ} {B : FullKineticCoefficient n} {b : PDE.Vec n → PDE.Vec n}
 
+section
+variable (hB_smooth : IsSmoothFullKineticCoefficient B) {g : ℝ → PDE.Vec n}
+    (hg : ContDiff ℝ (⊤ : ℕ∞) g)
+include hg
+
 /-- The derivative of a smooth curve is smooth. -/
-theorem contDiff_deriv_of_smooth {g : ℝ → PDE.Vec n} (hg : ContDiff ℝ (⊤ : ℕ∞) g) :
+theorem contDiff_deriv_of_smooth :
     ContDiff ℝ (⊤ : ℕ∞) (deriv g) :=
   (contDiff_infty_iff_deriv.mp hg).2
 
+include hB_smooth in
 /-- The straightened coefficient is a smooth coefficient field. -/
-theorem isSmoothCoefficient_straightenedCoefficient
-    (hB_smooth : IsSmoothFullKineticCoefficient B)
-    {g : ℝ → PDE.Vec n} (hg : ContDiff ℝ (⊤ : ℕ∞) g) (ε : ℝ) :
+theorem isSmoothCoefficient_straightenedCoefficient (ε : ℝ) :
     IsSmoothCoefficient (straightenedCoefficient B g ε) := by
   change ContDiff ℝ (⊤ : ℕ∞)
     (fun z i j => coefficientAt (straightenedCoefficient B g ε) z i j)
   refine contDiff_pi.2 fun k => contDiff_pi.2 fun l => ?_
-  have hmap : ContDiff ℝ (⊤ : ℕ∞) (fun q : ℝ × PDE.Vec (n + n) =>
-      (q.1, (g q.1 + spatialY q.2, spatialZ q.2))) :=
+  have hmap :=
     contDiff_fst.prodMk
       (((hg.comp contDiff_fst).add (contDiff_spatialY.comp contDiff_snd)).prodMk
         (contDiff_spatialZ.comp contDiff_snd))
@@ -83,51 +86,53 @@ theorem isSmoothCoefficient_straightenedCoefficient
     viscousBlockMatrix_addNat_addNat, Fin.natAdd_eq_addNat]
   · exact contDiff_const
   · exact contDiff_const
-  · exact contDiff_const
+  fun_prop
 
-/-- The straightened coefficient is pointwise symmetric. -/
-theorem isSymm_straightenedCoefficient
+end
+
+section
+variable (hB_smooth : IsSmoothFullKineticCoefficient B)
     (hB_symm : IsSymmetricFullKineticCoefficient B)
-    (g : ℝ → PDE.Vec n) (ε : ℝ) (s : ℝ) (x : PDE.Vec (n + n)) :
+    (hB_ell : HasEverywhereLoewnerBounds lam Lam B) (hb_smooth : IsSmoothDrift b)
+    (g : ℝ → PDE.Vec n) (hg : ContDiff ℝ (⊤ : ℕ∞) g) (ε : ℝ) (s : ℝ) (x : PDE.Vec (n + n))
+
+include hB_symm in
+/-- The straightened coefficient is pointwise symmetric. -/
+theorem isSymm_straightenedCoefficient :
     (straightenedCoefficient B g ε s x).IsSymm :=
   viscousBlockMatrix_isSymm (hB_symm s _ _) ε
 
+include hB_ell in
 /-- Lower Loewner bound `min(lam, ε) ≤ diag(B, ε I)`. -/
-theorem straightenedCoefficient_lower
-    (hB_ell : HasEverywhereLoewnerBounds lam Lam B)
-    (g : ℝ → PDE.Vec n) (ε : ℝ) (s : ℝ) (x : PDE.Vec (n + n)) :
+theorem straightenedCoefficient_lower :
     min lam ε • (1 : PDE.Mat (n + n)) ≤ straightenedCoefficient B g ε s x := by
   rw [← viscousBlockMatrix_smul_one (min lam ε)]
   exact viscousBlockMatrix_mono
     ((smul_one_le_smul_one (min_le_left lam ε)).trans (hB_ell s _ _).1) (min_le_right lam ε)
 
+include hB_ell in
 /-- Upper Loewner bound `diag(B, ε I) ≤ max(Lam, ε)`. -/
-theorem straightenedCoefficient_upper
-    (hB_ell : HasEverywhereLoewnerBounds lam Lam B)
-    (g : ℝ → PDE.Vec n) (ε : ℝ) (s : ℝ) (x : PDE.Vec (n + n)) :
+theorem straightenedCoefficient_upper :
     straightenedCoefficient B g ε s x ≤ max Lam ε • (1 : PDE.Mat (n + n)) := by
   rw [← viscousBlockMatrix_smul_one (max Lam ε)]
   exact viscousBlockMatrix_mono
     ((hB_ell s _ _).2.trans (smul_one_le_smul_one (le_max_left Lam ε))) (le_max_right Lam ε)
 
+include hb_smooth in
 /-- The straightened drift is smooth; no growth bound on `b` is needed. -/
-theorem contDiff_straightenedDrift (hb_smooth : IsSmoothDrift b)
+theorem contDiff_straightenedDrift
     {g : ℝ → PDE.Vec n} (hg : ContDiff ℝ (⊤ : ℕ∞) g) :
     ContDiff ℝ (⊤ : ℕ∞)
       (fun q : TimeVelocity (n + n) => straightenedDrift b g q.1 q.2) := by
   refine contDiff_spatialPack ((contDiff_deriv_of_smooth hg).comp contDiff_fst).neg ?_
   exact hb_smooth.comp ((hg.comp contDiff_fst).add (contDiff_spatialY.comp contDiff_snd))
 
+include hB_smooth hB_symm hB_ell hb_smooth hg in
 /-- Discharge of the coefficient and drift premises of the classical Dirichlet solvability theorem
 for the straightened viscous problem.  The hypotheses are exactly the coefficient and drift
 part of the standing source data; the viscosity enters only through the explicit Loewner
 bounds `min(lam, ε)` and `max(Lam, ε)`. -/
-theorem straightenedCoefficient_bounds_smooth
-    (hB_smooth : IsSmoothFullKineticCoefficient B)
-    (hB_symm : IsSymmetricFullKineticCoefficient B)
-    (hB_ell : HasEverywhereLoewnerBounds lam Lam B)
-    (hb_smooth : IsSmoothDrift b)
-    (g : ℝ → PDE.Vec n) (hg : ContDiff ℝ (⊤ : ℕ∞) g) (ε : ℝ) :
+theorem straightenedCoefficient_bounds_smooth :
     IsSmoothCoefficient (straightenedCoefficient B g ε) ∧
     (∀ s x, (straightenedCoefficient B g ε s x).IsSymm) ∧
     (∀ s x, min lam ε • (1 : PDE.Mat (n + n)) ≤ straightenedCoefficient B g ε s x) ∧
@@ -139,6 +144,8 @@ theorem straightenedCoefficient_bounds_smooth
     straightenedCoefficient_lower hB_ell g ε,
     straightenedCoefficient_upper hB_ell g ε,
     contDiff_straightenedDrift hb_smooth hg⟩
+
+end
 
 /-- The two elementary scalar side conditions of the Dirichlet solvability theorem: `0 < min(lam,
 ε)` and `min(lam, ε) ≤ max(Lam, ε)`. -/

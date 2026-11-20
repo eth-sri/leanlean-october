@@ -16,7 +16,7 @@ theorem bellman_finiteSpanning_closedIntervals (μ : Measure ℝ)
     [IsFiniteMeasureOnCompacts μ] :
     Nonempty (μ.FiniteSpanningSetsIn {S | ∃ a b : ℝ, a ≤ b ∧ Icc a b = S}) := by
   refine ⟨{
-    set := fun n => Icc (-(n : ℝ)) (n : ℝ)
+    set := fun n => Icc (-n) n
     set_mem := fun n => ⟨_, _, neg_le_self (Nat.cast_nonneg n), rfl⟩
     finite := fun _ => isCompact_Icc.measure_lt_top
     spanning := ?_ }⟩
@@ -32,11 +32,11 @@ theorem bellman_translation_factorization (ρ : Measure (ℝ × ℝ))
     ρ = (volume : Measure ℝ).prod (bellmanUnitSection ρ) := by
   let F := bellmanUnitSection ρ
   let : IsFiniteMeasureOnCompacts F := bellmanUnitSection_finiteOnCompacts ρ
-  let C : Set (Set ℝ) := {S | ∃ a b : ℝ, a ≤ b ∧ Icc a b = S}
-  have hgen : MeasurableSpace.generateFrom C = (inferInstance : MeasurableSpace ℝ) :=
+  let C := {S | ∃ a b : ℝ, a ≤ b ∧ Icc a b = S}
+  have hgen :=
     (BorelSpace.measurable_eq.trans (borel_eq_generateFrom_Icc ℝ)).symm
   have hpi : IsPiSystem C := isPiSystem_Icc id id
-  obtain ⟨hvol⟩ := bellman_finiteSpanning_closedIntervals (volume : Measure ℝ)
+  obtain ⟨hvol⟩ := bellman_finiteSpanning_closedIntervals volume
   obtain ⟨hF⟩ := bellman_finiteSpanning_closedIntervals F
   apply Eq.symm
   apply Measure.prod_eq_generateFrom hgen hgen hpi hpi hvol hF

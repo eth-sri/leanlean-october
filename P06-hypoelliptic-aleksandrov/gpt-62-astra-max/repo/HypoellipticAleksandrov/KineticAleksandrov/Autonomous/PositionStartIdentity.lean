@@ -11,7 +11,6 @@ open Set MeasureTheory HypoellipticAleksandrov
 
 /-- Subtracting the cumulative identities gives the exact source slab identity for one pole. -/
 theorem positionStartQuadratic_slab_identity
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
     {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (Y a b : ℝ)
     (hc : |c.vbar| = 2 * c.r) (hJ : closure c.active ⊆ J.carrier)
@@ -19,24 +18,22 @@ theorem positionStartQuadratic_slab_identity
     let f := fun q : Point => positionStartCutoff Y c.r c.positive (q.position 0) *
       visitQuadratic c (q.velocity 0)
     ({q : Point | a < q.time ∧ q.time ≤ b}.indicator f) p =
-      (∫ q, f q ∂enlargedActiveTerminalFamily hH hLE hlam hLam A c J b p) -
-      (∫ q, f q ∂enlargedActiveTerminalFamily hH hLE hlam hLam A c J a p) -
+      (∫ q, f q ∂enlargedActiveTerminalFamily hlam hLam A c J b p) -
+      (∫ q, f q ∂enlargedActiveTerminalFamily hlam hLam A c J a p) -
       ∫ q in {q : Point | a < q.time ∧ q.time ≤ b}, forwardScalarOperator A.a f q
-        ∂stripGreen hH hLE hlam hLam A c.activeInterval ⊤ (densityClockPole c p hv) := by
+        ∂stripGreen hlam hLam A c.activeInterval ⊤ (densityClockPole c p hv) := by
   dsimp only
   let f := fun q : Point => positionStartCutoff Y c.r c.positive (q.position 0) *
     visitQuadratic c (q.velocity 0)
-  let G := stripGreen hH hLE hlam hLam A c.activeInterval ⊤ (densityClockPole c p hv)
-  have hg : Integrable (fun q => forwardScalarOperator A.a f q) G :=
+  let G := stripGreen hlam hLam A c.activeInterval ⊤ (densityClockPole c p hv)
+  have hg :=
     positionStartQuadratic_operator_integrable hlam hLam A c Y hc G
-      ((stripGreen_infinite_ae_future_carrier hH hLE hlam hLam A c.activeInterval
+      ((stripGreen_infinite_ae_future_carrier hlam hLam A c.activeInterval
         (densityClockPole c p hv)).mono fun _ hq => hq.2)
   have hid := positionStartQuadratic_cumulative_identity
-    hH hLE hlam hLam A c J Y b hc hJ p hv
+    hlam hLam A c J Y b hc hJ p hv
   have hia := positionStartQuadratic_cumulative_identity
-    hH hLE hlam hLam A c J Y a hc hJ p hv
-  change ({q : Point | q.time ≤ b}.indicator f) p = _ at hid
-  change ({q : Point | q.time ≤ a}.indicator f) p = _ at hia
+    hlam hLam A c J Y a hc hJ p hv
   have hd : {q : Point | a < q.time ∧ q.time ≤ b} =
       {q : Point | q.time ≤ b} \ {q : Point | q.time ≤ a} := by
     ext q

@@ -72,8 +72,6 @@ theorem integral_regularizedAdjoint_of_jets
       rw [fderiv_fun_mul ((hβ i).differentiable (by simp) x)
         (hψ.differentiable (by simp) x)]
       simp only [add_apply, smul_apply, smul_eq_mul]
-      change β i x * fderiv ℝ ψ x (basisZ i) +
-        ψ x * fderiv ℝ (fun y => b (diffusedCoord n y) i) x (basisZ i) = _
       rw [fderiv_drift_transported_zero hb, mul_zero, add_zero]
 
     have h := setIntegral_mul_evolution_directional_test hu (hZ i) (basisZ i)
@@ -151,7 +149,6 @@ theorem integral_regularizedAdjoint_of_jets
       (∑ i, β i x * Z i x) + ε * ∑ i, K i x) * ψ x) =
       fun x => T x * ψ x + (∑ i, ∑ j, (A i j x * H i j x) * ψ x) +
         (∑ i, (β i x * Z i x) * ψ x) + ε * ∑ i, K i x * ψ x := by
-    funext x
     simp only [add_mul, Finset.sum_mul, mul_assoc, Finset.mul_sum]
   rw [hright]
   erw [integral_add ((jT.add (sumInt _ (fun i => sumInt _ (jH i)))).add

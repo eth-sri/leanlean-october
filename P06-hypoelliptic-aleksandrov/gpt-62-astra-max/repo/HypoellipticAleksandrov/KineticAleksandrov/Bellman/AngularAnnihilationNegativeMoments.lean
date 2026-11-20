@@ -16,7 +16,7 @@ theorem bellmanAngularFirstMoment_negative_mono {f : ℝ → ℝ}
     (y a : ℝ) (hya : y ≤ a) (ha : a ≤ 0) :
     bellmanAngularFirstMoment f a ≤ bellmanAngularFirstMoment f y := by
   have hi (u v : ℝ) : IntervalIntegrable (fun z => z * f z) volume u v := by
-    simpa only [pow_one] using bellmanAngularMoment_intervalIntegrable hf u v 1
+    simpa using bellmanAngularMoment_intervalIntegrable hf u v 1
   have he := intervalIntegral.integral_add_adjacent_intervals (hi y a) (hi a 0)
   have hnon : (∫ z in y..a, z * f z) ≤ 0 := by
     rw [intervalIntegral.integral_of_le hya]
@@ -38,7 +38,6 @@ theorem bellmanAngularDensity_negative_lower (β : ℝ) (f h J : ℝ → ℝ)
     (-y / 3) * bellmanAngularFirstMoment f y ≤ h y := by
   have hb := bellmanAngularSecondMoment_negative_bound hf hn hy
   have hd : 0 ≤ (β - 3) / 3 := by linarith
-  have hm := mul_le_mul_of_nonneg_left hb hd
   rw [he y, h0, hj0]
   nlinarith
 

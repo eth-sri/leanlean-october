@@ -26,15 +26,21 @@ open MeasureTheory Set
 open HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 open scoped ENNReal NNReal
 
+section
+variable (d : ℕ) (q : ℝ)
+include d q
+
 /-- The intermediate exponent `γ = (q + γ₀)/2` chosen in the proof of Proposition 5.3. -/
-def slabGamma (d : ℕ) (q : ℝ) : ℝ := (q + slabGamma0 d) / 2
+def slabGamma : ℝ := (q + slabGamma0 d) / 2
 
 /-- The dual exponent `q₁` with `(q-1)/γ + 1/q₁ = 1`. -/
-def slabQ1 (d : ℕ) (q : ℝ) : ℝ := slabGamma d q / (slabGamma d q - q + 1)
+def slabQ1 : ℝ := slabGamma d q / (slabGamma d q - q + 1)
 
 /-- The constant of Proposition 5.3, in terms of the constants `C_γ` of Lemma 5.1. -/
-def slabConstant (d : ℕ) (q : ℝ) (C : ℝ → ℝ≥0) : ℝ≥0 :=
+def slabConstant (C : ℝ → ℝ≥0) : ℝ≥0 :=
   C (slabGamma d q) ^ (q - 1) * C (slabQ1 d q)
+
+end
 
 section Numerics
 
@@ -53,9 +59,8 @@ lemma slabGamma0_eq {d : ℕ} (hd : 0 < (d : ℝ)) : slabGamma0 d = 1 + 1 / (d :
 
 lemma slab_q_lt_gamma (hq : 1 < q) (hqd : q < 1 + 1 / (d : ℝ)) :
     q < slabGamma d q ∧ slabGamma d q < slabGamma0 d := by
-  have hd := slab_d_pos hq hqd
   unfold slabGamma
-  rw [slabGamma0_eq hd]
+  rw [slabGamma0_eq (slab_d_pos hq hqd)]
   constructor <;> linarith [hqd]
 
 lemma slab_gamma_one_lt (hq : 1 < q) (hqd : q < 1 + 1 / (d : ℝ)) : 1 < slabGamma d q :=
@@ -64,7 +69,6 @@ lemma slab_gamma_one_lt (hq : 1 < q) (hqd : q < 1 + 1 / (d : ℝ)) : 1 < slabGam
 lemma slab_hq₁ (hq : 1 < q) (hqd : q < 1 + 1 / (d : ℝ)) :
     (q - 1) / slabGamma d q + 1 / slabQ1 d q = 1 := by
   have hγ := slab_gamma_one_lt hq hqd
-  have h0 : slabGamma d q - q + 1 ≠ 0 := by linarith [(slab_q_lt_gamma hq hqd).1]
   unfold slabQ1
   field_simp
   ring

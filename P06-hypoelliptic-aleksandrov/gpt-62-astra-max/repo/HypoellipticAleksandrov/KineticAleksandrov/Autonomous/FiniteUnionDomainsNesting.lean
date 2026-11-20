@@ -9,19 +9,22 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov
 
+variable (H1 H2 : FiniteIntervalUnion) (hsub : H1.carrier ⊆ H2.carrier) (sMinus T : ℝ)
+
+include H1 H2 sMinus T in
 /-- The internal restart boundary uses strict physical time and the larger open velocity set. -/
-def finiteUnionInternalExit (H1 H2 : FiniteIntervalUnion) (sMinus T : ℝ) : Set Point :=
+def finiteUnionInternalExit : Set Point :=
   {p | sMinus < p.time ∧ p.time < T ∧
     p.velocity 0 ∈ frontier H1.carrier ∩ H2.carrier}
 
 /-- The internal restart boundary is part of the smaller strip's prescribed exit. -/
-theorem finiteUnionInternalExit_subset_exit (H1 H2 : FiniteIntervalUnion) (sMinus T : ℝ) :
+theorem finiteUnionInternalExit_subset_exit :
     finiteUnionInternalExit H1 H2 sMinus T ⊆ finiteUnionExitSet H1 sMinus T :=
   fun _ hp => Or.inr ⟨hp.1, hp.2.1, hp.2.2.1⟩
 
+include hsub in
 /-- The smaller exit is exactly the outer exit part plus the internal restart part. -/
-theorem finiteUnionExitSet_nested_split (H1 H2 : FiniteIntervalUnion)
-    (hsub : H1.carrier ⊆ H2.carrier) (sMinus T : ℝ) :
+theorem finiteUnionExitSet_nested_split :
     finiteUnionExitSet H1 sMinus T =
       (finiteUnionExitSet H1 sMinus T ∩ finiteUnionExitSet H2 sMinus T) ∪
         finiteUnionInternalExit H1 H2 sMinus T := by
@@ -37,10 +40,10 @@ theorem finiteUnionExitSet_nested_split (H1 H2 : FiniteIntervalUnion)
         exact ⟨closure_mono hsub (frontier_subset_closure hp.2.2), hv⟩
   · rintro (hp | hp)
     · exact hp.1
-    · exact finiteUnionInternalExit_subset_exit H1 H2 sMinus T hp
+    · apply finiteUnionInternalExit_subset_exit <;> assumption
 
 /-- Outer prescribed exits and internal restart exits are disjoint. -/
-theorem finiteUnionExitSet_disjoint_internal (H1 H2 : FiniteIntervalUnion) (sMinus T : ℝ) :
+theorem finiteUnionExitSet_disjoint_internal :
     Disjoint (finiteUnionExitSet H2 sMinus T) (finiteUnionInternalExit H1 H2 sMinus T) := by
   apply Set.disjoint_left.mpr
   intro p hp hs
@@ -50,7 +53,7 @@ theorem finiteUnionExitSet_disjoint_internal (H1 H2 : FiniteIntervalUnion) (sMin
       (disjoint_frontier_iff_isOpen.mpr H2.isOpen_carrier) hp.2.2 hs.2.2.2
 
 /-- The internal restart set is Borel in physical coordinates. -/
-theorem measurableSet_finiteUnionInternalExit (H1 H2 : FiniteIntervalUnion) (sMinus T : ℝ) :
+theorem measurableSet_finiteUnionInternalExit :
     MeasurableSet (finiteUnionInternalExit H1 H2 sMinus T) := by
   unfold finiteUnionInternalExit
   convert ((isOpen_lt continuous_const continuous_time).measurableSet.inter

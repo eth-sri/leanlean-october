@@ -21,25 +21,31 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 /-- Fixed smooth scalar bump for the squared radial variable. -/
 def squaredRadiusBump : ContDiffBump (0 : ℝ) := ⟨1, 4, by norm_num, by norm_num⟩
 
+section
+variable {d : ℕ} (R : ℝ) (alpha : ℝ) (hR : 0 < R) (y : PDE.Vec d)
+
+include R y in
 /-- The radial cutoff of Appendix C, using the Euclidean squared length. -/
-def radialCutoff {d : ℕ} (R : ℝ) (y : PDE.Vec d) : ℝ :=
+def radialCutoff : ℝ :=
   squaredRadiusBump (PDE.vecNormSq y / R ^ 2)
 
+include alpha y in
 /-- The source's radial power profile. -/
-def radialProfile {d : ℕ} (alpha : ℝ) (y : PDE.Vec d) : ℝ :=
+def radialProfile : ℝ :=
   Real.rpow (PDE.vecNormSq y) (alpha / 2)
 
 /-- The literal interpolation of the translated seed with the radial profile. -/
-def cutoffProfile {d : ℕ} (alpha C₀ sigma R : ℝ) (y e : PDE.Vec d) : ℝ :=
+def cutoffProfile (alpha C₀ sigma R : ℝ) (y e : PDE.Vec d) : ℝ :=
   radialProfile alpha y + radialCutoff R y * (seed alpha C₀ sigma y e - radialProfile alpha y)
 
 /-- The radial cutoff takes values between zero and one. -/
-theorem radialCutoff_mem_Icc {d : ℕ} (R : ℝ) (y : PDE.Vec d) :
+theorem radialCutoff_mem_Icc :
     radialCutoff R y ∈ Set.Icc (0 : ℝ) 1 :=
   ⟨squaredRadiusBump.nonneg, squaredRadiusBump.le_one⟩
 
+include hR in
 /-- The cutoff is one on the closed Euclidean ball of radius R. -/
-theorem radialCutoff_eq_one {d : ℕ} (R : ℝ) (hR : 0 < R) (y : PDE.Vec d)
+theorem radialCutoff_eq_one
     (hy : PDE.vecEuclideanNorm y ≤ R) : radialCutoff R y = 1 := by
   apply squaredRadiusBump.one_of_mem_closedBall
   have hsq : PDE.vecNormSq y ≤ R ^ 2 := by
@@ -51,8 +57,9 @@ theorem radialCutoff_eq_one {d : ℕ} (R : ℝ) (hR : 0 < R) (y : PDE.Vec d)
   simpa only [Metric.mem_closedBall, Real.dist_eq, sub_zero, abs_of_nonneg hn,
     squaredRadiusBump] using hle
 
+include hR in
 /-- The cutoff is zero outside the open Euclidean ball of radius 2R. -/
-theorem radialCutoff_eq_zero {d : ℕ} (R : ℝ) (hR : 0 < R) (y : PDE.Vec d)
+theorem radialCutoff_eq_zero
     (hy : 2 * R ≤ PDE.vecEuclideanNorm y) : radialCutoff R y = 0 := by
   apply squaredRadiusBump.zero_of_le_dist
   have hsq : 4 * R ^ 2 ≤ PDE.vecNormSq y := by
@@ -63,24 +70,29 @@ theorem radialCutoff_eq_zero {d : ℕ} (R : ℝ) (hR : 0 < R) (y : PDE.Vec d)
   have hle : 4 ≤ PDE.vecNormSq y / R ^ 2 := (le_div_iff₀ hpos).mpr hsq
   simpa only [Real.dist_eq, sub_zero, abs_of_nonneg hn, squaredRadiusBump] using hle
 
+end
+
+variable {d : ℕ} (alpha C₀ sigma R : ℝ) (hC₀ : 0 ≤ C₀) (hsigma : 0 < sigma) (hR : 0 < R)
+    (y e : PDE.Vec d)
+
+include hR in
 /-- The cutoff profile equals the seed on the closed inner ball. -/
-theorem cutoffProfile_eq_seed {d : ℕ} (alpha C₀ sigma R : ℝ) (hR : 0 < R)
-    (y e : PDE.Vec d) (hy : PDE.vecEuclideanNorm y ≤ R) :
+theorem cutoffProfile_eq_seed (hy : PDE.vecEuclideanNorm y ≤ R) :
     cutoffProfile alpha C₀ sigma R y e = seed alpha C₀ sigma y e := by
   unfold cutoffProfile
   rw [radialCutoff_eq_one R hR y hy]
   ring
 
+include hR in
 /-- The cutoff profile equals the radial profile on the closed outer region. -/
-theorem cutoffProfile_eq_radial {d : ℕ} (alpha C₀ sigma R : ℝ) (hR : 0 < R)
-    (y e : PDE.Vec d) (hy : 2 * R ≤ PDE.vecEuclideanNorm y) :
+theorem cutoffProfile_eq_radial (hy : 2 * R ≤ PDE.vecEuclideanNorm y) :
     cutoffProfile alpha C₀ sigma R y e = radialProfile alpha y := by
   unfold cutoffProfile
   rw [radialCutoff_eq_zero R hR y hy]
   ring
 
 /-- The cutoff is smooth on the entire native velocity space. -/
-theorem contDiff_radialCutoff {d : ℕ} (R : ℝ) :
+theorem contDiff_radialCutoff (R : ℝ) :
     ContDiff ℝ (⊤ : ℕ∞) (radialCutoff (d := d) R) := by
   unfold radialCutoff
   apply squaredRadiusBump.contDiff.comp
@@ -88,14 +100,14 @@ theorem contDiff_radialCutoff {d : ℕ} (R : ℝ) :
   fun_prop
 
 /-- The radial profile is positive away from the velocity origin. -/
-theorem radialProfile_pos {d : ℕ} (alpha : ℝ) (y : PDE.Vec d) (hy : y ≠ 0) :
+theorem radialProfile_pos (alpha : ℝ) (y : PDE.Vec d) (hy : y ≠ 0) :
     0 < radialProfile alpha y := by
   apply Real.rpow_pos_of_pos
   exact (PDE.vecNormSq_nonneg y).lt_of_ne' (PDE.vecNormSq_eq_zero_iff.not.mpr hy)
 
+include hC₀ hsigma hR in
 /-- The interpolation is strictly positive, including at velocity zero. -/
-theorem cutoffProfile_pos {d : ℕ} (alpha C₀ sigma R : ℝ) (hC₀ : 0 ≤ C₀)
-    (hsigma : 0 < sigma) (hR : 0 < R) (y e : PDE.Vec d) :
+theorem cutoffProfile_pos :
     0 < cutoffProfile alpha C₀ sigma R y e := by
   by_cases hy : y = 0
   · rw [cutoffProfile_eq_seed alpha C₀ sigma R hR y e]
@@ -112,9 +124,9 @@ theorem cutoffProfile_pos {d : ℕ} (alpha C₀ sigma R : ℝ) (hC₀ : 0 ≤ C�
       have hr := mul_nonneg (sub_nonneg.mpr hchi1) hrad.le
       nlinarith
 
+include hsigma hR in
 /-- The interpolation is smooth jointly, including where its radial summands are singular. -/
-theorem contDiff_cutoffProfile {d : ℕ} (alpha C₀ sigma R : ℝ)
-    (hsigma : 0 < sigma) (hR : 0 < R) :
+theorem contDiff_cutoffProfile :
     ContDiff ℝ (⊤ : ℕ∞)
       (fun q : PDE.Vec d × PDE.Vec d => cutoffProfile alpha C₀ sigma R q.1 q.2) := by
   apply contDiff_iff_contDiffAt.mpr

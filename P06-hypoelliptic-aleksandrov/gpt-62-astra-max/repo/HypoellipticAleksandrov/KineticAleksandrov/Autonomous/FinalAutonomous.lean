@@ -1,8 +1,6 @@
 module
 
-public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.AssemblyTheoremAutonomous
-public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.AssemblyLocalisedAutonomous
-public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.AssemblyAutonomousHolder
+public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.AssemblyDensity
 public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.ReturnTime
 public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.TimeBinCount
 public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.EnlargedRecursionTerminalDomination
@@ -24,16 +22,16 @@ namespace Autonomous
 
 /-- The enlarged terminal measures satisfy the exact frontier domination statement. -/
 theorem terminalDominationStatement_holds : TerminalDominationStatement := by
-  intro hH hLE lam Lam hlam hLam A c J T P _hbar hT hJ _hvel N b hb hBT
-  exact enlarged_active_terminal_le_fullspace hH hLE hlam hLam A c J
+  intro lam Lam hlam hLam A c J T P _hbar hT hJ _hvel N b hb hBT
+  exact enlarged_active_terminal_le_fullspace hlam hLam A c J
     P.time (P.time + T) P le_rfl (lt_add_of_pos_right P.time hT) hJ N b hb hBT
 
 /-- The exact time-bin count follows from exponent-six admissibility and return. -/
 theorem timeBinCountStatement_holds : TimeBinCountStatement := by
-  intro hH hLE lam Lam hlam hLam
-  exact timeBinCount_holds_of_return_time hH hLE hlam hLam
-    (return_time hH hLE lam Lam hlam hLam
-      (smoothAutonomousP6_holds hH hLE lam Lam hlam hLam))
+  intro lam Lam hlam hLam
+  exact timeBinCount_holds_of_return_time hlam hLam
+    (return_time lam Lam hlam hLam
+      (smoothAutonomousP6_holds lam Lam hlam hLam))
 
 /-- All autonomous frontier steps hold relative to the source theorem. -/
 theorem autonomousRemainingFrontier_holds : AutonomousRemainingFrontier := by

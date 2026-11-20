@@ -11,7 +11,7 @@ the parabolic marginal bundle for a `z`-independent smooth elliptic coefficient 
 `W(σ, v) = ∫_σ^T ∫ g(r, w) P_{σ,r}(v, dw) dr` is smooth in `U₀`, satisfies
 `0 ≤ W ≤ (T - σ) sup g` and `∂_σ W + B : D_v² W = -g` in `U₀`, and extends continuously by zero
 to the terminal face `σ = T` and the lateral frontier.  Hörmander's theorem enters only through the
-explicit hypothesis `hH`.
+explicit hypothesis ``.
 -/
 
 @[expose] public section
@@ -28,7 +28,7 @@ open scoped Topology
 variable {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
 
 /-- **Parabolic Duhamel lemma** (Lemma 2.3), without the transport data. -/
-theorem parabolic_duhamel (hH : HormanderHypoellipticityStatement)
+theorem parabolic_duhamel
     (hΩ : IsAdmissibleEvolutionDomain Ω) (hγ : IsContinuousPiecewiseC1 γ) {lam Lam : ℝ}
     {B : CoefficientField d} (hB : SectionTwo.IsSectionTwoCoefficient lam Lam B)
     (K : MovingFiberKernel Ω γ)
@@ -57,15 +57,15 @@ theorem parabolic_duhamel (hH : HormanderHypoellipticityStatement)
         parabolicDuhamelPotential K (measurableSet_of_isAdmissibleEvolutionDomain hΩ) T g p =
           0) := by
   have hΩm := measurableSet_of_isAdmissibleEvolutionDomain hΩ
-  have hγc : Continuous γ := hγ.1
-  obtain ⟨hsmooth, heq⟩ := duhamel_smooth_equation K hH hΩ hγc hB hP g hg0 hgs hgc T hgU
+  have hγc := hγ.1
+  obtain ⟨hsmooth, heq⟩ := duhamel_smooth_equation K hΩ hγc hB hP g hg0 hgs hgc T hgU
   have hg : ∀ r, Measurable (fun v : PDE.Vec d => g (r, v)) := fun r =>
     hgs.continuous.measurable.comp (measurable_const.prodMk measurable_id)
   obtain ⟨C, hC⟩ := hgs.continuous.bounded_above_of_compact_support hgc
   have hbdd : BddAbove (range g) := ⟨C, by
     rintro _ ⟨p, rfl⟩
-    exact (le_abs_self _).trans (by simpa using hC p)⟩
-  have hgb : ∀ p, g p ≤ ⨆ q, g q := fun p => le_ciSup hbdd p
+    exact (le_abs_self _).trans (by exact hC p)⟩
+  have hgb := fun p => le_ciSup hbdd p
   refine ⟨hsmooth, fun p hp => ⟨parabolicDuhamelPotential_nonneg K hΩm T g hg hg0 p,
     parabolicDuhamelPotential_le K hΩm T g hg hg0 _ hgb p hp.1.le⟩, heq,
     continuousOn_duhamelPotential K hΩ hγc hP g hg0 hgs hgc T hgU,

@@ -30,7 +30,7 @@ theorem second_deriv_product (f g : ℝ → ℝ) (hf : ContDiff ℝ 2 f)
   have heq : deriv (fun w => f w*g w) =
       fun w => deriv f w*g w+f w*deriv g w := by
     funext w
-    exact deriv_fun_mul (hd w) (he w)
+    apply_rules [deriv_fun_mul]
   have h₁ : DifferentiableAt ℝ (fun w => deriv f w*g w) v :=
     (hf.differentiable_deriv_two v).mul (he v)
   have h₂ : DifferentiableAt ℝ (fun w => f w*deriv g w) v :=
@@ -56,7 +56,6 @@ theorem spatialCutoffTest_operator (a : ℝ → ℝ → ℝ) (chi psi : ℝ → 
       2*a (p.position 0) (p.velocity 0)*chi (p.position 0)*deriv psi (p.velocity 0)*
         kineticVelocityGradient phi p 0 := by
   have hc := hchi.differentiable (by norm_num)
-  have hp := hpsi.differentiable (by norm_num)
   have htime : kineticTimeDerivative (spatialCutoffTest chi psi phi) p =
       chi (p.position 0)*psi (p.velocity 0)*kineticTimeDerivative phi p := by
     change deriv (fun t => (chi (p.position 0)*psi (p.velocity 0))*

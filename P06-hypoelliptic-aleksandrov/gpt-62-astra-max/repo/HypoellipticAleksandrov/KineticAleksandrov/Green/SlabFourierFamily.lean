@@ -45,11 +45,11 @@ lemma isFiniteMeasure_slabRef (hd : 0 < d) {T : ℝ} (hT : 0 < T) :
   refine ⟨?_⟩
   rw [slabRef, withDensity_apply _ MeasurableSet.univ, Measure.restrict_univ]
   have h : ∫⁻ y, slabWeight d y ∂slabBase d T =
-      (∫⁻ _τ : ElapsedTime ⊤, (1 : ℝ≥0∞) ∂(elapsedVolume ⊤).restrict (slabTimeSet T)) *
+      (∫⁻ _τ : ElapsedTime ⊤, 1 ∂(elapsedVolume ⊤).restrict (slabTimeSet T)) *
         ∫⁻ ζ, decayProfile d 1 ζ := by
     unfold slabBase slabWeight
     have := lintegral_prod_mul (μ := (elapsedVolume ⊤).restrict (slabTimeSet T))
-      (ν := (volume : Measure (PDE.Vec d))) (f := fun _ => (1 : ℝ≥0∞))
+      (ν := volume) (f := fun _ => 1)
       (g := decayProfile d 1) aemeasurable_const (measurable_decayProfile d 1).aemeasurable
     simpa only [one_mul] using this
   rw [h, lintegral_const, one_mul, Measure.restrict_apply MeasurableSet.univ, univ_inter,
@@ -105,7 +105,11 @@ lemma phaseKernel_le (hF : Measurable F) (hFb : ∀ z : ℂ, ‖z‖ = 1 → F z
         exact ENNReal.ofReal_le_ofReal (hFb _ (norm_greenPhase ξ p))
     _ = _ := by rw [setLIntegral_const, one_mul]
 
-theorem phaseKernel_isFiniteKernel (hFb : ∀ z : ℂ, ‖z‖ = 1 → F z ≤ 1) :
+section
+variable (hd : 0 < d) (hT : 0 < T) (hF : Measurable F) (hFb : ∀ z : ℂ, ‖z‖ = 1 → F z ≤ 1)
+include hFb
+
+theorem phaseKernel_isFiniteKernel :
     IsFiniteKernel (phaseKernel d T Γ F) := by
   have h : IsFiniteKernel (Kernel.withDensity (Kernel.const (PDE.Vec d) (Γ.restrict (slabSet T)))
       (phaseDensity d F)) := by
@@ -117,10 +121,10 @@ theorem phaseKernel_isFiniteKernel (hFb : ∀ z : ℂ, ‖z‖ = 1 → F z ≤ 1
   unfold phaseKernel
   infer_instance
 
+include hd hT hF in
 /-- **One real channel.**  A jointly measurable family `r^ξ ≥ 0` of densities, on the slab base,
 of the measures `E ↦ ∫_{S_E} ofReal (F (e^{-iξ·z'})) dΓ`. -/
-theorem exists_channel (hd : 0 < d) (hT : 0 < T) (hF : Measurable F)
-    (hFb : ∀ z : ℂ, ‖z‖ = 1 → F z ≤ 1) (g : SlabBase d → ℝ≥0∞)
+theorem exists_channel (g : SlabBase d → ℝ≥0∞)
     (hg : ∀ E : Set (SlabBase d), MeasurableSet E →
       Γ {p | (p.1, p.2.1) ∈ E ∧ T < p.1.1 ∧ p.1.1 < 2 * T} = ∫⁻ y in E, g y ∂slabBase d T) :
     ∃ r : PDE.Vec d → SlabBase d → ℝ, Measurable (Function.uncurry r) ∧ (∀ ξ y, 0 ≤ r ξ y) ∧
@@ -131,7 +135,7 @@ theorem exists_channel (hd : 0 < d) (hT : 0 < T) (hF : Measurable F)
   have hmfin := isFiniteMeasure_slabRef hd hT
   have hκfin := phaseKernel_isFiniteKernel (d := d) (T := T) (Γ := Γ) (F := F) hFb
   set κ := phaseKernel d T Γ F with hκ
-  let η : Kernel (PDE.Vec d) (SlabBase d) := Kernel.const (PDE.Vec d) (slabRef d T)
+  let η := Kernel.const (PDE.Vec d) (slabRef d T)
   have hac : ∀ ξ, κ ξ ≪ η ξ := by
     intro ξ s hs
     rw [Kernel.const_apply] at hs
@@ -139,9 +143,8 @@ theorem exists_channel (hd : 0 < d) (hT : 0 < T) (hF : Measurable F)
     refine measure_mono_null hst ?_
     have h1 : slabBase d T t = 0 := by
       rw [slabRef, withDensity_apply _ ht] at hnull
-      have h2 := (lintegral_eq_zero_iff' (measurable_slabWeight d).aemeasurable).1 hnull
-      have h3 : ∀ᵐ x ∂(slabBase d T).restrict t, False :=
-        h2.mono (fun x hx => (slabWeight_pos x).ne' hx)
+      have h3 :=
+        ((lintegral_eq_zero_iff' (measurable_slabWeight d).aemeasurable).1 hnull).mono (fun x hx => (slabWeight_pos x).ne' hx)
       rw [Filter.eventually_false_iff_eq_bot, ae_eq_bot] at h3
       have := congrArg (fun μ => μ univ) h3
       simpa using this
@@ -153,31 +156,29 @@ theorem exists_channel (hd : 0 < d) (hT : 0 < T) (hF : Measurable F)
     intro ξ E hE
     have hr : Measurable (fun y => κ.rnDeriv η ξ y) :=
       (Kernel.measurable_rnDeriv κ η).comp (measurable_const.prodMk measurable_id)
-    have h1 := setLIntegral_withDensity_eq_setLIntegral_mul (slabBase d T)
-      (measurable_slabWeight d) hr hE
     have h2 := Kernel.setLIntegral_rnDeriv (hac ξ) hE
     rw [Kernel.const_apply] at h2
-    exact h1.symm.trans h2
+    exact (setLIntegral_withDensity_eq_setLIntegral_mul (slabBase d T) (measurable_slabWeight d) hr hE).symm.trans h2
   refine ⟨fun ξ y => (slabWeight d y * κ.rnDeriv η ξ y).toReal, ?_,
     fun ξ y => ENNReal.toReal_nonneg,
     fun ξ => ?_⟩
   · exact ENNReal.measurable_toReal.comp (((measurable_slabWeight d).comp measurable_snd).mul
       (Kernel.measurable_rnDeriv κ η))
-  · have hr : Measurable (fun y => κ.rnDeriv η ξ y) :=
-      (Kernel.measurable_rnDeriv κ η).comp (measurable_const.prodMk measurable_id)
-    have hmeas : Measurable (fun y => slabWeight d y * κ.rnDeriv η ξ y) :=
-      (measurable_slabWeight d).mul hr
+  · have hmeas : Measurable (fun y => slabWeight d y * κ.rnDeriv η ξ y) :=
+      (measurable_slabWeight d).mul ((Kernel.measurable_rnDeriv κ η).comp (measurable_const.prodMk measurable_id))
     have hfin : ∫⁻ y, slabWeight d y * κ.rnDeriv η ξ y ∂slabBase d T ≠ ⊤ := by
       have := hset ξ univ MeasurableSet.univ
       rw [Measure.restrict_univ] at this
       rw [this]
-      exact measure_ne_top _ _
+      apply measure_ne_top
     refine ⟨integrable_toReal_of_lintegral_ne_top hmeas.aemeasurable hfin, fun E hE => ?_⟩
     have hfinE : ∫⁻ y in E, slabWeight d y * κ.rnDeriv η ξ y ∂slabBase d T ≠ ⊤ := by
-      rw [hset ξ E hE]; exact measure_ne_top _ _
+      rw [hset ξ E hE]; apply measure_ne_top
     rw [integral_toReal hmeas.aemeasurable (ae_lt_top hmeas hfinE), hset ξ E hE,
       hκ, phaseKernel_apply (T := T) (Γ := Γ) hF ξ hE]
     rfl
+
+end
 
 end
 
@@ -193,33 +194,23 @@ theorem exists_measurable_fourier_family (hd : 0 < d) {T : ℝ} (hT : 0 < T)
         ∫ y in E, k ξ y ∂slabBase d T =
           ∫ p in {p : GreenCarrier d | (p.1, p.2.1) ∈ E ∧ T < p.1.1 ∧ p.1.1 < 2 * T},
             greenPhase d ξ p ∂Γ := by
-  have hre : ∀ z : ℂ, ‖z‖ = 1 → z.re ≤ 1 :=
-    fun z hz => (le_abs_self _).trans ((Complex.abs_re_le_norm z).trans hz.le)
-  have hnre : ∀ z : ℂ, ‖z‖ = 1 → -z.re ≤ 1 :=
-    fun z hz => (neg_le_abs _).trans ((Complex.abs_re_le_norm z).trans hz.le)
-  have him : ∀ z : ℂ, ‖z‖ = 1 → z.im ≤ 1 :=
-    fun z hz => (le_abs_self _).trans ((Complex.abs_im_le_norm z).trans hz.le)
-  have hnim : ∀ z : ℂ, ‖z‖ = 1 → -z.im ≤ 1 :=
-    fun z hz => (neg_le_abs _).trans ((Complex.abs_im_le_norm z).trans hz.le)
   obtain ⟨r1, hm1, -, h1⟩ := exists_channel (Γ := Γ) (F := fun z : ℂ => z.re) hd hT
-    Complex.measurable_re hre g hg
+    Complex.measurable_re (fun z hz => (le_abs_self _).trans ((Complex.abs_re_le_norm z).trans hz.le)) g hg
   obtain ⟨r2, hm2, -, h2⟩ := exists_channel (Γ := Γ) (F := fun z : ℂ => -z.re) hd hT
-    Complex.measurable_re.neg hnre g hg
+    Complex.measurable_re.neg (fun z hz => (neg_le_abs _).trans ((Complex.abs_re_le_norm z).trans hz.le)) g hg
   obtain ⟨r3, hm3, -, h3⟩ := exists_channel (Γ := Γ) (F := fun z : ℂ => z.im) hd hT
-    Complex.measurable_im him g hg
+    Complex.measurable_im (fun z hz => (le_abs_self _).trans ((Complex.abs_im_le_norm z).trans hz.le)) g hg
   obtain ⟨r4, hm4, -, h4⟩ := exists_channel (Γ := Γ) (F := fun z : ℂ => -z.im) hd hT
-    Complex.measurable_im.neg hnim g hg
-  refine ⟨fun ξ y => ((r1 ξ y - r2 ξ y : ℝ) : ℂ) + ((r3 ξ y - r4 ξ y : ℝ) : ℂ) * Complex.I,
+    Complex.measurable_im.neg (fun z hz => (neg_le_abs _).trans ((Complex.abs_im_le_norm z).trans hz.le)) g hg
+  refine ⟨fun ξ y => ((r1 ξ y - r2 ξ y : ℝ)) + ((r3 ξ y - r4 ξ y : ℝ)) * Complex.I,
     ?_, fun ξ => ⟨?_, fun E hE => ?_⟩⟩
-  · exact ((Complex.measurable_ofReal.comp (hm1.sub hm2)).add
-      ((Complex.measurable_ofReal.comp (hm3.sub hm4)).mul_const Complex.I))
+  · fun_prop
   · exact (((h1 ξ).1.sub (h2 ξ).1).ofReal).add
       (((h3 ξ).1.sub (h4 ξ).1).ofReal.mul_const Complex.I)
-  · have hki : Integrable (fun y => ((r1 ξ y - r2 ξ y : ℝ) : ℂ) +
-        ((r3 ξ y - r4 ξ y : ℝ) : ℂ) * Complex.I) (slabBase d T) :=
+  · have hki : Integrable (fun y => ((r1 ξ y - r2 ξ y : ℝ)) +
+        ((r3 ξ y - r4 ξ y : ℝ)) * Complex.I) (slabBase d T) :=
       (((h1 ξ).1.sub (h2 ξ).1).ofReal).add
         (((h3 ξ).1.sub (h4 ξ).1).ofReal.mul_const Complex.I)
-    have hSEm := measurableSet_slabPreimage T hE
     have hsub : {p : GreenCarrier d | (p.1, p.2.1) ∈ E ∧ T < p.1.1 ∧ p.1.1 < 2 * T} ⊆
         slabSet T := fun p hp => ⟨hp.2.1, hp.2.2⟩
     have hΓE : IsFiniteMeasure (Γ.restrict

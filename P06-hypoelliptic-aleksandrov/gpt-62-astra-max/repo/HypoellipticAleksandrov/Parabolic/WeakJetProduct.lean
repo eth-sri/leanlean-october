@@ -24,23 +24,21 @@ namespace HypoellipticAleksandrov.Parabolic
 open Filter MeasureTheory
 open scoped ENNReal Topology
 
-private theorem integrable_restrict_mul_of_locallyIntegrableOn
-    {d : ℕ} {U : Set (TimeVelocity d)} {f g : TimeVelocity d → ℝ}
+section
+variable {d : ℕ} {i : Fin d} {U : Set (TimeVelocity d)} (f g : TimeVelocity d → ℝ)
+    (hf : ContDiff ℝ (⊤ : ℕ∞) f) (hg : ContDiff ℝ (⊤ : ℕ∞) g) (z : TimeVelocity d)
+
+private theorem integrable_restrict_mul_of_locallyIntegrableOn {f g : TimeVelocity d → ℝ}
     (hf : LocallyIntegrableOn f U volume) (hg : Continuous g)
     (hgCompact : HasCompactSupport g) (hgSub : tsupport g ⊆ U) :
     Integrable (fun z => f z * g z) (timeVelocityVolumeOn U) := by
-  have hfK : IntegrableOn f (tsupport g) volume :=
-    hf.integrableOn_compact_subset hgSub hgCompact.isCompact
   have hfgK : IntegrableOn (fun z => f z * g z) (tsupport g) volume := by
     simpa only [smul_eq_mul] using
-      hfK.smul_continuousOn hg.continuousOn hgCompact.isCompact
-  have hsupport : Function.support (fun z => f z * g z) ⊆ tsupport g := by
-    intro z hz
-    exact tsupport_mul_subset_right (subset_closure hz)
+      (hf.integrableOn_compact_subset hgSub hgCompact.isCompact).smul_continuousOn hg.continuousOn hgCompact.isCompact
+  have hsupport : Function.support (fun z => f z * g z) ⊆ tsupport g := fun z hz => tsupport_mul_subset_right (subset_closure hz)
   exact (integrableOn_iff_integrable_of_support_subset hsupport).mp hfgK |>.restrict
 
 private theorem weak_product_rule
-    {d : ℕ} {U : Set (TimeVelocity d)}
     {u du b : TimeVelocity d → ℝ}
     {D : (TimeVelocity d → ℝ) → TimeVelocity d → ℝ}
     (hu : ∀ φ : TimeVelocity d → ℝ, ContDiff ℝ (⊤ : ℕ∞) φ →
@@ -61,56 +59,44 @@ private theorem weak_product_rule
       (∫ z in U, (b z * u z) * D φ z ∂volume) =
         -∫ z in U, (b z * du z + u z * D b z) * φ z ∂volume := by
   intro φ hφ hφCompact hφSub
-  let μU : Measure (TimeVelocity d) := timeVelocityVolumeOn U
-  let dφ : TimeVelocity d → ℝ := D φ
-  let db : TimeVelocity d → ℝ := D b
-  let φb : TimeVelocity d → ℝ := b * φ
-  have hbCont : Continuous b := hb.continuous
-  have hφCont : Continuous φ := hφ.continuous
-  have hdφCont : Continuous dφ := hDcont φ hφ
-  have hdbCont : Continuous db := hDcont b hb
-  have hdφCompact : HasCompactSupport dφ := hDcompact φ hφCompact
-  have hdφSub : tsupport dφ ⊆ U := (hDtsupport φ).trans hφSub
-  have hφbSmooth : ContDiff ℝ (⊤ : ℕ∞) φb := hb.mul hφ
+  let μU := timeVelocityVolumeOn U
+  let dφ := D φ
+  let db := D b
+  let φb := b * φ
+  have hbCont := hb.continuous
+  have hφCont := hφ.continuous
+  have hφbSmooth := hb.mul hφ
   have hφbCompact : HasCompactSupport φb := by
-    simpa only [φb] using hφCompact.mul_left (f := b)
-  have hdφbCont : Continuous (D φb) := hDcont φb hφbSmooth
-  have hdφbCompact : HasCompactSupport (D φb) := hDcompact φb hφbCompact
-  have hφbSub : tsupport φb ⊆ U :=
+    exact hφCompact.mul_left (f := b)
+  have hφbSub :=
     (tsupport_mul_subset_right (f := b) (g := φ)).trans hφSub
-  have hdφbSub : tsupport (D φb) ⊆ U := (hDtsupport φb).trans hφbSub
   have huWeak :
       (∫ z, u z * D φb z ∂μU) = -∫ z, du z * φb z ∂μU := by
-    simpa only [μU] using hu φb hφbSmooth hφbCompact hφbSub
-  have hbdφCont : Continuous (fun z => b z * dφ z) := hbCont.mul hdφCont
+    exact hu φb hφbSmooth hφbCompact hφbSub
+  have hbdφCont := hbCont.mul (hDcont φ hφ)
   have hbdφCompact : HasCompactSupport (fun z => b z * dφ z) := by
-    simpa only [Pi.mul_def] using hdφCompact.mul_left (f := b)
+    simpa only [Pi.mul_def] using (hDcompact φ hφCompact).mul_left (f := b)
   have hbdφSub : tsupport (fun z => b z * dφ z) ⊆ U :=
-    (tsupport_mul_subset_right.trans hdφSub)
-  have hφdbCont : Continuous (fun z => φ z * db z) := hφCont.mul hdbCont
+    (tsupport_mul_subset_right.trans ((hDtsupport φ).trans hφSub))
+  have hφdbCont : Continuous (fun z => φ z * db z) := hφCont.mul (hDcont b hb)
   have hφdbCompact : HasCompactSupport (fun z => φ z * db z) := by
-    simpa only [Pi.mul_def] using hφCompact.mul_right (f' := db)
+    exact hφCompact.mul_right (f' := db)
   have hφdbSub : tsupport (fun z => φ z * db z) ⊆ U :=
     tsupport_mul_subset_left.trans hφSub
-  have huBdφ : Integrable (fun z => u z * (b z * dφ z)) μU := by
-    simpa only [μU] using
-      integrable_restrict_mul_of_locallyIntegrableOn huLoc hbdφCont hbdφCompact hbdφSub
   have huφdb : Integrable (fun z => u z * (φ z * db z)) μU := by
-    simpa only [μU] using
-      integrable_restrict_mul_of_locallyIntegrableOn huLoc hφdbCont hφdbCompact hφdbSub
+    exact integrable_restrict_mul_of_locallyIntegrableOn huLoc hφdbCont hφdbCompact hφdbSub
   have huDφb : Integrable (fun z => u z * D φb z) μU := by
     simpa only [μU] using
-      integrable_restrict_mul_of_locallyIntegrableOn huLoc hdφbCont hdφbCompact hdφbSub
+      integrable_restrict_mul_of_locallyIntegrableOn huLoc (hDcont φb hφbSmooth) (hDcompact φb hφbCompact) ((hDtsupport φb).trans hφbSub)
   have hduφb : Integrable (fun z => du z * φb z) μU := by
-    simpa only [μU, φb] using
-      integrable_restrict_mul_of_locallyIntegrableOn hduLoc
+    exact integrable_restrict_mul_of_locallyIntegrableOn hduLoc
         (hbCont.mul hφCont) hφbCompact hφbSub
   have huDbφ : Integrable (fun z => (u z * db z) * φ z) μU := by
     simpa only [μU, mul_assoc, mul_left_comm, mul_comm] using
       integrable_restrict_mul_of_locallyIntegrableOn huLoc hφdbCont hφdbCompact hφdbSub
   have hproduct : ∀ z, D φb z = b z * dφ z + φ z * db z := by
     intro z
-    simpa only [φb, dφ, db, Pi.mul_apply] using hDmul b φ hb hφ z
+    exact hDmul b φ hb hφ z
   have hleft :
       (∫ z, (b z * u z) * dφ z ∂μU) =
         ∫ z, u z * (b z * dφ z) ∂μU := by
@@ -152,8 +138,6 @@ private theorem weak_product_rule
       exact Filter.Eventually.of_forall fun z => by ring
     rw [huTerm, hsum]
     ring
-  change (∫ z, (b z * u z) * dφ z ∂μU) =
-    -∫ z, (b z * du z + u z * db z) * φ z ∂μU
   calc
     (∫ z, (b z * u z) * dφ z ∂μU) =
         ∫ z, u z * (b z * dφ z) ∂μU := hleft
@@ -161,29 +145,25 @@ private theorem weak_product_rule
     _ = -(∫ z, du z * φb z ∂μU) - ∫ z, u z * (φ z * db z) ∂μU := by rw [huWeak]
     _ = -∫ z, (b z * du z + u z * db z) * φ z ∂μU := hright
 
-private theorem timeDerivative_mul
-    {d : ℕ} (f g : TimeVelocity d → ℝ)
-    (hf : ContDiff ℝ (⊤ : ℕ∞) f) (hg : ContDiff ℝ (⊤ : ℕ∞) g) (z : TimeVelocity d) :
+include hf hg in
+private theorem timeDerivative_mul :
     timeDerivative (f * g) z = f z * timeDerivative g z + g z * timeDerivative f z := by
   unfold timeDerivative
   rw [fderiv_mul (hf.contDiffAt.differentiableAt (by simp))
     (hg.contDiffAt.differentiableAt (by simp))]
-  simp only [ContinuousLinearMap.add_apply, ContinuousLinearMap.smul_apply, smul_eq_mul]
+  simp
 
-private theorem timeDerivative_continuous {d : ℕ} {f : TimeVelocity d → ℝ}
+private theorem timeDerivative_continuous {f : TimeVelocity d → ℝ}
     (hf : ContDiff ℝ (⊤ : ℕ∞) f) : Continuous (timeDerivative f) := by
-  unfold timeDerivative
-  simpa using (hf.continuous_fderiv (by simp)).clm_apply continuous_const
+  exact (hf.continuous_fderiv (by simp)).clm_apply continuous_const
 
-private theorem timeDerivative_compact {d : ℕ} {f : TimeVelocity d → ℝ}
+private theorem timeDerivative_compact {f : TimeVelocity d → ℝ}
     (hf : HasCompactSupport f) : HasCompactSupport (timeDerivative f) := by
-  unfold timeDerivative
-  simpa using hf.fderiv_apply (𝕜 := ℝ) ((1, 0) : TimeVelocity d)
+  exact hf.fderiv_apply (𝕜 := ℝ) ((1, 0) : TimeVelocity d)
 
-private theorem timeDerivative_tsupport {d : ℕ} (f : TimeVelocity d → ℝ) :
+private theorem timeDerivative_tsupport (f : TimeVelocity d → ℝ) :
     tsupport (timeDerivative f) ⊆ tsupport f := by
   unfold timeDerivative
-  change closure (Function.support (fun z => fderiv ℝ f z (1, 0))) ⊆ tsupport f
   refine (closure_mono ?_).trans (tsupport_fderiv_subset ℝ)
   intro z hz
   rw [Function.mem_support] at hz ⊢
@@ -191,36 +171,39 @@ private theorem timeDerivative_tsupport {d : ℕ} (f : TimeVelocity d → ℝ) :
   apply hz
   simp [hzero]
 
-private theorem velocityGradient_mul {d : ℕ} {i : Fin d}
-    (f g : TimeVelocity d → ℝ)
-    (hf : ContDiff ℝ (⊤ : ℕ∞) f) (hg : ContDiff ℝ (⊤ : ℕ∞) g) (z : TimeVelocity d) :
+include hf hg in
+private theorem velocityGradient_mul :
     velocityGradient (f * g) z i =
       f z * velocityGradient g z i + g z * velocityGradient f z i := by
   unfold velocityGradient
   rw [fderiv_mul (hf.contDiffAt.differentiableAt (by simp))
     (hg.contDiffAt.differentiableAt (by simp))]
-  simp only [ContinuousLinearMap.add_apply, ContinuousLinearMap.smul_apply, smul_eq_mul]
+  simp
 
-private theorem velocityGradient_continuous {d : ℕ} {f : TimeVelocity d → ℝ} {i : Fin d}
+end
+
+section
+variable {d : ℕ} {f : TimeVelocity d → ℝ} {i : Fin d}
+
+private theorem velocityGradient_continuous
     (hf : ContDiff ℝ (⊤ : ℕ∞) f) : Continuous (fun z => velocityGradient f z i) := by
-  unfold velocityGradient
-  simpa using (hf.continuous_fderiv (by simp)).clm_apply continuous_const
+  exact (hf.continuous_fderiv (by simp)).clm_apply continuous_const
 
-private theorem velocityGradient_compact {d : ℕ} {f : TimeVelocity d → ℝ} {i : Fin d}
+private theorem velocityGradient_compact
     (hf : HasCompactSupport f) : HasCompactSupport (fun z => velocityGradient f z i) := by
-  unfold velocityGradient
-  simpa using hf.fderiv_apply (𝕜 := ℝ) ((0, Pi.single i 1) : TimeVelocity d)
+  exact hf.fderiv_apply (𝕜 := ℝ) ((0, Pi.single i 1) : TimeVelocity d)
 
-private theorem velocityGradient_tsupport {d : ℕ} {i : Fin d} (f : TimeVelocity d → ℝ) :
+private theorem velocityGradient_tsupport (f : TimeVelocity d → ℝ) :
     tsupport (fun z => velocityGradient f z i) ⊆ tsupport f := by
   unfold velocityGradient
-  change closure (Function.support (fun z => fderiv ℝ f z (0, Pi.single i 1))) ⊆ tsupport f
   refine (closure_mono ?_).trans (tsupport_fderiv_subset ℝ)
   intro z hz
   rw [Function.mem_support] at hz ⊢
   intro hzero
   apply hz
   simp [hzero]
+
+end
 
 namespace HasWeakTimeDerivOn
 
@@ -254,14 +237,16 @@ theorem mul_contDiff {d : ℕ} {U : Set (TimeVelocity d)} {i : Fin d}
 
 end HasWeakVelocityPartialDerivOn
 
-private theorem velocityGradient_contDiff {d : ℕ} {f : TimeVelocity d → ℝ} {i : Fin d}
+section
+variable {d : ℕ} {f : TimeVelocity d → ℝ} {b : TimeVelocity d → ℝ} {i j : Fin d}
+
+private theorem velocityGradient_contDiff {i : Fin d}
     (hf : ContDiff ℝ (⊤ : ℕ∞) f) :
     ContDiff ℝ (⊤ : ℕ∞) (fun z => velocityGradient f z i) := by
   unfold velocityGradient
   exact (contDiff_infty_iff_fderiv.mp hf).2.clm_apply contDiff_const
 
-private theorem velocityHessian_continuous {d : ℕ} {f : TimeVelocity d → ℝ}
-    {i j : Fin d} (hf : ContDiff ℝ (⊤ : ℕ∞) f) :
+private theorem velocityHessian_continuous (hf : ContDiff ℝ (⊤ : ℕ∞) f) :
     Continuous (fun z => velocityHessian f z i j) := by
   unfold velocityHessian
   have hgrad : ContDiff ℝ (⊤ : ℕ∞) (fderiv ℝ f) :=
@@ -269,8 +254,7 @@ private theorem velocityHessian_continuous {d : ℕ} {f : TimeVelocity d → ℝ
   simpa using (hgrad.continuous_fderiv (by simp)).clm_apply continuous_const |>.clm_apply
     continuous_const
 
-private theorem velocityHessian_compact {d : ℕ} {f : TimeVelocity d → ℝ}
-    {i j : Fin d} (hf : HasCompactSupport f) :
+private theorem velocityHessian_compact (hf : HasCompactSupport f) :
     HasCompactSupport (fun z => velocityHessian f z i j) := by
   unfold velocityHessian
   have hfirst : HasCompactSupport (fderiv ℝ f) := hf.fderiv ℝ
@@ -279,8 +263,7 @@ private theorem velocityHessian_compact {d : ℕ} {f : TimeVelocity d → ℝ}
     (g := fun H : TimeVelocity d →L[ℝ] TimeVelocity d →L[ℝ] ℝ =>
       H ((0, Pi.single i 1) : TimeVelocity d) ((0, Pi.single j 1) : TimeVelocity d)) rfl
 
-private theorem velocityGradient_velocityGradient {d : ℕ} {b : TimeVelocity d → ℝ}
-    {i j : Fin d} (hb : ContDiff ℝ (⊤ : ℕ∞) b) (z : TimeVelocity d) :
+private theorem velocityGradient_velocityGradient (hb : ContDiff ℝ (⊤ : ℕ∞) b) (z : TimeVelocity d) :
     velocityGradient (fun y => velocityGradient b y i) z j =
       HypoellipticAleksandrov.Parabolic.velocityHessian b z i j := by
   have hgrad : ContDiff ℝ (⊤ : ℕ∞) (fderiv ℝ b) :=
@@ -302,12 +285,17 @@ private theorem velocityGradient_velocityGradient {d : ℕ} {b : TimeVelocity d 
       exact WithTop.coe_le_coe.mpr le_top)) z
   exact hraw.trans (hsymm.apply i j)
 
+end
+
 namespace ParabolicW12Function
 
+variable {d : ℕ} {U : Set (TimeVelocity d)} {p : ℝ≥0∞} (w : ParabolicW12Function d U p)
+    (hp : 1 ≤ p) {b : TimeVelocity d → ℝ} (hb : ContDiff ℝ (⊤ : ℕ∞) b)
+    (hbCompact : HasCompactSupport b)
+
+include w hp hb hbCompact in
 /-- Multiply a raw parabolic weak jet by a globally smooth compactly supported scalar. -/
-noncomputable def mulContDiffHasCompactSupport {d : ℕ} {U : Set (TimeVelocity d)} {p : ℝ≥0∞}
-    (w : ParabolicW12Function d U p) (hp : 1 ≤ p) {b : TimeVelocity d → ℝ}
-    (hb : ContDiff ℝ (⊤ : ℕ∞) b) (hbCompact : HasCompactSupport b) :
+noncomputable def mulContDiffHasCompactSupport :
     ParabolicW12Function d U p where
   toFun := fun z => b z * w.toFun z
   timeDeriv := fun z => b z * w.timeDeriv z + w.toFun z * timeDerivative b z
@@ -439,30 +427,18 @@ noncomputable def mulContDiffHasCompactSupport {d : ℕ} {U : Set (TimeVelocity 
       simp only [dbi]
       ring
 
-@[simp] theorem mulContDiffHasCompactSupport_toFun {d : ℕ} {U : Set (TimeVelocity d)}
-    {p : ℝ≥0∞} (w : ParabolicW12Function d U p) (hp : 1 ≤ p)
-    {b : TimeVelocity d → ℝ} (hb : ContDiff ℝ (⊤ : ℕ∞) b)
-    (hbCompact : HasCompactSupport b) :
+@[simp] theorem mulContDiffHasCompactSupport_toFun :
     (w.mulContDiffHasCompactSupport hp hb hbCompact).toFun = fun z => b z * w.toFun z := rfl
 
-@[simp] theorem mulContDiffHasCompactSupport_timeDeriv {d : ℕ} {U : Set (TimeVelocity d)}
-    {p : ℝ≥0∞} (w : ParabolicW12Function d U p) (hp : 1 ≤ p)
-    {b : TimeVelocity d → ℝ} (hb : ContDiff ℝ (⊤ : ℕ∞) b)
-    (hbCompact : HasCompactSupport b) :
+@[simp] theorem mulContDiffHasCompactSupport_timeDeriv :
     (w.mulContDiffHasCompactSupport hp hb hbCompact).timeDeriv =
       fun z => b z * w.timeDeriv z + w.toFun z * timeDerivative b z := rfl
 
-@[simp] theorem mulContDiffHasCompactSupport_velocityGrad {d : ℕ} {U : Set (TimeVelocity d)}
-    {p : ℝ≥0∞} (w : ParabolicW12Function d U p) (hp : 1 ≤ p)
-    {b : TimeVelocity d → ℝ} (hb : ContDiff ℝ (⊤ : ℕ∞) b)
-    (hbCompact : HasCompactSupport b) :
+@[simp] theorem mulContDiffHasCompactSupport_velocityGrad :
     (w.mulContDiffHasCompactSupport hp hb hbCompact).velocityGrad =
       fun z i => b z * w.velocityGrad z i + w.toFun z * velocityGradient b z i := rfl
 
-@[simp] theorem mulContDiffHasCompactSupport_velocityHessian {d : ℕ} {U : Set (TimeVelocity d)}
-    {p : ℝ≥0∞} (w : ParabolicW12Function d U p) (hp : 1 ≤ p)
-    {b : TimeVelocity d → ℝ} (hb : ContDiff ℝ (⊤ : ℕ∞) b)
-    (hbCompact : HasCompactSupport b) :
+@[simp] theorem mulContDiffHasCompactSupport_velocityHessian :
     (w.mulContDiffHasCompactSupport hp hb hbCompact).velocityHessian =
       fun z i j => b z * w.velocityHessian z i j + velocityGradient b z j * w.velocityGrad z i +
         w.velocityGrad z j * velocityGradient b z i + w.toFun z *

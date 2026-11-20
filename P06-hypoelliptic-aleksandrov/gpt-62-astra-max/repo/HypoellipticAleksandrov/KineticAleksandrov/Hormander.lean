@@ -53,9 +53,11 @@ def euclideanDivergence {N : ℕ} (V : PDE.Vec N → PDE.Vec N)
     (x : PDE.Vec N) : ℝ :=
   ∑ i : Fin N, (fderiv ℝ V x (PDE.basisVec i)) i
 
+variable {k N : ℕ} (Ω : Set (PDE.Vec N)) (X : Fin (k + 1) → PDE.Vec N → PDE.Vec N)
+include X
+
 /-- The formal adjoint applied to a smooth compactly supported test function. -/
-def hormanderAdjointTest {k N : ℕ}
-    (X : Fin (k + 1) → PDE.Vec N → PDE.Vec N)
+def hormanderAdjointTest
     (c : PDE.Vec N → ℝ) (φ : PDE.Vec N → ℝ)
     (x : PDE.Vec N) : ℝ :=
   -euclideanDivergence (fun y => φ y • X 0 y) x +
@@ -66,9 +68,9 @@ def hormanderAdjointTest {k N : ℕ}
         x +
     c x * φ x
 
+include Ω in
 /-- A locally integrable function satisfying the literal weak Hörmander equation. -/
-def HasWeakHormanderEquation {k N : ℕ} (Ω : Set (PDE.Vec N))
-    (X : Fin (k + 1) → PDE.Vec N → PDE.Vec N)
+def HasWeakHormanderEquation
     (c g u : PDE.Vec N → ℝ) : Prop :=
   LocallyIntegrableOn u Ω volume ∧
     ContDiffOn ℝ (⊤ : ℕ∞) g Ω ∧

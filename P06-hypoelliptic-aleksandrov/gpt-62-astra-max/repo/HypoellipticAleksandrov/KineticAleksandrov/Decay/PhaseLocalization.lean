@@ -39,12 +39,6 @@ theorem ae_phase_strip_of_forbidden_tests {d : ℕ}
     (measure_union_null (hzero 1 (Or.inl rfl)) (hzero (-1) (Or.inr rfl)))
   change ¬ |q x| ≤ c at hx
   change 0 < 1 * q x - c ∨ 0 < -1 * q x - c
-  by_cases hp : 0 ≤ q x
-  · rw [abs_of_nonneg hp] at hx
-    left
-    linarith
-  · rw [abs_of_neg (lt_of_not_ge hp)] at hx
-    right
-    linarith
+  grind
 
 end HypoellipticAleksandrov.KineticAleksandrov.Decay

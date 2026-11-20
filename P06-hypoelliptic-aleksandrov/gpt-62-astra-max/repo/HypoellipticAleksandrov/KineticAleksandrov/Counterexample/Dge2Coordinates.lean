@@ -16,37 +16,43 @@ noncomputable section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 
+section
+variable {d : ℕ} (alpha : ℝ) (r : ℝ) (phi : PDE.Vec d → PDE.Vec d → ℝ) (hr : 0 < r)
+    (x v : PDE.Vec d)
+
 /-- The unit Euclidean position direction, defined by the literal normalization. -/
-def positionDirection {d : ℕ} (x : PDE.Vec d) : PDE.Vec d :=
+def positionDirection (x : PDE.Vec d) : PDE.Vec d :=
   (PDE.vecEuclideanNorm x)⁻¹ • x
 
+include x v in
 /-- Velocity normalized by the cube root of the Euclidean position radius. -/
-def normalizedVelocity {d : ℕ} (x v : PDE.Vec d) : PDE.Vec d :=
+def normalizedVelocity : PDE.Vec d :=
   Real.rpow (PDE.vecEuclideanNorm x) (-(1 / 3 : ℝ)) • v
 
+include alpha phi x v in
 /-- The literal homogeneous ansatz on nonzero positions. -/
-def homogeneousAnsatz {d : ℕ} (alpha : ℝ)
-    (phi : PDE.Vec d → PDE.Vec d → ℝ) (x v : PDE.Vec d) : ℝ :=
+def homogeneousAnsatz : ℝ :=
   Real.rpow (PDE.vecEuclideanNorm x) (alpha / 3) *
     phi (normalizedVelocity x v) (positionDirection x)
 
+include alpha phi in
 /-- The source transport expression, using the ambient derivative in a tangent direction. -/
-def ansatzTransport {d : ℕ} (alpha : ℝ)
-    (phi : PDE.Vec d → PDE.Vec d → ℝ) (y e : PDE.Vec d) : ℝ :=
+def ansatzTransport (y e : PDE.Vec d) : ℝ :=
   PDE.vecDot y e * (alpha / 3 * phi y e -
     (1 / 3 : ℝ) * fderiv ℝ (fun z => phi z e) y y) +
     fderiv ℝ (fun a => phi y a) e (y - PDE.vecDot y e • e)
 
 /-- Normalizing a nonzero position gives a Euclidean unit vector. -/
-theorem positionDirection_normSq {d : ℕ} (x : PDE.Vec d) (hx : x ≠ 0) :
+theorem positionDirection_normSq (x : PDE.Vec d) (hx : x ≠ 0) :
     PDE.vecNormSq (positionDirection x) = 1 := by
-  have hp : 0 < PDE.vecEuclideanNorm x := PDE.vecEuclideanNorm_pos_iff.mpr hx
+  have hp := PDE.vecEuclideanNorm_pos_iff.mpr hx
   unfold positionDirection
   rw [PDE.vecNormSq_smul, ← PDE.vecEuclideanNorm_sq]
   field_simp
 
+include hr in
 /-- Positive kinetic scaling preserves the position direction. -/
-theorem positionDirection_dilate {d : ℕ} (r : ℝ) (hr : 0 < r) (x : PDE.Vec d) :
+theorem positionDirection_dilate (x : PDE.Vec d) :
     positionDirection (r ^ 3 • x) = positionDirection x := by
   unfold positionDirection
   rw [PDE.vecEuclideanNorm_smul, abs_of_pos (pow_pos hr 3), mul_inv_rev, smul_smul]
@@ -55,9 +61,9 @@ theorem positionDirection_dilate {d : ℕ} (r : ℝ) (hr : 0 < r) (x : PDE.Vec d
     field_simp
   rw [h]
 
+include hr in
 /-- Positive kinetic scaling preserves the normalized velocity. -/
-theorem normalizedVelocity_dilate {d : ℕ} (r : ℝ) (hr : 0 < r)
-    (x v : PDE.Vec d) :
+theorem normalizedVelocity_dilate :
     normalizedVelocity (r ^ 3 • x) (r • v) = normalizedVelocity x v := by
   unfold normalizedVelocity
   rw [PDE.vecEuclideanNorm_smul, abs_of_pos (pow_pos hr 3)]
@@ -66,8 +72,9 @@ theorem normalizedVelocity_dilate {d : ℕ} (r : ℝ) (hr : 0 < r)
     ← Real.rpow_natCast_mul hr.le]
   norm_num
   rw [Real.rpow_neg_one, smul_smul]
-  congr 1
   field_simp
+
+end
 
 /-- The homogeneous ansatz has the exact kinetic scaling of Appendix C. -/
 theorem homogeneousAnsatz_dilate {d : ℕ} (alpha r : ℝ) (hr : 0 < r)
@@ -80,9 +87,7 @@ theorem homogeneousAnsatz_dilate {d : ℕ} (alpha r : ℝ) (hr : 0 < r)
   simp only [Real.rpow_eq_pow]
   rw [Real.mul_rpow (pow_nonneg hr.le 3) (PDE.vecEuclideanNorm_nonneg x),
     ← Real.rpow_natCast_mul hr.le]
-  have h : (3 : ℝ) * (alpha / 3) = alpha := by ring
-  norm_num only [Nat.cast_ofNat]
-  rw [h, mul_assoc]
+  grind
 
 /-- The seed transport is the explicit source expression with its sphere derivative. -/
 theorem ansatzTransport_seed {d : ℕ} (alpha C₀ sigma : ℝ) (hsigma : 0 < sigma)

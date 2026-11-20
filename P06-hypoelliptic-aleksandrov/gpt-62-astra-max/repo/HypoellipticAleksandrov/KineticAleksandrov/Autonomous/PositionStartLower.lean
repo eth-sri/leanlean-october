@@ -18,7 +18,7 @@ theorem positionStartQuadratic_slab_lower (mu : Measure Point) [IsFiniteMeasure 
       ∫ p in {q : Point | s + a < q.time ∧ q.time ≤ s + b},
         positionStartCutoff (x + ((k : ℝ) + 1 / 2) * c.r ^ 3) c.r c.positive
           (p.position 0) * visitQuadratic c (p.velocity 0) ∂mu := by
-  let Y := x + ((k : ℝ) + 1 / 2) * c.r ^ 3
+  let Y := x + (k + 1 / 2) * c.r ^ 3
   let f := fun p : Point => positionStartCutoff Y c.r c.positive (p.position 0) *
     visitQuadratic c (p.velocity 0)
   let S := {q : Point | s + a < q.time ∧ q.time ≤ s + b}
@@ -35,11 +35,9 @@ theorem positionStartQuadratic_slab_lower (mu : Measure Point) [IsFiniteMeasure 
           ((continuous_apply 0).comp continuous_position).measurable).inter
             (isClosed_closure.measurableSet.preimage
               ((continuous_apply 0).comp continuous_velocity).measurable)))
-  have hf : Integrable f mu := positionStartQuadratic_integrable c Y mu
-    (hmu.mono fun _ hp => subset_closure (enlarged_closedEntrance_subset_active c hp))
   have hm : (∫ p, B.indicator (fun _ => 5 * c.r ^ 2 / 16) p ∂mu) ≤
       ∫ p, S.indicator f p ∂mu := by
-    apply integral_mono_ae ((integrable_const _).indicator hB) (hf.indicator hS)
+    apply integral_mono_ae ((integrable_const _).indicator hB) ((positionStartQuadratic_integrable c Y mu (hmu.mono fun _ hp => subset_closure (enlarged_closedEntrance_subset_active c hp))).indicator hS)
     filter_upwards [hmu] with p hv
     by_cases hp : p ∈ B
     · rw [indicator_of_mem hp, indicator_of_mem (show p ∈ S from ⟨hp.1, hp.2.1⟩)]

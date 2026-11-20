@@ -44,7 +44,9 @@ theorem parabolic_harnack_unit_cylinder
           ∀ P' ∈ Set.Ioo (3 / 4 : ℝ) 1 ×ˢ
               PDE.euclideanBall (0 : PDE.Vec N) (1 / 2 : ℝ),
             h * u P ≤ u P' := by
-  exact HypoellipticAleksandrov.Parabolic.parabolic_harnack_unit_cylinder_aux
-    N hN lam hlam Lam hlamLam
+  obtain ⟨h, E, hh, _, _, H⟩ := unit_harnack_with_source N hN lam hlam Lam hlamLam
+  refine ⟨h, hh, fun B u hc _ hlo hhi hu hn he P hP P' hP' => ?_⟩
+  simpa using H B u 0 le_rfl hc hlo hhi hu hn (fun z hz => by
+    simp [KrylovEstimate.residual, he z hz]) P hP P' hP'
 
 end HypoellipticAleksandrov.Parabolic

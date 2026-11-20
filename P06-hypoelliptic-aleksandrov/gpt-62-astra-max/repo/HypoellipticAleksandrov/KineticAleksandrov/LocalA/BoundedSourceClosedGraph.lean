@@ -76,9 +76,7 @@ theorem compactRepresentativeMap_apply_eq (u : H) (g : E → ℝ)
     (hg : ContinuousOn g U) (he : (u.1 : E → ℝ) =ᵐ[μ.restrict U] g) (z : K) :
     compactRepresentativeMap μ U K hU hKU H hrep u z = g z := by
   have hae := (continuousWeakRepresentative_ae μ U H hrep u).symm.trans he
-  have hpoint := Measure.eqOn_open_of_ae_eq hae hU
-    (continuousWeakRepresentative_continuous μ U H hrep u) hg
-  exact hpoint (hKU z.2)
+  exact (Measure.eqOn_open_of_ae_eq hae hU (continuousWeakRepresentative_continuous μ U H hrep u) hg) (hKU z.2)
 
 include hK hKi hH in
 /-- Compact evaluation of the continuous representatives is a continuous linear map. -/
@@ -111,8 +109,7 @@ theorem continuous_compactRepresentativeMap :
     have hp := (continuous_eval_const ⟨z, hzK⟩).tendsto y |>.comp hy
     have hpσ := hp.comp hσ.tendsto_atTop
     have hactual : Tendsto (fun n => f (u (σ n)) z) atTop (𝓝 (f x z)) := by
-      rw [hxz] at hz
-      exact hz.congr' (Eventually.of_forall fun n => hs (σ n))
+      grind
     have hp' : Tendsto (fun n => f (u (σ n)) z) atTop (𝓝 (y ⟨z, hzK⟩)) := hpσ
     change yext z = f x z
     rw [show yext z = y ⟨z, hzK⟩ from dite_eq_left hzK]

@@ -40,13 +40,11 @@ theorem ae_tendsto_duhamelPotential_of_action_ae
   have hD := measurableSet_boundedSourcePairSet hΩ hγ
   have hout : ∀ᵐ q ∂η.compProd κ,
       Tendsto (fun n => f n ⟨q.1.1.2, q.2.1, q.2.2⟩) atTop
-        (𝓝 (F ⟨q.1.1.2, q.2.1, q.2.2⟩)) := by
-    exact ae_of_ae_map measurable_boundedSourceOutput.aemeasurable hae
-  have hdis := Measure.ae_ae_of_ae_compProd hout
+        (𝓝 (F ⟨q.1.1.2, q.2.1, q.2.2⟩)) := ae_of_ae_map measurable_boundedSourceOutput.aemeasurable hae
   have hvalid : ∀ᵐ q ∂η,
       Tendsto (fun n => duhamelIntegrand K (f n) q.1.1 q.1.2) atTop
         (𝓝 (duhamelIntegrand K F q.1.1 q.1.2)) := by
-    filter_upwards [hdis] with q hq
+    filter_upwards [(Measure.ae_ae_of_ae_compProd hout)] with q hq
     have : IsFiniteMeasure (κ q) := inferInstance
     have hi := tendsto_integral_of_dominated_convergence (fun _ => C)
       (fun n => (hf n).aestronglyMeasurable.comp_measurable
@@ -64,11 +62,8 @@ theorem ae_tendsto_duhamelPotential_of_action_ae
       rfl
     change Tendsto (fun n => ∫ w, f n ⟨q.1.2, w.1, w.2⟩ ∂κ q)
       atTop (𝓝 (∫ w, F ⟨q.1.2, w.1, w.2⟩ ∂κ q)) at hi
-    simpa only [← he] using hi
-  have hmap : ∀ᵐ q ∂Measure.map Subtype.val η,
-      Tendsto (fun n => duhamelIntegrand K (f n) q.1 q.2) atTop
-        (𝓝 (duhamelIntegrand K F q.1 q.2)) := by
-    exact (ae_map_iff measurable_subtype_coe.aemeasurable
+    simpa [← he] using hi
+  have hmap := (ae_map_iff measurable_subtype_coe.aemeasurable
       (measurableSet_tendsto_fun (fun n =>
         measurable_duhamelIntegrand K hΩ hγ (f n) (hf n))
         (measurable_duhamelIntegrand K hΩ hγ F hF))).2 hvalid
@@ -83,19 +78,15 @@ theorem ae_tendsto_duhamelPotential_of_action_ae
     by_cases hqm : q ∈ boundedSourcePairSet Ω γ
     · exact hq hqm
     · have hz (g : KineticPoint d → ℝ) : duhamelIntegrand K g q.1 q.2 = 0 := by
-        unfold duhamelIntegrand
         exact dite_eq_right hqm
-      simpa only [hz] using (tendsto_const_nhds :
-        Tendsto (fun _ : ℕ => (0 : ℝ)) atTop (𝓝 0))
-  have hstarts := Measure.ae_ae_of_ae_prod hpairs
-  filter_upwards [hstarts, hfloor] with p hp hpa
+      simpa only [hz] using tendsto_const_nhds
+  filter_upwards [(Measure.ae_ae_of_ae_prod hpairs), hfloor] with p hp hpa
   have hi := tendsto_integral_of_dominated_convergence (fun _ => C)
     (fun n => ((measurable_duhamelIntegrand K hΩ hγ (f n) (hf n)).comp
       (measurable_const.prodMk measurable_id)).aestronglyMeasurable.restrict)
     (integrable_const C) (fun n => Eventually.of_forall fun r => by
-      rw [Real.norm_eq_abs]
-      exact abs_duhamelIntegrand_le K (f n) C hC (hb n) p r) hp
+      apply_rules [abs_duhamelIntegrand_le]) hp
   have he (g : KineticPoint d → ℝ) := duhamelPotential_eq_integral_window K g p (T := T) hpa
-  simpa only [Function.comp_apply, id_eq, ← he] using hi
+  simpa [← he] using hi
 
 end HypoellipticAleksandrov.KineticAleksandrov.SectionTwo

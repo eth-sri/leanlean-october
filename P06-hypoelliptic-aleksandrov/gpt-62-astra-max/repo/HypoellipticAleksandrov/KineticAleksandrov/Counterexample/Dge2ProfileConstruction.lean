@@ -21,14 +21,11 @@ def geometricProfile {d : ℕ} (alpha C₀ sigma R : ℝ) (q : PDE.Vec d × PDE.
   if q.1 = 0 then radialProfile alpha q.2 else
     homogeneousAnsatz alpha (cutoffProfile alpha C₀ sigma R) q.1 q.2
 
-/-- The profile vanishes at the joint origin for positive homogeneity degree. -/
-theorem geometricProfile_zero (d : ℕ) (alpha C₀ sigma R : ℝ) (ha : 0 < alpha) :
-    geometricProfile (d := d) alpha C₀ sigma R 0 = 0 := by
-  simp [geometricProfile, radialProfile, PDE.vecNormSq, PDE.vecDot, Real.rpow_eq_pow,
-    Real.zero_rpow (ne_of_gt (div_pos ha (by norm_num : (0 : ℝ) < 2)))]
+variable {d : ℕ} (alpha C₀ sigma R : ℝ) (hC₀ : 0 ≤ C₀) (hsigma : 0 < sigma) (hR : 0 < R)
+    (q : PDE.Vec d × PDE.Vec d)
 
 /-- The literal radial profile scales by the exact power alpha under positive dilation. -/
-theorem radialProfile_smul {d : ℕ} (alpha r : ℝ) (hr : 0 < r) (v : PDE.Vec d) :
+theorem radialProfile_smul (alpha r : ℝ) (hr : 0 < r) (v : PDE.Vec d) :
     radialProfile alpha (r • v) = Real.rpow r alpha * radialProfile alpha v := by
   unfold radialProfile
   rw [PDE.vecNormSq_smul]
@@ -36,43 +33,39 @@ theorem radialProfile_smul {d : ℕ} (alpha r : ℝ) (hr : 0 < r) (v : PDE.Vec d
   rw [Real.mul_rpow (sq_nonneg r) (PDE.vecNormSq_nonneg v),
     ← Real.rpow_natCast_mul hr.le]
   norm_num only [Nat.cast_ofNat]
-  congr 2
   ring
 
 /-- The extended profile has exact kinetic homogeneity, including both axes. -/
-theorem geometricProfile_homogeneous {d : ℕ} (alpha C₀ sigma R r : ℝ) (hr : 0 < r)
+theorem geometricProfile_homogeneous (alpha C₀ sigma R r : ℝ) (hr : 0 < r)
     (q : PDE.Vec d × PDE.Vec d) :
     geometricProfile alpha C₀ sigma R (r ^ 3 • q.1, r • q.2) =
       Real.rpow r alpha * geometricProfile alpha C₀ sigma R q := by
-  have hzero : r ^ 3 • q.1 = 0 ↔ q.1 = 0 :=
-    smul_eq_zero_iff_right (pow_ne_zero 3 hr.ne')
   unfold geometricProfile
   by_cases hx : q.1 = 0
   · simp only [hx, smul_zero, ite_true]
-    exact radialProfile_smul alpha r hr q.2
-  · simp only [hx, hzero.not.mpr hx, ite_false]
-    exact homogeneousAnsatz_dilate alpha r hr _ q.1 q.2
+    solve_by_elim [radialProfile_smul]
+  · simp only [hx, (smul_eq_zero_iff_right (pow_ne_zero 3 hr.ne')).not.mpr hx, ite_false]
+    apply homogeneousAnsatz_dilate <;> assumption
 
+include hC₀ hsigma hR in
 /-- The extended profile is positive at every nonzero kinetic point. -/
-theorem geometricProfile_pos {d : ℕ} (alpha C₀ sigma R : ℝ)
-    (hC₀ : 0 ≤ C₀) (hsigma : 0 < sigma) (hR : 0 < R)
-    (q : PDE.Vec d × PDE.Vec d) (hq : q ≠ 0) :
+theorem geometricProfile_pos (hq : q ≠ 0) :
     0 < geometricProfile alpha C₀ sigma R q := by
   unfold geometricProfile
   split_ifs with hx
   · apply radialProfile_pos
-    intro hv
-    exact hq (Prod.ext hx hv)
+    aesop
   · apply mul_pos
     · exact Real.rpow_pos_of_pos (PDE.vecEuclideanNorm_pos_iff.mpr hx) _
-    · exact cutoffProfile_pos alpha C₀ sigma R hC₀ hsigma hR _ _
+    · apply cutoffProfile_pos <;> assumption
 
+include hR in
 /-- Exterior interpolation cancels all position dependence of the ansatz exactly. -/
-theorem homogeneousAnsatz_eq_radial {d : ℕ} (alpha C₀ sigma R : ℝ) (hR : 0 < R)
+theorem homogeneousAnsatz_eq_radial
     (x v : PDE.Vec d) (hx : x ≠ 0)
     (hout : 2 * R ≤ PDE.vecEuclideanNorm (normalizedVelocity x v)) :
     homogeneousAnsatz alpha (cutoffProfile alpha C₀ sigma R) x v = radialProfile alpha v := by
-  have hr : 0 < PDE.vecEuclideanNorm x := PDE.vecEuclideanNorm_pos_iff.mpr hx
+  have hr := PDE.vecEuclideanNorm_pos_iff.mpr hx
   unfold homogeneousAnsatz
   rw [cutoffProfile_eq_radial alpha C₀ sigma R hR _ _ hout]
   unfold radialProfile normalizedVelocity
@@ -82,12 +75,12 @@ theorem homogeneousAnsatz_eq_radial {d : ℕ} (alpha C₀ sigma R : ℝ) (hR : 0
     ← Real.rpow_natCast_mul (Real.rpow_nonneg hr.le _), ← Real.rpow_mul hr.le]
   norm_num only [Nat.cast_ofNat]
   rw [← mul_assoc, ← Real.rpow_add hr]
-  have he : alpha / 3 + (-(1 / 3 : ℝ) * (2 * (alpha / 2))) = 0 := by ring
-  rw [he, Real.rpow_zero, one_mul]
+  have he : alpha / 3 + (-(1 / 3) * (2 * (alpha / 2))) = 0 := by ring
+  aesop
 
+include hR in
 /-- The physical outer-region condition forces exact radial agreement. -/
-theorem geometricProfile_eq_radial_of_outer {d : ℕ} (alpha C₀ sigma R : ℝ) (hR : 0 < R)
-    (q : PDE.Vec d × PDE.Vec d)
+theorem geometricProfile_eq_radial_of_outer
     (hout : 2 * R * Real.rpow (PDE.vecEuclideanNorm q.1) (1 / 3) ≤
       PDE.vecEuclideanNorm q.2) :
     geometricProfile alpha C₀ sigma R q = radialProfile alpha q.2 := by
@@ -95,48 +88,41 @@ theorem geometricProfile_eq_radial_of_outer {d : ℕ} (alpha C₀ sigma R : ℝ)
   · simp [geometricProfile, hx]
   · rw [geometricProfile, ite_eq_right hx]
     apply homogeneousAnsatz_eq_radial alpha C₀ sigma R hR q.1 q.2 hx
-    have hr : 0 < PDE.vecEuclideanNorm q.1 := PDE.vecEuclideanNorm_pos_iff.mpr hx
+    have hr := PDE.vecEuclideanNorm_pos_iff.mpr hx
     have hp : 0 < Real.rpow (PDE.vecEuclideanNorm q.1) (1 / 3) :=
       Real.rpow_pos_of_pos hr _
     unfold normalizedVelocity
     simp only [Real.rpow_eq_pow] at hp hout ⊢
     rw [PDE.vecEuclideanNorm_smul,
-      abs_of_pos (Real.rpow_pos_of_pos hr (-(1 / 3 : ℝ)))]
+      abs_of_pos (Real.rpow_pos_of_pos hr (-(1 / 3)))]
     rw [Real.rpow_neg hr.le]
-    have hh := (le_div_iff₀ hp).mpr hout
-    simpa only [div_eq_mul_inv, mul_comm] using hh
+    simpa only [div_eq_mul_inv, mul_comm] using ((le_div_iff₀ hp).mpr hout)
 
+include hsigma hR in
 /-- The ansatz of the actual smooth cutoff is smooth at every nonzero position. -/
-theorem contDiffAt_cutoffAnsatz {d : ℕ} (alpha C₀ sigma R : ℝ)
-    (hsigma : 0 < sigma) (hR : 0 < R) (q : PDE.Vec d × PDE.Vec d) (hx : q.1 ≠ 0) :
+theorem contDiffAt_cutoffAnsatz (hx : q.1 ≠ 0) :
     ContDiffAt ℝ (⊤ : ℕ∞)
       (fun z : PDE.Vec d × PDE.Vec d =>
         homogeneousAnsatz alpha (cutoffProfile alpha C₀ sigma R) z.1 z.2) q := by
-  have hbase := PDE.vecNormSq_eq_zero_iff.not.mpr hx
   have hnorm := PDE.vecEuclideanNorm_eq_zero_iff.not.mpr hx
-  have hr : ContDiffAt ℝ (⊤ : ℕ∞)
-      (fun z : PDE.Vec d × PDE.Vec d => PDE.vecEuclideanNorm z.1) q :=
-    (PDE.contDiff_vecNormSq.comp contDiff_fst).contDiffAt.sqrt hbase
-  have he : ContDiffAt ℝ (⊤ : ℕ∞)
-      (fun z : PDE.Vec d × PDE.Vec d => positionDirection z.1) q :=
+  have hr :=
+    (PDE.contDiff_vecNormSq.comp contDiff_fst).contDiffAt.sqrt (PDE.vecNormSq_eq_zero_iff.not.mpr hx)
+  have he :=
     (hr.inv hnorm).smul contDiffAt_fst
-  have hy : ContDiffAt ℝ (⊤ : ℕ∞)
-      (fun z : PDE.Vec d × PDE.Vec d => normalizedVelocity z.1 z.2) q :=
-    (hr.rpow_const_of_ne (p := -(1 / 3 : ℝ)) hnorm).smul contDiffAt_snd
+  have hy :=
+    (hr.rpow_const_of_ne (p := -(1 / 3)) hnorm).smul contDiffAt_snd
   exact (hr.rpow_const_of_ne (p := alpha / 3) hnorm).mul
     ((contDiff_cutoffProfile alpha C₀ sigma R hsigma hR).contDiffAt.comp q (hy.prodMk he))
 
+include hsigma hR in
 /-- The literal extension is smooth everywhere except the joint origin. -/
-theorem geometricProfile_smooth_off_origin {d : ℕ} (alpha C₀ sigma R : ℝ)
-    (hsigma : 0 < sigma) (hR : 0 < R) :
+theorem geometricProfile_smooth_off_origin :
     ContDiffOn ℝ (⊤ : ℕ∞) (geometricProfile (d := d) alpha C₀ sigma R) ({0}ᶜ) := by
   intro q hq
   apply ContDiffAt.contDiffWithinAt
   by_cases hx : q.1 = 0
   · have hv : q.2 ≠ 0 := by
-      intro hv
-      apply hq
-      exact Set.mem_singleton_iff.mpr (Prod.ext hx hv)
+      aesop
     have hr : ContDiffAt ℝ (⊤ : ℕ∞)
         (fun z : PDE.Vec d × PDE.Vec d => radialProfile alpha z.2) q :=
       (PDE.contDiff_vecNormSq.comp contDiff_snd).contDiffAt.rpow_const_of_ne

@@ -1,6 +1,12 @@
 module
 
-public import HypoellipticAleksandrov.KineticAleksandrov.ClassicalInputs
+import HypoellipticAleksandrov.Statements.HormanderHypoellipticity
+
+public import HypoellipticAleksandrov.KineticAleksandrov.Hormander
+public import HypoellipticAleksandrov.KineticAleksandrov.EllipsoidDirichlet
+public import HypoellipticAleksandrov.Parabolic.ScalarDirichletData
+public import HypoellipticAleksandrov.Parabolic.KrylovCylinder
+public import PDEFoundation.Geometry.EuclideanBall.Basic
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.BracketHormander
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.HormanderBridgeTransfer
 
@@ -8,7 +14,7 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.HormanderBrid
 # Hörmander regularity for `L_ε` and for the transported operator
 
 Consequences of Hörmander's hypoellipticity theorem (`HormanderHypoellipticityStatement`),
-taken as an explicit hypothesis `hH`.
+taken as an explicit hypothesis ``.
 
 * `exists_smooth_viscous_kinetic_representative` (Proposition 2.1): for `ε > 0`, a locally
   integrable distributional solution of `L_ε u = 0` on an open set
@@ -39,11 +45,11 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Evolution
 variable {n : ℕ}
 
 /-- **Smooth representative** (Proposition 2.1).  Assuming Hörmander's theorem
-`hH`, a locally integrable distributional solution `u` of `L_ε u = 0` (`ε > 0`) on an open
+``, a locally integrable distributional solution `u` of `L_ε u = 0` (`ε > 0`) on an open
 `U ⊆ KineticPoint n` has a representative `v`, smooth in packed coordinates on the preimage of `U`,
 with `u = v` almost everywhere on `U`. -/
 theorem exists_smooth_viscous_kinetic_representative
-    (hH : HormanderHypoellipticityStatement) {lam Lam : ℝ}
+    {lam Lam : ℝ}
     {B : FullKineticCoefficient n} {b : PDE.Vec n → PDE.Vec n} (hlam : 0 < lam)
     (hB_smooth : IsSmoothFullKineticCoefficient B)
     (hB_ell : HasEverywhereLoewnerBounds lam Lam B) (hb_smooth : IsSmoothDrift b)
@@ -56,18 +62,18 @@ theorem exists_smooth_viscous_kinetic_representative
     hormander_hypotheses_regularizedFields hlam hB_smooth hB_ell hb_smooth hε
       (evolutionHomeomorph n ⁻¹' U)
   have hEq := hasWeakHormanderEquation_comp_regularizedFields hε.le hlam hB_smooth hB_ell
-    hb_smooth hu (contDiffOn_const (c := (0 : ℝ)))
+    hb_smooth hu (contDiffOn_const (c := 0))
   exact exists_kinetic_representative
-    (hH ((evolutionHomeomorph n).continuous.isOpen_preimage U hU) _ _ _ _ hX hspan
+    (exists_smooth_aeRepresentative_of_hormander ((evolutionHomeomorph n).continuous.isOpen_preimage U hU) _ _ _ _ hX hspan
       contDiffOn_const hEq)
 
 /-- **Smooth representative** (Proposition 2.1, Hörmander part).  Assuming the Hörmander
-theorem `hH`, a locally integrable distributional solution `u` of `Lop u = 0` for the transported
+theorem ``, a locally integrable distributional solution `u` of `Lop u = 0` for the transported
 operator on an open `U ⊆ KineticPoint n` has a representative `v`, smooth in packed coordinates
 on the preimage of `U`, with `u = v` almost everywhere on `U`.  The bracket check uses `0 < m` and
 unit-direction drift coercivity. -/
 theorem exists_smooth_kinetic_representative
-    (hH : HormanderHypoellipticityStatement) {lam Lam m : ℝ}
+    {lam Lam m : ℝ}
     {B : FullKineticCoefficient n} {b : PDE.Vec n → PDE.Vec n} (hlam : 0 < lam)
     (hB_smooth : IsSmoothFullKineticCoefficient B)
     (hB_ell : HasEverywhereLoewnerBounds lam Lam B) (hb_smooth : IsSmoothDrift b)
@@ -81,9 +87,9 @@ theorem exists_smooth_kinetic_representative
     hormander_hypotheses_transportedFields hlam hB_smooth hB_ell hb_smooth hm hb_coercive
       (evolutionHomeomorph n ⁻¹' U)
   have hEq := hasWeakHormanderEquation_comp_transportedFields hlam hB_smooth hB_ell
-    hb_smooth hu (contDiffOn_const (c := (0 : ℝ)))
+    hb_smooth hu (contDiffOn_const (c := 0))
   exact exists_kinetic_representative
-    (hH ((evolutionHomeomorph n).continuous.isOpen_preimage U hU) _ _ _ _ hX hspan
+    (exists_smooth_aeRepresentative_of_hormander ((evolutionHomeomorph n).continuous.isOpen_preimage U hU) _ _ _ _ hX hspan
       contDiffOn_const hEq)
 
 /-- Identification of a continuous candidate with a smooth representative: two functions that
@@ -94,10 +100,8 @@ theorem eqOn_of_ae_eq_of_continuousOn_kinetic {U : Set (KineticPoint n)} (hU : I
     (hv : ContinuousOn (v ∘ evolutionHomeomorph n) (evolutionHomeomorph n ⁻¹' U))
     (hw : ContinuousOn (w ∘ evolutionHomeomorph n) (evolutionHomeomorph n ⁻¹' U))
     (hae : v =ᵐ[volume.restrict U] w) : EqOn v w U := by
-  have h := Measure.eqOn_open_of_ae_eq (ae_eq_comp_evolutionHomeomorph_iff.2 hae)
-    ((evolutionHomeomorph n).continuous.isOpen_preimage U hU) hv hw
   intro x hx
-  have := h (show (evolutionHomeomorph n).symm x ∈ evolutionHomeomorph n ⁻¹' U by simpa using hx)
+  have := (Measure.eqOn_open_of_ae_eq (ae_eq_comp_evolutionHomeomorph_iff.2 hae) ((evolutionHomeomorph n).continuous.isOpen_preimage U hU) hv hw) (show (evolutionHomeomorph n).symm x ∈ evolutionHomeomorph n ⁻¹' U by simpa using hx)
   simpa using this
 
 end HypoellipticAleksandrov.KineticAleksandrov.Evolution

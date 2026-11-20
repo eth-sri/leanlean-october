@@ -23,11 +23,11 @@ theorem bellman_joint_integral_fderiv {A : Type*}
       ∫ a, fderiv ℝ f (q, radius a) (e, 0) ∂mu := by
   let L : (ℝ × ℝ) →L[ℝ] (ℝ × ℝ) × ℝ :=
     (ContinuousLinearMap.id ℝ (ℝ × ℝ)).prod 0
-  let J : (((ℝ × ℝ) × ℝ) →L[ℝ] ℝ) →L[ℝ] (ℝ × ℝ) →L[ℝ] ℝ :=
+  let J :=
     (ContinuousLinearMap.compL ℝ (ℝ × ℝ) ((ℝ × ℝ) × ℝ) ℝ).flip L
-  let g : ((ℝ × ℝ) × ℝ) → (ℝ × ℝ) →L[ℝ] ℝ := fun w => J (fderiv ℝ f w)
+  let g := fun w => J (fderiv ℝ f w)
   have hopen : IsOpen (U ×ˢ Ioi (0 : ℝ)) := hU.prod isOpen_Ioi
-  have hg : ContinuousOn g (U ×ˢ Ioi 0) :=
+  have hg :=
     (J.contDiff.comp_contDiffOn
       (hf.fderiv_of_isOpen hopen (m := 0) (by norm_num))).continuousOn
   have hmap : MapsTo (fun w : (ℝ × ℝ) × A => (w.1, radius w.2))
@@ -44,9 +44,7 @@ theorem bellman_joint_integral_fderiv {A : Type*}
     have hdc : HasFDerivAt (fun z : ℝ × ℝ => (z, radius a)) L x :=
       (hasFDerivAt_id x).prodMk (hasFDerivAt_const (radius a) x)
     exact hdf.hasFDerivAt.comp x hdc
-  have ht := bellman_compact_parameter_hasFDerivAt mu hU
-    (fun x a => f (x, radius a)) (fun x a => g (x, radius a)) hc0 hc1 hd hq
-  rw [ht.fderiv, ContinuousLinearMap.integral_apply
+  rw [(bellman_compact_parameter_hasFDerivAt mu hU (fun x a => f (x, radius a)) (fun x a => g (x, radius a)) hc0 hc1 hd hq).fderiv, ContinuousLinearMap.integral_apply
     (bellman_compact_parameter_integrable mu (f := fun x a => g (x, radius a)) hc1 hq)]
   rfl
 

@@ -38,9 +38,7 @@ theorem reconstruction_homogeneous_gap_le_barrier
       sectionTwoPoint p ∈ reconstructionStrip H lower T := by
     intro p hp
     refine ⟨he.trans_le hp.1, hp.2.1, ?_⟩
-    simpa only [mem_movingDomain_iff, PDE.mem_translateSet_iff_sub_mem, sub_zero,
-      intervalDomain, PDE.mem_oneDimensionalAxisBox_iff, PDE.vecOneCoordinate, Interval.carrier,
-      sectionTwoPoint] using hp.2.2
+    simpa [mem_movingDomain_iff, PDE.mem_translateSet_iff_sub_mem, intervalDomain, PDE.mem_oneDimensionalAxisBox_iff, PDE.vecOneCoordinate, Interval.carrier, sectionTwoPoint] using hp.2.2
   have hslab : ∀ p ∈ movingClosedSlab (intervalDomain H) (fun _ => 0) a T,
       sectionTwoPoint p ∈ reconstructionClosedSlab H a T := by
     intro p hp
@@ -53,20 +51,14 @@ theorem reconstruction_homogeneous_gap_le_barrier
     reconstruction_physical_slice_regular H lower T v hv p (hact p hp)
   have huc' := huc.comp (continuous_sectionTwoPoint 1).continuousOn
     (reconstruction_closedSlab_mapsTo H he)
-  have hvc' := hvc.comp (continuous_sectionTwoPoint 1).continuousOn
-    (reconstruction_closedSlab_mapsTo H he)
   have hmax := growth_comparison
     (isOpen_of_isAdmissibleEvolutionDomain (intervalDomain_admissible H)) continuous_const
     hlam (evolutionCoefficient_bounds A) (identityDrift_bounds 1).1
     (le_refl 0) zero_le_one (a := a) (T := T)
     (u := fun p => (u (sectionTwoPoint p) - v (sectionTwoPoint p) - eps) - q p)
     ⟨Mu + Mv + |eps|, fun p hp => by
-      have h1 := (le_abs_self _).trans (hub _ (hslab p hp))
-      have h2 := (neg_le_abs _).trans (hvb _ (hslab p hp))
-      have h3 := neg_le_abs eps
-      have h4 := hqn p
-      linarith⟩
-    (((huc'.sub hvc').sub continuousOn_const).sub hqc.continuousOn)
+      linarith [(le_abs_self _).trans (hub _ (hslab p hp)), (neg_le_abs _).trans (hvb _ (hslab p hp)), neg_le_abs eps, hqn p]⟩
+    (((huc'.sub (hvc.comp (continuous_sectionTwoPoint 1).continuousOn (reconstruction_closedSlab_mapsTo H he))).sub continuousOn_const).sub hqc.continuousOn)
     (fun p hp => ((hur p hp).sub (hvr p hp) |>.sub (IsSliceRegularAt.const eps p)).sub (hqr p))
     (fun p hp => by
       change 0 ≤ viscousTransportedOperator (evolutionCoefficient A.a) (identityDrift 1) 0
@@ -80,18 +72,16 @@ theorem reconstruction_homogeneous_gap_le_barrier
         reconstruction_scalar_operator_swap, reconstruction_scalar_operator_swap,
         huop _ (hact p hp), hvop _ (hact p hp), viscousTransportedOperator_const,
         viscousTransportedOperator_zero]
-      have hh := hqo p ⟨hp.2.1, hp.2.2⟩
-      linarith)
+      linarith [hqo p ⟨hp.2.1, hp.2.2⟩])
     (fun p hp hpt => by
       have hvel := intervalDomain_closure_bounds H (by
-        simpa only [mem_closure_movingDomain_iff, sub_zero] using hp.2.2)
+        simpa [mem_closure_movingDomain_iff] using hp.2.2)
       have hh := hbd (sectionTwoPoint p) (Or.inl ⟨hpt, hvel⟩) hp.1
-      change (u (sectionTwoPoint p) - v (sectionTwoPoint p) - eps) - q p ≤ 0
       rw [sectionTwoPoint_involutive] at hh
       linarith)
     (fun p hp hpf => by
       have hvel := reconstruction_interval_frontier_eq H (by
-        simpa only [movingDomain, PDE.translateSet_zero] using hpf)
+        simpa [movingDomain] using hpf)
       have hh := hbd (sectionTwoPoint p) (Or.inr ⟨hp.2.1, hvel⟩) hp.1
       rw [sectionTwoPoint_involutive] at hh
       linarith)

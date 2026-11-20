@@ -17,9 +17,8 @@ theorem bellmanLiftIntegrand_spatial_fderiv (alpha : ℝ) (zeta : (ℝ × ℝ) �
     fderiv ℝ (bellmanLiftIntegrand alpha zeta) (q, r) (e, 0) =
       r ^ (-1 - alpha) * fderiv ℝ zeta (bellmanPlaneDilation r q)
         (bellmanDilationLinear r e) := by
-  have hf := bellmanLiftIntegrand_contDiffOn_order 1 alpha zeta hz
-  have hd : DifferentiableAt ℝ (bellmanLiftIntegrand alpha zeta) (q, r) :=
-    ((hf (q, r) ⟨trivial, hr⟩).contDiffAt
+  have hd :=
+    (((bellmanLiftIntegrand_contDiffOn_order 1 alpha zeta hz) (q, r) ⟨trivial, hr⟩).contDiffAt
       ((isOpen_univ.prod isOpen_Ioi).mem_nhds ⟨trivial, hr⟩)).differentiableAt (by norm_num)
   let L : (ℝ × ℝ) →L[ℝ] (ℝ × ℝ) × ℝ :=
     (ContinuousLinearMap.id ℝ (ℝ × ℝ)).prod 0
@@ -28,11 +27,7 @@ theorem bellmanLiftIntegrand_spatial_fderiv (alpha : ℝ) (zeta : (ℝ × ℝ) �
   have hcomp := hd.hasFDerivAt.comp q hpair
   have hslice := (((hz.contDiffAt.differentiableAt (by norm_num)).hasFDerivAt).comp q
     (bellmanDilationLinear r).hasFDerivAt).const_mul (r ^ (-1 - alpha))
-  change HasFDerivAt (fun x => bellmanLiftIntegrand alpha zeta (x, r)) _ q at hslice
   have he := congrArg (fun D : (ℝ × ℝ) →L[ℝ] ℝ => D e) (hcomp.unique hslice)
-  simpa only [ContinuousLinearMap.comp_apply, L, ContinuousLinearMap.prod_apply,
-    ContinuousLinearMap.id_apply, zero_apply, smul_apply, smul_eq_mul,
-    bellmanDilationLinear_apply]
-    using he
+  exact he
 
 end HypoellipticAleksandrov.KineticAleksandrov

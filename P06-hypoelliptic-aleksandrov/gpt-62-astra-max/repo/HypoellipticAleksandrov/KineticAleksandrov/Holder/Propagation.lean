@@ -39,10 +39,6 @@ theorem propagation (d : ℕ) (hd : 1 ≤ d) (lam Lam : ℝ)
   have hg := barrierGamma_bounds hL
   refine ⟨(barrierGamma L) ^ Nat.ceil (T1 / hs), pow_pos hg.1 _,
     pow_le_one₀ hg.1.le hg.2.le, ?_⟩
-  intro p C_A hp A hA O hO tminus P hPO hTP0 hTP1 x v hsk hxP hvP htube
-    ell hell u hnonneg hu hinitial
-  exact propagation_explicit d hd lam Lam H T0 T1 kx kv hlam hLam hH hkx hkv hT0 hT1
-    p C_A hp A hA O hO tminus P hPO hTP0 hTP1 x v hsk hxP hvP htube
-    ell hell u hnonneg hu hinitial
+  apply propagation_explicit <;> assumption
 
 end HypoellipticAleksandrov.KineticAleksandrov.Holder

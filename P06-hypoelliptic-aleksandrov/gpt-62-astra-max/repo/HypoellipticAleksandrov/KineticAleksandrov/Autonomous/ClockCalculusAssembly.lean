@@ -11,16 +11,20 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open HypoellipticAleksandrov.Parabolic
 open HypoellipticAleksandrov.KineticAleksandrov.TheoremA
 
+variable (c : Clock) (a : ℝ → ℝ → ℝ) (e : Point)
+
+include c a e in
 /-- The local normalized scalar diffusion on the full coefficient carrier. -/
-def Clock.normalizedCoefficient (c : Clock) (a : ℝ → ℝ → ℝ) (e : Point) :
+def Clock.normalizedCoefficient :
     FullKineticCoefficient 1 := fun s y _ _ _ => c.diffusion a e s (y 0)
 
+include c in
 /-- The local normalized scalar transport on the drift carrier. -/
-def Clock.normalizedDrift (c : Clock) : PDE.Vec 1 → PDE.Vec 1 :=
+def Clock.normalizedDrift : PDE.Vec 1 → PDE.Vec 1 :=
   fun y _ => c.drift (y 0)
 
 /-- Exact field-order identification with the Section Two operator. -/
-theorem Clock.normalizedOperator_eq_transport (c : Clock) (a : ℝ → ℝ → ℝ)
+theorem Clock.normalizedOperator_eq_transport
     (e q : Point) (h : Point → ℝ) :
     c.normalizedOperator a e h q =
       transportedForwardOperator (c.normalizedCoefficient a e) c.normalizedDrift
@@ -31,7 +35,7 @@ theorem Clock.normalizedOperator_eq_transport (c : Clock) (a : ℝ → ℝ → �
   rfl
 
 /-- The source conjugacy for every function smooth on the normalized open velocity strip. -/
-theorem Clock.conjugacy (c : Clock) (a : ℝ → ℝ → ℝ) (e : Point) (h : Point → ℝ)
+theorem Clock.conjugacy (h : Point → ℝ)
     (hh : ContDiffOn ℝ (⊤ : ℕ∞) (h ∘ scalarPoint)
       {q : Fin 3 → ℝ | q 2 ∈ normalizedActive})
     (p : Point) (hp : p.velocity 0 ∈ c.active) :
@@ -41,12 +45,9 @@ theorem Clock.conjugacy (c : Clock) (a : ℝ → ℝ → ℝ) (e : Point) (h : P
           (h ∘ sectionTwoPoint) (sectionTwoPoint (c.map e p)) := by
   have hopen : IsOpen {q : Fin 3 → ℝ | q 2 ∈ normalizedActive} :=
     isOpen_Ioo.preimage (continuous_apply 2)
-  have hmem : scalarCoordinates (c.map e p) ∈
-      {q : Fin 3 → ℝ | q 2 ∈ normalizedActive} :=
+  have hmem :=
     (c.mem_active_iff (p.velocity 0)).mp hp
-  have hlocal : ContDiffAt ℝ 2 (h ∘ scalarPoint) (scalarCoordinates (c.map e p)) :=
-    ((hh _ hmem).contDiffAt (hopen.mem_nhds hmem)).of_le (by norm_num)
   rw [← c.normalizedOperator_eq_transport a e (c.map e p) h]
-  exact c.conjugacy_at a e p h hp hlocal
+  exact c.conjugacy_at a e p h hp (((hh _ hmem).contDiffAt (hopen.mem_nhds hmem)).of_le (by norm_num))
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

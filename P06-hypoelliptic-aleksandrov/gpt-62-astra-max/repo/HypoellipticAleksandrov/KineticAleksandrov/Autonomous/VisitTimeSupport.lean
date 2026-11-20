@@ -25,6 +25,6 @@ theorem visitTimeQuadratic_zero_off_window (c : Clock) (b : ℝ) (a : ℝ → �
   · rw [he, zero_mul]
   · rw [visitTimeQuadratic_operator c _
       (visitTimeCutoff_properties b c.r c.positive).1, he, hd]
-    simp only [zero_mul, mul_zero, sub_zero]
+    simp
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

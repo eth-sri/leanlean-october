@@ -34,8 +34,7 @@ theorem intervalExtension_covariance {a c : ℝ}
   intro σ τ hστ z p
   by_cases hp : p.1.1 ∈ PDE.oneDimensionalAxisBox a c
   · let pj : EvolutionState (PDE.oneDimensionalAxisBox a c) stationary σ :=
-      ⟨p.1, by simpa only [evolutionStateSet, mem_prod, movingDomain_stationary,
-        mem_univ, and_true] using hp⟩
+      ⟨p.1, by simpa [evolutionStateSet] using hp⟩
     have he : intervalStateInclusion σ pj = p := Subtype.ext rfl
     rw [← he, intervalStateInclusion_shift, intervalExtension_fiber_inside,
       intervalExtension_fiber_inside,
@@ -45,7 +44,7 @@ theorem intervalExtension_covariance {a c : ℝ}
       Measure.map_map (measurable_intervalStateInclusion τ)
         (measurable_evolutionStateShift _ _ τ z)]
     rfl
-  · have hs : (evolutionStateShift (wholeSpace 1) (fun _ => (0 : PDE.Vec 1)) σ z p).1.1
+  · have hs : (evolutionStateShift (wholeSpace 1) (fun _ => 0) σ z p).1.1
         ∉ PDE.oneDimensionalAxisBox a c := hp
     rw [intervalExtension_fiber_outside hJ K σ τ hστ p hp,
       intervalExtension_fiber_outside hJ K σ τ hστ _ hs, Measure.map_zero]

@@ -21,7 +21,7 @@ open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic Set Metric
 theorem isCompact_quadratic_weight_sublevel
     {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E] [FiniteDimensional ℝ E]
     (R : ℝ) : IsCompact {x : E | 1 + ‖x‖ ^ 2 ≤ R} := by
-  apply (isCompact_closedBall (0 : E) (|R| + 1)).of_isClosed_subset
+  apply (isCompact_closedBall 0 (|R| + 1)).of_isClosed_subset
     (isClosed_le (continuous_const.add (continuous_norm.pow 2)) continuous_const)
   intro x hx
   rw [mem_closedBall_zero_iff]
@@ -39,14 +39,12 @@ theorem quadratic_state_weight_le_radial {n : ℕ} (r : ℝ) (x : EvolutionAmbie
     rw [← PDE.vecEuclideanNorm_sq]
     exact (sq_le_sq₀ (norm_nonneg _) (PDE.vecEuclideanNorm_nonneg _)).mpr
       (PDE.norm_le_vecEuclideanNorm y)
-  have h₁ := hcomponent x.1
-  have h₂ := hcomponent x.2
   rw [Prod.norm_def]
   dsimp only [radialSq]
   rcases le_total ‖x.1‖ ‖x.2‖ with h | h
   · rw [max_eq_right h]
-    linarith only [h₂, PDE.vecNormSq_nonneg x.1]
+    linarith only [(hcomponent x.2), PDE.vecNormSq_nonneg x.1]
   · rw [max_eq_left h]
-    linarith only [h₁, PDE.vecNormSq_nonneg x.2]
+    linarith only [(hcomponent x.1), PDE.vecNormSq_nonneg x.2]
 
 end HypoellipticAleksandrov.KineticAleksandrov

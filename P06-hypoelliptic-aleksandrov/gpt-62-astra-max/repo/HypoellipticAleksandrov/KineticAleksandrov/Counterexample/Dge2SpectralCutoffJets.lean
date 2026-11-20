@@ -16,7 +16,7 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 theorem dotProduct_matrix_of_bilinear {d : ℕ}
     (B : PDE.Vec d →L[ℝ] PDE.Vec d →L[ℝ] ℝ) (w : PDE.Vec d) :
     dotProduct w (Matrix.mulVec (fun i k => B (Pi.single i 1) (Pi.single k 1)) w) = B w w := by
-  have heq : w = ∑ i : Fin d, w i • Pi.single i (1 : ℝ) := by
+  have heq : w = ∑ i : Fin d, w i • Pi.single i 1 := by
     ext k
     simp [Pi.single_apply]
   conv_rhs => rw [heq]

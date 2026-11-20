@@ -57,27 +57,26 @@ theorem one_add_radialSq_le_growthBarrier {n : ℕ} {C T : ℝ} (hC : 0 ≤ C) {
 /-- Derivative of an affine function of the squared distance. -/
 theorem deriv_affine_weight (c a : ℝ) :
     deriv (fun s : ℝ => c * (a + s)) = fun _ => c := by
-  funext s
-  have h : HasDerivAt (fun s : ℝ => c * (a + s)) c s := by
-    have := ((hasDerivAt_id s).const_add a).const_mul c
-    simpa using this
-  exact h.deriv
+  simp
+
+section
+variable {n : ℕ} (C T : ℝ) (p : KineticPoint n)
 
 /-- The squared distance to a fixed point is smooth. -/
-theorem contDiff_vecNormSq_sub {n : ℕ} (m : PDE.Vec n) :
+theorem contDiff_vecNormSq_sub (m : PDE.Vec n) :
     ContDiff ℝ 2 (fun y : PDE.Vec n => PDE.vecNormSq (y - m)) := by
   have : (fun y : PDE.Vec n => PDE.vecNormSq (y - m)) = fun y => ∑ i, (y i - m i) ^ 2 := by
     funext y
     rw [PDE.vecNormSq_eq_sum_sq]
     rfl
   rw [this]
-  exact ContDiff.sum fun i _ => ((contDiff_apply ℝ ℝ i).sub contDiff_const).pow 2
+  fun_prop
 
 /-- The growth barrier is slice regular everywhere. -/
-theorem isSliceRegularAt_growthBarrier {n : ℕ} (C T : ℝ) (p : KineticPoint n) :
+theorem isSliceRegularAt_growthBarrier :
     IsSliceRegularAt (growthBarrier C T) p := by
   have hpos : ContDiff ℝ 2 (fun y : PDE.Vec n => PDE.vecNormSq y) := by
-    simpa using contDiff_vecNormSq_sub (0 : PDE.Vec n)
+    simpa using contDiff_vecNormSq_sub 0
   refine ⟨?_, ?_, ?_⟩
   · have : DifferentiableAt ℝ (fun t : ℝ => Real.exp (C * (T - t)) * (1 + radialSq p)) p.time := by
       fun_prop
@@ -92,7 +91,7 @@ theorem isSliceRegularAt_growthBarrier {n : ℕ} (C T : ℝ) (p : KineticPoint n
     exact h.contDiffAt
 
 /-- The time derivative of the growth barrier. -/
-theorem kineticTimeDerivative_growthBarrier {n : ℕ} (C T : ℝ) (p : KineticPoint n) :
+theorem kineticTimeDerivative_growthBarrier :
     kineticTimeDerivative (growthBarrier C T) p =
       Real.exp (C * (T - p.time)) * (-C * (1 + radialSq p)) := by
   show deriv (fun r : ℝ => Real.exp (C * (T - r)) * (1 + radialSq p)) p.time = _
@@ -103,7 +102,7 @@ theorem kineticTimeDerivative_growthBarrier {n : ℕ} (C T : ℝ) (p : KineticPo
   ring
 
 /-- The `y`-slice of the growth barrier, as a function of `|y|²`. -/
-theorem growthBarrier_positionSlice {n : ℕ} (C T : ℝ) (p : KineticPoint n) :
+theorem growthBarrier_positionSlice :
     (fun y : PDE.Vec n => growthBarrier C T ⟨p.time, y, p.velocity⟩) =
       fun y => (fun s : ℝ => Real.exp (C * (T - p.time)) *
         ((1 + PDE.vecNormSq p.velocity) + s)) (PDE.vecNormSq (y - 0)) := by
@@ -112,7 +111,7 @@ theorem growthBarrier_positionSlice {n : ℕ} (C T : ℝ) (p : KineticPoint n) :
   ring
 
 /-- The `z`-slice of the growth barrier, as a function of `|z|²`. -/
-theorem growthBarrier_velocitySlice {n : ℕ} (C T : ℝ) (p : KineticPoint n) :
+theorem growthBarrier_velocitySlice :
     (fun z : PDE.Vec n => growthBarrier C T ⟨p.time, p.position, z⟩) =
       fun z => (fun s : ℝ => Real.exp (C * (T - p.time)) *
         ((1 + PDE.vecNormSq p.position) + s)) (PDE.vecNormSq (z - 0)) := by
@@ -120,13 +119,17 @@ theorem growthBarrier_velocitySlice {n : ℕ} (C T : ℝ) (p : KineticPoint n) :
   simp only [growthBarrier, radialSq, sub_zero]
   ring
 
+end
+
 /-- Affine functions are smooth. -/
 theorem contDiffAt_affine_weight (c a s : ℝ) :
     ContDiffAt ℝ 2 (fun s : ℝ => c * (a + s)) s :=
   (contDiff_const.mul (contDiff_const.add contDiff_id)).contDiffAt
 
+variable {n : ℕ} {B : FullKineticCoefficient n} {b : PDE.Vec n → PDE.Vec n}
+
 /-- The viscous operator applied to the growth barrier. -/
-theorem viscousTransportedOperator_growthBarrier {n : ℕ} (B : FullKineticCoefficient n)
+theorem viscousTransportedOperator_growthBarrier (B : FullKineticCoefficient n)
     (b : PDE.Vec n → PDE.Vec n) (ε C T : ℝ) (p : KineticPoint n) :
     viscousTransportedOperator B b ε (growthBarrier C T) p =
       Real.exp (C * (T - p.time)) *
@@ -167,7 +170,7 @@ theorem viscousTransportedOperator_growthBarrier {n : ℕ} (B : FullKineticCoeff
   ring
 
 /-- Linear growth of a Lipschitz drift in the Euclidean norm. -/
-theorem vecEuclideanNorm_le_of_lipschitz {n : ℕ} {b : PDE.Vec n → PDE.Vec n} {Lb : ℝ}
+theorem vecEuclideanNorm_le_of_lipschitz {Lb : ℝ}
     (hb : ∀ y y', PDE.vecEuclideanNorm (b y - b y') ≤ Lb * PDE.vecEuclideanNorm (y - y'))
     (y : PDE.Vec n) :
     PDE.vecEuclideanNorm (b y) ≤ PDE.vecEuclideanNorm (b 0) + |Lb| * PDE.vecEuclideanNorm y := by
@@ -182,18 +185,16 @@ theorem vecEuclideanNorm_le_of_lipschitz {n : ℕ} {b : PDE.Vec n → PDE.Vec n}
   linarith
 
 /-- The trace of a matrix bounded above by `Λ I` is at most `n Λ`. -/
-theorem trace_le_of_le_smul_one {n : ℕ} {A : PDE.Mat n} {Lam : ℝ}
+theorem trace_le_of_le_smul_one {A : PDE.Mat n} {Lam : ℝ}
     (h : A ≤ Lam • (1 : PDE.Mat n)) : A.trace ≤ n * Lam := by
-  have h1 : (Lam • (1 : PDE.Mat n) - A).PosSemidef := Matrix.le_iff.mp h
-  have h2 := h1.trace_nonneg
+  have h2 := (Matrix.le_iff.mp h).trace_nonneg
   rw [Matrix.trace_sub, Matrix.trace_smul, Matrix.trace_one] at h2
   simp only [Fintype.card_fin, smul_eq_mul] at h2
   linarith
 
 /-- The Lyapunov inequality `L_ε Φ ≤ -Φ` for the growth barrier with the explicit
 constant, for every `0 ≤ ε ≤ 1`, at every kinetic point. -/
-theorem viscousTransportedOperator_growthBarrier_le {n : ℕ} {B : FullKineticCoefficient n}
-    {b : PDE.Vec n → PDE.Vec n} {ε Lam Lb : ℝ} (hε1 : ε ≤ 1)
+theorem viscousTransportedOperator_growthBarrier_le {ε Lam Lb : ℝ} (hε1 : ε ≤ 1)
     (hBLam : ∀ σ y z, B σ y z ≤ Lam • (1 : PDE.Mat n))
     (hb : ∀ y y', PDE.vecEuclideanNorm (b y - b y') ≤ Lb * PDE.vecEuclideanNorm (y - y'))
     (T : ℝ) (p : KineticPoint n) :
@@ -204,41 +205,32 @@ theorem viscousTransportedOperator_growthBarrier_le {n : ℕ} {B : FullKineticCo
   unfold growthBarrier growthConstant
   set E := Real.exp (growthConstant n Lam (PDE.vecEuclideanNorm (b 0)) Lb * (T - p.time)) with hE
   unfold growthConstant at hE
-  have hEpos : 0 < E := Real.exp_pos _
   set b0 := PDE.vecEuclideanNorm (b 0) with hb0
   have hb0nn : 0 ≤ b0 := PDE.vecEuclideanNorm_nonneg _
   have htr := trace_le_of_le_smul_one (hBLam p.time p.position p.velocity)
-  have hs := PDE.vecEuclideanNorm_sq p.position
-  have hr := PDE.vecEuclideanNorm_sq p.velocity
   set s := PDE.vecEuclideanNorm p.position
   set r := PDE.vecEuclideanNorm p.velocity
-  have hsn : 0 ≤ s := PDE.vecEuclideanNorm_nonneg _
-  have hrn : 0 ≤ r := PDE.vecEuclideanNorm_nonneg _
   have hdot : PDE.vecDot (b p.position) p.velocity ≤ (b0 + |Lb| * s) * r := by
     calc PDE.vecDot (b p.position) p.velocity ≤ |PDE.vecDot (b p.position) p.velocity| :=
           le_abs_self _
       _ ≤ PDE.vecEuclideanNorm (b p.position) * r := PDE.abs_vecDot_le_vecEuclideanNorm_mul _ _
       _ ≤ (b0 + |Lb| * s) * r :=
-          mul_le_mul_of_nonneg_right (vecEuclideanNorm_le_of_lipschitz hb _) hrn
+          mul_le_mul_of_nonneg_right (vecEuclideanNorm_le_of_lipschitz hb _) (PDE.vecEuclideanNorm_nonneg _)
   have hLn : 0 ≤ |Lb| := abs_nonneg _
-  have hq : 1 ≤ 1 + radialSq p := by
-    have : 0 ≤ radialSq p := add_nonneg (PDE.vecNormSq_nonneg _) (PDE.vecNormSq_nonneg _)
-    linarith
   have hradial : radialSq p = s ^ 2 + r ^ 2 := by
     unfold radialSq
-    rw [← hs, ← hr]
+    rw [← (PDE.vecEuclideanNorm_sq p.position), ← (PDE.vecEuclideanNorm_sq p.velocity)]
   have hcross : 2 * ((b0 + |Lb| * s) * r) ≤ (b0 + |Lb|) * (1 + radialSq p) := by
     rw [hradial]
     have h1 : 0 ≤ b0 * (r - 1) ^ 2 := mul_nonneg hb0nn (sq_nonneg _)
     have h2 : 0 ≤ |Lb| * (s - r) ^ 2 := mul_nonneg hLn (sq_nonneg _)
     nlinarith [h1, h2]
   have hn : (0 : ℝ) ≤ n := Nat.cast_nonneg n
-  have hLamabs : Lam ≤ |Lam| := le_abs_self Lam
+  have hLamabs := le_abs_self Lam
   have hpart : 2 * (B p.time p.position p.velocity).trace + 2 * ε * n ≤
       2 * n * (|Lam| + 1) * (1 + radialSq p) := by
     have h1 : 2 * (B p.time p.position p.velocity).trace ≤ 2 * (n * |Lam|) := by
-      have : n * Lam ≤ n * |Lam| := mul_le_mul_of_nonneg_left hLamabs hn
-      linarith
+      linarith [mul_le_mul_of_nonneg_left hLamabs hn]
     have h2 : 2 * ε * n ≤ 2 * n := by nlinarith
     have h3 : 2 * n * (|Lam| + 1) ≤ 2 * n * (|Lam| + 1) * (1 + radialSq p) := by
       have : 0 ≤ 2 * n * (|Lam| + 1) := by positivity
@@ -251,7 +243,7 @@ theorem viscousTransportedOperator_growthBarrier_le {n : ℕ} {B : FullKineticCo
   calc E * (-(2 * n * (|Lam| + 1) + b0 + |Lb| + 1) * (1 + radialSq p) +
         2 * (B p.time p.position p.velocity).trace +
           2 * PDE.vecDot (b p.position) p.velocity + 2 * ε * n)
-      ≤ E * (-(1 + radialSq p)) := mul_le_mul_of_nonneg_left hkey hEpos.le
+      ≤ E * (-(1 + radialSq p)) := mul_le_mul_of_nonneg_left hkey (Real.exp_pos _).le
     _ = -(E * (1 + radialSq p)) := by ring
 
 end HypoellipticAleksandrov.KineticAleksandrov

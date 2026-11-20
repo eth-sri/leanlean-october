@@ -42,10 +42,10 @@ theorem rnDensity_of_smooth_tests (ν μ : Measure E)
     fun _ => ENNReal.toReal_nonneg, ?_, ?_, ?_⟩
   · have hi := Measure.integrableOn_toReal_rnDeriv (μ := μ) (ν := ν.restrict U)
       (measure_ne_top μ univ)
-    simpa only [integrableOn_univ] using hi
+    simpa using hi
   · intro f
     simpa only [mul_comm] using integral_toReal_rnDeriv_mul hac (f := f)
-  · simpa only [measureReal_def] using Measure.integral_toReal_rnDeriv hac
+  · exact Measure.integral_toReal_rnDeriv hac
 
 /-- The Radon–Nikodym density has the sharp `Lʳ` bound on each compact interior subset. -/
 theorem rnDensity_compact_norm_le (ν μ : Measure E)
@@ -76,20 +76,18 @@ theorem rnDensity_compact_norm_le (ν μ : Measure E)
   intro φ hφ hφbound
   obtain ⟨M, hM, hφM⟩ := hφbound
   let f := K.indicator φ
-  have hf : Measurable f := hφ.indicator hK.measurableSet
   have hfK : Function.support f ⊆ K := Set.support_indicator_subset
   have hfM : ∀ x, |f x| ≤ M := by
     intro x
     by_cases hx : x ∈ K
     · simpa [f, hx] using hφM x
-    · simpa [f, hx] using hM
-  have hfp := memLp_of_bounded_compact_support (ν + μ) hf hK hfK hfM p
+    simp_all <;> grind
+  have hfp := memLp_of_bounded_compact_support (ν + μ) (hφ.indicator hK.measurableSet) hK hfK hfM p
   have hb := abs_integral_le_of_smooth_tests_compact ν μ hU hp hpt hC htest
     hfp hK hKU hfK
   have hpair : (∫ x, φ x * g x ∂(ν.restrict U).restrict K) = ∫ x, f x ∂μ := by
     rw [show (fun x => φ x * g x) = (fun x => g x * φ x) by
-      funext x; exact mul_comm _ _]
-    change (∫ x in K, (μ.rnDeriv (ν.restrict U) x).toReal * φ x ∂ν.restrict U) = _
+      apply mul_comm]
     rw [setIntegral_toReal_rnDeriv_mul hac hK.measurableSet,
       ← integral_indicator hK.measurableSet]
   rw [hpair]

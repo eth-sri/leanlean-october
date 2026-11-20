@@ -20,9 +20,7 @@ theorem abp_eLpNorm_toReal_nonneg {E : Type*} [MeasurableSpace E]
   rw [hg.eLpNorm_eq_integral_rpow_norm (ENNReal.ofReal_pos.mpr hp).ne'
     ENNReal.ofReal_ne_top]
   simp only [ENNReal.toReal_ofReal hp.le]
-  have hi : 0 ≤ ∫ x, ‖g x‖ ^ p ∂μ :=
-    integral_nonneg fun x => Real.rpow_nonneg (norm_nonneg _) _
-  rw [ENNReal.toReal_ofReal (Real.rpow_nonneg hi _)]
+  rw [ENNReal.toReal_ofReal (Real.rpow_nonneg (integral_nonneg fun x => Real.rpow_nonneg (norm_nonneg _) _) _)]
   simp only [one_div]
   congr 1
   apply integral_congr_ae
@@ -40,9 +38,7 @@ theorem abp_potential_holder {E : Type*} [MeasurableSpace E]
   rw [hΓ,integral_withDensity_eq_integral_toReal_smul (hG.ennreal_ofReal)
     (Filter.Eventually.of_forall (fun _ => ENNReal.ofReal_lt_top))]
   have heq : (fun x => (ENNReal.ofReal (G x)).toReal • g x) = fun x => G x * g x := by
-    funext x
-    rw [ENNReal.toReal_ofReal (hG0 x)]
-    rfl
+    simp_all
   rw [heq]
   have hnn : ∀ᵐ x ∂μ, 0 ≤ G x := Filter.Eventually.of_forall hG0
   have hh := integral_mul_le_Lp_mul_Lq_of_nonneg hpq hnn hg0 hGq hgp

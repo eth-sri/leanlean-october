@@ -42,30 +42,32 @@ def kineticReflectionHomeomorph (d : ℕ) : KineticPoint d ≃ₜ KineticPoint d
   continuous_toFun := continuous_kineticReflection d
   continuous_invFun := continuous_kineticReflection d
 
-private theorem neg_ball {d : ℕ} (x y : PDE.Vec d) (r : ℝ) :
+section
+variable {d : ℕ} (P₀ : KineticPoint d) (x y : PDE.Vec d) (R : ℝ) (r : ℝ) (hR : 0 < R)
+
+private theorem neg_ball :
     -x ∈ PDE.euclideanBall (-y) r ↔ x ∈ PDE.euclideanBall y r := by
   change PDE.vecNormSq (-x - -y) < r ^ 2 ↔ PDE.vecNormSq (x-y) < r ^ 2
   rw [show -x - -y = -(x-y) by abel, PDE.vecNormSq_neg]
 
-private theorem neg_sphere {d : ℕ} (x y : PDE.Vec d) (r : ℝ) :
+private theorem neg_sphere :
     -x ∈ PDE.euclideanSphere (-y) r ↔ x ∈ PDE.euclideanSphere y r := by
   change PDE.vecNormSq (-x - -y) = r ^ 2 ↔ PDE.vecNormSq (x-y) = r ^ 2
   rw [show -x - -y = -(x-y) by abel, PDE.vecNormSq_neg]
 
-private theorem reflected_mem_forward {d : ℕ}
+private theorem reflected_mem_forward
     (P₀ P : KineticPoint d) (R : ℝ) (hR : 0 < R) :
     kineticReflection P ∈ forwardCylinder (kineticReflection P₀) R hR ↔
       P ∈ backwardCylinder P₀ R := by
   rw [mem_forwardCylinder_iff, mem_backwardCylinder_iff]
   rw [(kineticReflection_relative P₀ P).2]
-  have hb := neg_ball (relativePosition P₀ P) (0 : PDE.Vec d) (R ^ 3)
+  have hb := neg_ball (relativePosition P₀ P) 0 (R ^ 3)
   simp only [neg_zero] at hb
   simp only [kineticReflection, neg_lt_neg_iff, hb]
-  constructor <;> rintro ⟨h1,h2,h3,h4⟩ <;> refine ⟨?_,?_,h3,h4⟩ <;> linarith
+  bound
 
 /-- Reflection maps the backward cylinder onto the source forward cylinder. -/
-theorem kineticReflection_image_backwardCylinder {d : ℕ}
-    (P₀ : KineticPoint d) (R : ℝ) (hR : 0 < R) :
+theorem kineticReflection_image_backwardCylinder :
     kineticReflection '' backwardCylinder P₀ R =
       forwardCylinder (kineticReflection P₀) R hR := by
   ext P
@@ -79,8 +81,7 @@ theorem kineticReflection_image_backwardCylinder {d : ℕ}
     exact hP
 
 /-- Reflection maps the prescribed kinetic boundary onto the exit boundary. -/
-theorem kineticReflection_image_kineticBoundary {d : ℕ}
-    (P₀ : KineticPoint d) (R : ℝ) (hR : 0 < R) :
+theorem kineticReflection_image_kineticBoundary :
     kineticReflection '' kineticBoundary P₀ R =
       exitBoundary (kineticReflection P₀) R hR := by
   have hc : kineticReflection '' closure (backwardCylinder P₀ R) =
@@ -91,66 +92,45 @@ theorem kineticReflection_image_kineticBoundary {d : ℕ}
       exitBoundary (kineticReflection P₀) R hR ↔ P ∈ kineticBoundary P₀ R := by
     intro P
     rw [mem_exitBoundary_iff, mem_kineticBoundary_iff, ← hc]
-    have hi : kineticReflection P ∈ kineticReflection '' closure (backwardCylinder P₀ R) ↔
-        P ∈ closure (backwardCylinder P₀ R) := by
-      exact kineticReflection_involutive.injective.mem_set_image
-    rw [hi, (kineticReflection_relative P₀ P).1,
+    rw [kineticReflection_involutive.injective.mem_set_image, (kineticReflection_relative P₀ P).1,
       (kineticReflection_relative P₀ P).2]
-    have hs := neg_sphere (relativePosition P₀ P) (0 : PDE.Vec d) (R ^ 3)
+    have hs := neg_sphere (relativePosition P₀ P) 0 (R ^ 3)
     simp only [neg_zero] at hs
     have hd : PDE.vecDot (relativeVelocity P₀ P) (-relativePosition P₀ P) =
         -PDE.vecDot (relativeVelocity P₀ P) (relativePosition P₀ P) := by
-      simp [PDE.vecDot, Finset.sum_neg_distrib]
+      simp [PDE.vecDot]
     have ht : -P.time = -P₀.time + R ^ 2 ↔ P.time = P₀.time - R ^ 2 := by
       constructor <;> intro h <;> linarith
-    simp only [kineticReflection, hs, hd, neg_nonneg, ht]
+    simp_all [kineticReflection, hs, hd, ht]
   ext P
   constructor
-  · rintro ⟨Q,hQ,rfl⟩
-    exact (hmem Q).2 hQ
+  · grind
   · intro hP
     refine ⟨kineticReflection P, ?_, kineticReflection_involutive P⟩
     apply (hmem (kineticReflection P)).1
     rw [kineticReflection_involutive P]
     exact hP
 
+end
+
 /-- Reflection preserves unnormalised product Lebesgue measure. -/
 theorem measurePreserving_kineticReflection (d : ℕ) :
     MeasurePreserving (kineticReflection (d := d)) volume volume := by
   let e := (KineticPoint.homeomorphProd d).toMeasurableEquiv
-  have he : MeasurePreserving e volume volume := KineticPoint.measurePreserving_equivProd d
+  have he := KineticPoint.measurePreserving_equivProd d
   have hp := (Measure.measurePreserving_neg (volume : Measure ℝ)).prod
     ((Measure.measurePreserving_neg (volume : Measure (PDE.Vec d))).prod
       (MeasurePreserving.id (volume : Measure (PDE.Vec d))))
   exact (he.symm e).comp (hp.comp he)
 
-private theorem coefficientTimeReflection_preserving (d : ℕ) :
-    MeasurePreserving (fun z : TimeVelocity d => (-z.1,z.2)) volume volume :=
-  (Measure.measurePreserving_neg (volume : Measure ℝ)).prod
-    (MeasurePreserving.id (volume : Measure (PDE.Vec d)))
-
-/-- Source coefficient reflection preserves the Borel coefficient class. -/
-theorem isBorelCoefficient_kineticReflectedCoefficient {d : ℕ}
-    (A : CoefficientField d) (hA : IsBorelCoefficient A) :
-    IsBorelCoefficient (kineticReflectedCoefficient A) :=
-  hA.comp ((continuous_fst.neg.prodMk continuous_snd).measurable)
+variable {d : ℕ} (A : CoefficientField d)
 
 /-- Source coefficient reflection preserves pointwise symmetry. -/
-theorem isSymmetricCoefficient_kineticReflectedCoefficient {d : ℕ}
-    (A : CoefficientField d) (hA : IsSymmetricCoefficient A) :
+theorem isSymmetricCoefficient_kineticReflectedCoefficient (hA : IsSymmetricCoefficient A) :
     IsSymmetricCoefficient (kineticReflectedCoefficient A) := fun s v => hA (-s) v
 
-/-- Source coefficient reflection preserves almost-everywhere ellipticity bounds. -/
-theorem ellipticityAE_kineticReflectedCoefficient {d : ℕ}
-    (A : CoefficientField d) (lam Lam : ℝ)
-    (hlo : HasLowerEllipticityAE lam A) (hhi : HasUpperEllipticityAE Lam A) :
-    HasLowerEllipticityAE lam (kineticReflectedCoefficient A) ∧
-      HasUpperEllipticityAE Lam (kineticReflectedCoefficient A) := by
-  exact ⟨(coefficientTimeReflection_preserving d).quasiMeasurePreserving.ae hlo,
-    (coefficientTimeReflection_preserving d).quasiMeasurePreserving.ae hhi⟩
-
 /-- Source time reflection preserves the existing C-infinity coefficient class. -/
-theorem isSmoothCoefficient_kineticReflectedCoefficient {d : ℕ} (A : CoefficientField d)
+theorem isSmoothCoefficient_kineticReflectedCoefficient
     (hA : IsSmoothCoefficient A) :
     IsSmoothCoefficient (kineticReflectedCoefficient A) :=
   hA.comp (contDiff_fst.neg.prodMk contDiff_snd)

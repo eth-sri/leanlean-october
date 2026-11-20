@@ -10,8 +10,11 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov
 open SectionTwo TheoremA Evolution
 
+variable {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam) (A : SmoothAutonomous lam Lam)
+    (H : Interval) (v : PDE.Vec 1)
+
 /-- The native one-dimensional interval closure is exactly the physical scalar closed interval. -/
-theorem nested_intervalDomain_closure_iff (H : Interval) (v : PDE.Vec 1) :
+theorem nested_intervalDomain_closure_iff :
     v ∈ closure (intervalDomain H) ↔ H.lo ≤ v 0 ∧ v 0 ≤ H.hi := by
   let e := (ContinuousLinearEquiv.piUnique ℝ (fun _ : Fin 1 => ℝ)).toHomeomorph
   have hset : intervalDomain H = e ⁻¹' Ioo H.lo H.hi := by
@@ -22,7 +25,7 @@ theorem nested_intervalDomain_closure_iff (H : Interval) (v : PDE.Vec 1) :
   rfl
 
 /-- Either scalar endpoint is a genuine native velocity frontier point. -/
-theorem nested_intervalDomain_frontier_of_endpoint (H : Interval) (v : PDE.Vec 1)
+theorem nested_intervalDomain_frontier_of_endpoint
     (hv : v 0 = H.lo ∨ v 0 = H.hi) : v ∈ frontier (intervalDomain H) := by
   rw [frontier,
     (isOpen_of_isAdmissibleEvolutionDomain (intervalDomain_admissible H)).interior_eq]
@@ -37,12 +40,10 @@ theorem nested_intervalDomain_frontier_of_endpoint (H : Interval) (v : PDE.Vec 1
     · exact (lt_irrefl _ hb.1)
     · exact (lt_irrefl _ hb.2)
 
+include hlam hLam in
 /-- Compact source potentials are continuous on the literal physical closed past and zero
 on both terminal and lateral exits of their own interval. -/
-theorem nestedSourcePotential_continuous_zero_exit
-    (hH : HormanderHypoellipticityStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (H : Interval) (E : StripEvolution H)
+theorem nestedSourcePotential_continuous_zero_exit (E : StripEvolution H)
     (hE : IsStripEvolution A H E) (T : ℝ) (f : exitProbeSubmodule)
     (hfn : ∀ p, 0 ≤ exitProbePhysical f p)
     (hs : tsupport (exitProbePhysical f) ⊆ {p | p.time < T ∧ p.velocity 0 ∈ H.carrier}) :
@@ -54,7 +55,7 @@ theorem nestedSourcePotential_continuous_zero_exit
   have hgc := (exitProbePhysical_continuous_compact f).2.comp_homeomorph
     (sectionTwoHomeomorph 1)
   obtain ⟨-, -, -, -, -, hc, ht, hv, -⟩ :=
-    kinetic_duhamel hH (by omega) (intervalDomain_admissible H) (zeroCurve_piecewiseC1 1)
+    kinetic_duhamel (by omega) (intervalDomain_admissible H) (zeroCurve_piecewiseC1 1)
       hlam hLam one_pos (evolutionCoefficient A.a) (evolutionCoefficient_smooth A)
       (evolutionCoefficient_symmetric A.a) (evolutionCoefficient_bounds A)
       (identityDrift 1) (identityDrift_smooth 1) (identityDrift_bounds 1)

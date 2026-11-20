@@ -20,7 +20,7 @@ theorem bellmanRadialWeight_integral_div (β : ℝ) (ψ : ℝ → ℝ) (n : ℕ)
   apply setIntegral_congr_fun measurableSet_Ioi
   intro s hs
   change s ^ (3 - β) * (ψ s / s ^ n) = s ^ ((3 - β) - n) * ψ s
-  rw [Real.rpow_sub hs (3 - β) (n : ℝ), Real.rpow_natCast]
+  rw [Real.rpow_sub hs (3 - β) n, Real.rpow_natCast]
   ring
 
 /-- A positive-position supported integrand has the same positive and full real integral. -/
@@ -38,33 +38,29 @@ theorem bellmanRadialWeight_deriv_relation (β a b : ℝ) (ha : 0 < a) (hab : a 
     (hs : tsupport ζ ⊆ Ioo a b) :
     (∫ s, deriv ζ s.val / s.val ∂bellmanRadialWeight β) =
       (β - 2) * (∫ s, ζ s.val / s.val ^ 2 ∂bellmanRadialWeight β) := by
-  have hd : tsupport (deriv ζ) ⊆ Ioo a b := tsupport_deriv_subset.trans hs
+  have hd := tsupport_deriv_subset.trans hs
   have hs1 : Function.support (fun s : ℝ => s ^ (2 - β) * deriv ζ s) ⊆ Ioc a b := by
     intro s h
-    have hz : deriv ζ s ≠ 0 := (mul_ne_zero_iff.mp h).2
+    have hz := (mul_ne_zero_iff.mp h).2
     exact ⟨(hd (subset_tsupport _ hz)).1, (hd (subset_tsupport _ hz)).2.le⟩
   have hs2 : Function.support (fun s : ℝ => s ^ (1 - β) * ζ s) ⊆ Ioc a b := by
     intro s h
-    have hz : ζ s ≠ 0 := (mul_ne_zero_iff.mp h).2
+    have hz := (mul_ne_zero_iff.mp h).2
     exact ⟨(hs (subset_tsupport _ hz)).1, (hs (subset_tsupport _ hz)).2.le⟩
-  have hp1 : Function.support (fun s : ℝ => s ^ (2 - β) * deriv ζ s) ⊆ Ioi 0 :=
-    fun s h => ha.trans (hs1 h).1
-  have hp2 : Function.support (fun s : ℝ => s ^ (1 - β) * ζ s) ⊆ Ioi 0 :=
-    fun s h => ha.trans (hs2 h).1
   have h1 := bellmanRadialWeight_integral_div β (deriv ζ) 1
   simp only [pow_one, Nat.cast_one] at h1
   rw [h1, bellmanRadialWeight_integral_div β ζ 2]
   norm_num only [Nat.cast_ofNat]
   have he1 : (3 - β) - 1 = 2 - β := by ring
   have he2 : (3 - β) - 2 = 1 - β := by ring
-  rw [he1, he2, bellman_positiveIntegral_eq_full hp1,
-    bellman_positiveIntegral_eq_full hp2,
+  rw [he1, he2, bellman_positiveIntegral_eq_full (fun s h => ha.trans (hs1 h).1),
+    bellman_positiveIntegral_eq_full (fun s h => ha.trans (hs2 h).1),
     ← intervalIntegral.integral_eq_integral_of_support_subset hs1,
     ← intervalIntegral.integral_eq_integral_of_support_subset hs2]
-  have hza : ζ a = 0 := image_eq_zero_of_notMem_tsupport
+  have hza := image_eq_zero_of_notMem_tsupport
     (fun h => (lt_irrefl a) (hs h).1)
-  have hzb : ζ b = 0 := image_eq_zero_of_notMem_tsupport
+  have hzb := image_eq_zero_of_notMem_tsupport
     (fun h => (lt_irrefl b) (hs h).2)
-  exact bellmanAngularRadial_integrationByParts β a b ha hab ζ hζ hza hzb
+  apply bellmanAngularRadial_integrationByParts <;> assumption
 
 end HypoellipticAleksandrov.KineticAleksandrov

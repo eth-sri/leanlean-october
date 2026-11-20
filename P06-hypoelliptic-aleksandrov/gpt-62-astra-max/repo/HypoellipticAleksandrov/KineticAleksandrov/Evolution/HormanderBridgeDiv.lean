@@ -23,7 +23,7 @@ variable {n : ℕ}
 theorem basisT_eq_basisVec : (basisT : EvolutionVec n) = PDE.basisVec 0 := by
   funext i
   refine Fin.cases ?_ (fun j => ?_) i
-  · simp [basisT, PDE.basisVec]
+  · simp [basisT]
   · rw [basisT, PDE.basisVec_apply, ite_eq_right_of_eq_false _ _ (eq_false (Fin.succ_ne_zero _))]
     refine Fin.addCases (fun a => ?_) (fun c => ?_) j <;>
       simp only [packPoint_diffused_apply, packPoint_transported_apply] <;> rfl
@@ -65,14 +65,12 @@ theorem euclideanDivergence_eq {V : EvolutionVec n → EvolutionVec n} {x : Evol
       fderiv ℝ (fun y => V y 0) x basisT +
         ∑ j, fderiv ℝ (fun y => V y (Fin.succ (Fin.castAdd n j))) x (basisV j) +
         ∑ l, fderiv ℝ (fun y => V y (Fin.succ (Fin.natAdd n l))) x (basisZ l) := by
-  have hcomp : ∀ i, DifferentiableAt ℝ (fun y => V y i) x := differentiableAt_pi.1 hV
   have key : ∀ (i : Fin (EvolutionDim n)) (w : EvolutionVec n),
       fderiv ℝ V x w i = fderiv ℝ (fun y => V y i) x w := by
     intro i w
-    have := fderiv_pi (𝕜 := ℝ) (φ := fun i y => V y i) (x := x) hcomp
+    have := fderiv_pi (𝕜 := ℝ) (φ := fun i y => V y i) (x := x) (differentiableAt_pi.1 hV)
     have h2 : fderiv ℝ V x = fderiv ℝ (fun y i => V y i) x := rfl
-    rw [h2, this]
-    rfl
+    simp_all
   unfold euclideanDivergence
   rw [Fin.sum_univ_succ, Fin.sum_univ_add]
   simp only [key, basisT_eq_basisVec, basisV_eq_basisVec, basisZ_eq_basisVec]
@@ -89,9 +87,9 @@ theorem euclideanDivergence_packPoint {s : EvolutionVec n → ℝ} {g h : Evolut
   have hV : DifferentiableAt ℝ (fun y => packPoint (s y) (g y) (h y)) x := by
     refine differentiableAt_pi.2 fun i => ?_
     refine Fin.cases ?_ (fun j => ?_) i
-    · simpa only [packPoint_zero_apply] using hs
+    · exact hs
     · refine Fin.addCases (fun a => ?_) (fun c => ?_) j
-      · simpa only [packPoint_diffused_apply] using hg a
+      · simpa using hg a
       · simpa only [packPoint_transported_apply] using hh c
   rw [euclideanDivergence_eq hV]
   simp only [packPoint_zero_apply, packPoint_diffused_apply, packPoint_transported_apply]

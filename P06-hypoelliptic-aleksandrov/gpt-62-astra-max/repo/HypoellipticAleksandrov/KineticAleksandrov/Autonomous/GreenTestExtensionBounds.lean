@@ -28,16 +28,12 @@ theorem reconstruction_closed_velocity_slice_bound
     (p : Point) (hp : p.velocity 0 ∈ Icc H.lo H.hi)
     (hb : ∀ v ∈ H.carrier, |phi ⟨p.time, p.position, fun _ => v⟩| ≤ M) :
     |phi p| ≤ M := by
-  let f : ℝ → ℝ := fun v => |phi ⟨p.time, p.position, fun _ => v⟩|
-  have hf : Continuous f :=
-    (hc.comp ((KineticPoint.homeomorphProd 1).symm.continuous.comp
-      (continuous_const.prodMk (continuous_const.prodMk
-        (continuous_pi fun _ => continuous_id))))).abs
+  let f := fun v => |phi ⟨p.time, p.position, fun _ => v⟩|
   have hcl : p.velocity 0 ∈ closure (Ioo H.lo H.hi) := by
     rw [closure_Ioo H.ordered.ne]
     exact hp
   have hh := le_on_closure (f := f) (g := fun _ => M) hb
-    hf.continuousOn continuousOn_const hcl
+    ((hc.comp ((KineticPoint.homeomorphProd 1).symm.continuous.comp (continuous_const.prodMk (continuous_const.prodMk (continuous_pi fun _ => continuous_id))))).abs).continuousOn continuousOn_const hcl
   have he : (fun _ : Fin 1 => p.velocity 0) = p.velocity := by
     ext i
     rw [Fin.eq_zero i]

@@ -13,10 +13,14 @@ open Evolution Occupation
 open scoped Topology
 variable {d : ℕ}
 
-/-- The full kinetic operator preserves smoothness on an open set with smooth coefficients. -/
-theorem contDiffOn_duhamel_operator {U : Set (EvolutionVec d)} (hU : IsOpen U)
-    {B : FullKineticCoefficient d} (hB : IsSmoothFullKineticCoefficient B)
+section
+variable {U : Set (EvolutionVec d)} (hU : IsOpen U) {B : FullKineticCoefficient d}
+    (hB : IsSmoothFullKineticCoefficient B) (hBs : IsSymmetricFullKineticCoefficient B)
     {b : PDE.Vec d → PDE.Vec d} (hb : IsSmoothDrift b)
+include hU hB hb
+
+/-- The full kinetic operator preserves smoothness on an open set with smooth coefficients. -/
+theorem contDiffOn_duhamel_operator
     {u : EvolutionVec d → ℝ} (hu : ContDiffOn ℝ (⊤ : ℕ∞) u U) :
     ContDiffOn ℝ (⊤ : ℕ∞) (transportedOperator B b u) U := by
   have hA : ∀ i j, ContDiff ℝ (⊤ : ℕ∞) (fun x : EvolutionVec d =>
@@ -32,11 +36,9 @@ theorem contDiffOn_duhamel_operator {U : Set (EvolutionVec d)} (hU : IsOpen U)
   · exact ContDiffOn.sum fun i _ => (hβ i).contDiffOn.mul
       (contDiffOn_duhamel_direction hU hu (basisZ i))
 
+include hBs in
 /-- A smooth kinetic weak solution satisfies its source equation at every interior point. -/
-theorem duhamel_operator_eq_of_smooth_weak {U : Set (EvolutionVec d)} (hU : IsOpen U)
-    {B : FullKineticCoefficient d} (hB : IsSmoothFullKineticCoefficient B)
-    (hBs : IsSymmetricFullKineticCoefficient B)
-    {b : PDE.Vec d → PDE.Vec d} (hb : IsSmoothDrift b)
+theorem duhamel_operator_eq_of_smooth_weak
     {u f : EvolutionVec d → ℝ} (hu : ContDiffOn ℝ (⊤ : ℕ∞) u U)
     (hf : ContinuousOn f U) (hweak : IsWeakTransportedSolution B b U u f) :
     ∀ x ∈ U, transportedOperator B b u x = f x := by
@@ -71,10 +73,12 @@ theorem duhamel_operator_eq_of_smooth_weak {U : Set (EvolutionVec d)} (hU : IsOp
   intro x hx
   exact sub_eq_zero.mp (heq hx)
 
+end
+
 variable {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
 
 /-- The full kinetic Duhamel potential satisfies `Lop W = -g` pointwise in the past cylinder. -/
-theorem duhamelPotential_source_equation (hH : HormanderHypoellipticityStatement)
+theorem duhamelPotential_source_equation
     (hΩa : IsAdmissibleEvolutionDomain Ω)
     (hΩ : MeasurableSet Ω) (hγ : Continuous γ)
     (B : FullKineticCoefficient d) (b : PDE.Vec d → PDE.Vec d)
@@ -92,8 +96,8 @@ theorem duhamelPotential_source_equation (hH : HormanderHypoellipticityStatement
     ∀ p ∈ evolutionPastOpenCylinder Ω γ T,
       transportedForwardOperator B b (duhamelPotential K T g) p = -g p := by
   have hU := (isOpen_duhamelCylinder (isOpen_of_isAdmissibleEvolutionDomain hΩa) hγ T
-    ).preimage (evolutionHomeomorph d).continuous
-  have hsm := duhamelPotential_contDiffOn hH hΩa hΩ hγ B b S K hreal hB hBs hb
+).preimage (evolutionHomeomorph d).continuous
+  have hsm := duhamelPotential_contDiffOn hΩa hΩ hγ B b S K hreal hB hBs hb
     g hgn hg hgc hgs T hgU hlam hm hell hcoerc
   have hweak := (isWeakTransportedSolution_comp_iff B b _ _ _).2
     (duhamel_isKineticWeakTransportedSolution hΩa hΩ hγ B b S K hreal hB hBs hb

@@ -16,20 +16,22 @@ noncomputable section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 
+variable {d : ℕ} (alpha sigma : ℝ) (p : (ℝ × ℝ × PDE.Vec d) × PDE.Vec d) (hz : p.2 ≠ 0)
+    (hb : seedBase (p.1.2.1 * sigma) p.2 (p.1.2.1 • p.1.2.2) ≠ 0)
+
 /-- The cutoff interpolation on a fixed annulus, with independent constant and scale. -/
-def rescaledCutoff {d : ℕ} (alpha sigma s t : ℝ) (e z : PDE.Vec d) : ℝ :=
+def rescaledCutoff (alpha sigma s t : ℝ) (e z : PDE.Vec d) : ℝ :=
   radialProfile alpha z + radialCutoff 1 z *
     (s + Real.rpow (seedBase (t * sigma) z (t • e)) (alpha / 2) - radialProfile alpha z)
 
 /-- The zero-parameter interpolation is exactly the radial profile. -/
-theorem rescaledCutoff_zero {d : ℕ} (alpha sigma : ℝ) (e z : PDE.Vec d) :
+theorem rescaledCutoff_zero (e z : PDE.Vec d) :
     rescaledCutoff alpha sigma 0 0 e z = radialProfile alpha z := by
   simp [rescaledCutoff, seedBase, radialProfile]
 
+include hz hb in
 /-- The fixed-annulus family is smooth wherever both radial power bases are positive. -/
-theorem contDiffAt_rescaledCutoff {d : ℕ} (alpha sigma : ℝ)
-    (p : (ℝ × ℝ × PDE.Vec d) × PDE.Vec d) (hz : p.2 ≠ 0)
-    (hb : seedBase (p.1.2.1 * sigma) p.2 (p.1.2.1 • p.1.2.2) ≠ 0) :
+theorem contDiffAt_rescaledCutoff :
     ContDiffAt ℝ (⊤ : ℕ∞)
       (fun q : (ℝ × ℝ × PDE.Vec d) × PDE.Vec d =>
         rescaledCutoff alpha sigma q.1.1 q.1.2.1 q.1.2.2 q.2) p := by
@@ -47,10 +49,9 @@ theorem contDiffAt_rescaledCutoff {d : ℕ} (alpha sigma : ℝ)
   exact hr.add (((contDiff_radialCutoff 1).comp contDiff_snd).contDiffAt.mul
     ((hs.add (hbase.contDiffAt.rpow_const_of_ne hb)).sub hr))
 
+include hz hb in
 /-- Partial velocity derivatives of the fixed-annulus family are smooth jointly. -/
-theorem contDiffAt_rescaledCutoff_first {d : ℕ} (alpha sigma : ℝ)
-    (p : (ℝ × ℝ × PDE.Vec d) × PDE.Vec d) (hz : p.2 ≠ 0)
-    (hb : seedBase (p.1.2.1 * sigma) p.2 (p.1.2.1 • p.1.2.2) ≠ 0) :
+theorem contDiffAt_rescaledCutoff_first :
     ContDiffAt ℝ (⊤ : ℕ∞)
       (fun q : (ℝ × ℝ × PDE.Vec d) × PDE.Vec d =>
         fderiv ℝ (rescaledCutoff alpha sigma q.1.1 q.1.2.1 q.1.2.2) q.2) p := by
@@ -60,10 +61,9 @@ theorem contDiffAt_rescaledCutoff_first {d : ℕ} (alpha sigma : ℝ)
       (p, p.2) := by fun_prop
   exact (hf.comp (p, p.2) hc).fderiv contDiffAt_snd (by simp)
 
+include hz hb in
 /-- The velocity Hessian is continuous jointly at every regular parameter point. -/
-theorem continuousAt_rescaledCutoff_hessian {d : ℕ} (alpha sigma : ℝ)
-    (p : (ℝ × ℝ × PDE.Vec d) × PDE.Vec d) (hz : p.2 ≠ 0)
-    (hb : seedBase (p.1.2.1 * sigma) p.2 (p.1.2.1 • p.1.2.2) ≠ 0)
+theorem continuousAt_rescaledCutoff_hessian
     (w u : PDE.Vec d) :
     ContinuousAt
       (fun q : (ℝ × ℝ × PDE.Vec d) × PDE.Vec d =>

@@ -37,9 +37,9 @@ theorem borel_inner_error {d : ℕ} {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam
       (volume.restrict K)) ∧
     Tendsto (fun j => (eLpNorm (borelCoefficientError (C j) A H)
       (ENNReal.ofReal p) (volume.restrict K)).toReal) atTop (𝓝 0) := by
-  let : IsFiniteMeasureOnCompacts (volume : Measure (KineticPoint d)) :=
+  let : IsFiniteMeasureOnCompacts volume :=
     Measure.IsFiniteMeasureOnCompacts.map
-      (volume : Measure (ℝ × (PDE.Vec d × PDE.Vec d)))
+      volume
       (KineticPoint.homeomorphProd d).symm
   let : IsFiniteMeasure (volume.restrict K) := ⟨by
     rw [Measure.restrict_apply_univ]
@@ -51,20 +51,15 @@ theorem borel_inner_error {d : ℕ} {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam
   let : BorelSpace (PDE.Mat d) :=
     inferInstanceAs (BorelSpace (Fin d → Fin d → ℝ))
   change Measurable (coefficientAt A) at hBorel
-  have hproj : Measurable (fun P : KineticPoint d => (P.time,P.velocity)) :=
+  have hproj :=
     ((continuous_time (d := d)).prodMk (continuous_velocity (d := d))).measurable
   have hAm : AEStronglyMeasurable
       (fun P : KineticPoint d => A P.time P.velocity) (volume.restrict K) :=
     (hBorel.comp hproj).aestronglyMeasurable.restrict
   have hHm : AEStronglyMeasurable H (volume.restrict K) := hH.aestronglyMeasurable hK.measurableSet
-  have hcontr : Continuous (fun z : PDE.Mat d × PDE.Mat d =>
-      matrixContraction z.1 z.2) :=
-    continuousOn_univ.mp (continuousOn_matrixContraction
-      continuous_fst.continuousOn continuous_snd.continuousOn)
   have hm j : AEStronglyMeasurable (borelCoefficientError (C j) A H)
       (volume.restrict K) := by
-    have hCs : Continuous (coefficientAt (C j)) := by
-      exact (hC j).1.continuous
+    have hCs : Continuous (coefficientAt (C j)) := (hC j).1.continuous
     have hCm : AEStronglyMeasurable
         (fun P : KineticPoint d => C j P.time P.velocity) (volume.restrict K) :=
       (hCs.measurable.comp hproj).aestronglyMeasurable.restrict
@@ -73,13 +68,12 @@ theorem borel_inner_error {d : ℕ} {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam
     have hsum : AEStronglyMeasurable (fun P =>
         matrixContraction (C j P.time P.velocity - A P.time P.velocity) (H P))
         (volume.restrict K) := by
-      unfold matrixContraction
       exact Finset.aestronglyMeasurable_fun_sum _ fun i _ =>
         Finset.aestronglyMeasurable_fun_sum _ fun k _ =>
           (((he i k).comp_aestronglyMeasurable hCm).sub
             ((he i k).comp_aestronglyMeasurable hAm)).mul
             ((he i k).comp_aestronglyMeasurable hHm)
-    exact (continuous_abs : Continuous (abs : ℝ → ℝ)).comp_aestronglyMeasurable hsum
+    exact continuous_abs.comp_aestronglyMeasurable hsum
   have hbounds j : ∀ᵐ P ∂(volume.restrict K), borelCoefficientError (C j) A H P ≤
       2 * Real.sqrt d * Lam * borelFrobeniusNorm (H P) := by
     filter_upwards [ae_restrict_of_ae (borel_timeVelocity_ae_lift hlo),
@@ -87,16 +81,14 @@ theorem borel_inner_error {d : ℕ} {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam
     exact borel_coefficient_error_bound hlam hLam hl hh
       ((hC j).2.2.1 P.time P.velocity) ((hC j).2.2.2 P.time P.velocity) (H P)
   have hFN : ContinuousOn (fun P => borelFrobeniusNorm (H P)) K := by
-    have ht := Real.continuous_sqrt.comp_continuousOn (continuousOn_matrixContraction hH hH)
-    convert ht using 1
+    convert (Real.continuous_sqrt.comp_continuousOn (continuousOn_matrixContraction hH hH)) using 1
     funext P
-    simp only [borelFrobeniusNorm_eq,matrixContraction,pow_two,Function.comp_def]
+    simp [borelFrobeniusNorm_eq, matrixContraction, pow_two]
   obtain ⟨B,hB⟩ := hK.bddAbove_image hFN
   let M := max B 0
-  have hM : 0 ≤ M := le_max_right _ _
   have hHM P (hP : P ∈ K) : borelFrobeniusNorm (H P) ≤ M :=
     (hB (mem_image_of_mem _ hP)).trans (le_max_left _ _)
-  have hLam0 : 0 ≤ Lam := hlam.le.trans hLam
+  have hLam0 := hlam.le.trans hLam
   have hbound j : ∀ᵐ P ∂(volume.restrict K), borelCoefficientError (C j) A H P ≤
       2 * Real.sqrt d * Lam * M := by
     filter_upwards [hbounds j,ae_restrict_mem hK.measurableSet] with P hb hP
@@ -104,12 +96,11 @@ theorem borel_inner_error {d : ℕ} {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam
   have heconv : ∀ᵐ P ∂(volume.restrict K),
       Tendsto (fun j => borelCoefficientError (C j) A H P) atTop (𝓝 0) := by
     filter_upwards [ae_restrict_of_ae (borel_timeVelocity_ae_lift hc)] with P hP
-    have ht := hcontr.continuousAt.tendsto.comp
+    have ht := (continuousOn_univ.mp (continuousOn_matrixContraction continuous_fst.continuousOn continuous_snd.continuousOn)).continuousAt.tendsto.comp
       ((hP.sub_const (A P.time P.velocity)).prodMk_nhds
         (tendsto_const_nhds (x := H P)))
     have ht' := ht.abs
-    simpa only [coefficientAt,sub_self,matrixContraction,Matrix.zero_apply,
-      zero_mul,Finset.sum_const_zero,abs_zero,Function.comp_def,borelCoefficientError] using ht'
+    simpa [coefficientAt, matrixContraction, borelCoefficientError] using ht'
   refine ⟨hbounds,?_,borel_bounded_error_norm_tendsto (volume.restrict K) hp (by positivity)
     (fun j => borelCoefficientError (C j) A H) hm ?_ hbound heconv⟩
   · intro j

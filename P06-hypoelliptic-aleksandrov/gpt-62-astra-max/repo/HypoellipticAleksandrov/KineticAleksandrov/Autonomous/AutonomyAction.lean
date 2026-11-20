@@ -12,18 +12,20 @@ open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic Set MeasureTheory
 open HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 open scoped Topology
 
+variable {lam Lam : ℝ} (A : SmoothAutonomous lam Lam) (E : FullSpaceEvolution)
+    (hE : IsFullSpaceEvolution A E) (F : BoundedBorel (EvolutionAmbientState 1)) (p : Point)
+
+include E F p in
 /-- Elapsed-time kernel action, with physical state order `(X,v)`. -/
-def fullSpaceAction (E : FullSpaceEvolution) (F : BoundedBorel (EvolutionAmbientState 1))
-    (p : Point) : ℝ :=
+def fullSpaceAction : ℝ :=
   if hp : 0 ≤ p.time then
     ∫ x, F (x.2, x.1) ∂E.2.master
       (wholeSpaceQuery (-p.time) 0 (neg_nonpos.mpr hp) p.velocity p.position)
   else F (p.position, p.velocity)
 
+include hE in
 /-- The definition agrees exactly with the source kernel formula at times `0,t`. -/
-theorem fullSpaceAction_eq_zeroTime {lam Lam : ℝ} (A : SmoothAutonomous lam Lam)
-    (E : FullSpaceEvolution) (hE : IsFullSpaceEvolution A E)
-    (F : BoundedBorel (EvolutionAmbientState 1)) (p : Point) (hp : 0 ≤ p.time) :
+theorem fullSpaceAction_eq_zeroTime (hp : 0 ≤ p.time) :
     fullSpaceAction E F p = ∫ x, F (x.2, x.1) ∂E.2.master
       (wholeSpaceQuery 0 p.time hp p.velocity p.position) := by
   rw [fullSpaceAction, dite_eq_left hp]
@@ -36,6 +38,6 @@ theorem fullSpaceAction_eq_zeroTime {lam Lam : ℝ} (A : SmoothAutonomous lam La
     dsimp only [autonomousQueryShift, wholeSpaceQuery]
     congr 1 <;> ring
   rw [hq] at hk
-  exact congrArg (fun μ => ∫ x, F (x.2, x.1) ∂μ) hk.symm
+  apply_rules [congrArg]
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

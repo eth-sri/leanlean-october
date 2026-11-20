@@ -29,11 +29,9 @@ theorem admissible_test_le_of_zero_source {d : ℕ} {A : FullKineticCoefficient 
   have hsup : sSup ((fun P => max (psi P - u P) 0) '' kineticBoundary P₀ R) ≤ 0 := by
     apply csSup_le ((kineticBoundary_nonempty P₀ hR).image _)
     rintro _ ⟨P, hP, rfl⟩
-    exact max_le (sub_nonpos.mpr (hboundary P hP)) le_rfl
-  have hbounded := (isCompact_closure_backwardCylinder P₀ R hR).bddAbove_image
-    (hpsi.continuousOn.sub (hu.1.mono hQO))
+    simp_all
   intro P hP
-  have hpoint := (le_csSup hbounded (mem_image_of_mem (fun T => psi T - u T) hP)).trans
+  have hpoint := (le_csSup ((isCompact_closure_backwardCylinder P₀ R hR).bddAbove_image (hpsi.continuousOn.sub (hu.1.mono hQO))) (mem_image_of_mem (fun T => psi T - u T) hP)).trans
     (hu.2 P₀ R hR hQO psi hpsi)
   rw [hnorm, ENNReal.toReal_zero, mul_zero, add_zero] at hpoint
   exact sub_nonpos.mp (hpoint.trans hsup)

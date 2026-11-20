@@ -52,11 +52,10 @@ theorem exists_global_density {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE
       Γ.restrict (slabSet T) = ((greenLebesgue d).restrict (slabSet T)).withDensity (Gl T)) :
     ∃ G : GreenCarrier d → ℝ≥0∞, Measurable G ∧ Γ = (greenLebesgue d).withDensity G ∧
       ∀ T : ℝ, 0 < T → ∀ᵐ p ∂((greenLebesgue d).restrict (slabSet T)), G p = Gl T p := by
-  have hMfin : μ univ < ⊤ := measure_lt_top μ _
   have hslab_fin : ∀ T : ℝ, 0 < T → Γ (slabSet T) < ⊤ := fun T hT =>
-    (green_slab_le K σ₀ μ Γ hΓ hT).trans_lt (ENNReal.mul_lt_top hMfin ENNReal.ofReal_lt_top)
+    (green_slab_le K σ₀ μ Γ hΓ hT).trans_lt (ENNReal.mul_lt_top (measure_lt_top μ _) ENNReal.ofReal_lt_top)
   have hsf : SigmaFinite Γ := by
-    refine Measure.sigmaFinite_of_countable (S := Set.range fun r : ℚ => slabSet (d := d) (r : ℝ))
+    refine Measure.sigmaFinite_of_countable (S := Set.range fun r : ℚ => slabSet (d := d) r)
       (Set.countable_range _) ?_ ?_
     · rintro _ ⟨r, rfl⟩
       by_cases hr : 0 < (r : ℝ)
@@ -74,7 +73,7 @@ theorem exists_global_density {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE
       rwa [measure_toMeasurable]
     refine measure_mono_null (subset_toMeasurable (greenLebesgue d) A) ?_
     set B := toMeasurable (greenLebesgue d) A
-    have hcov : B ⊆ ⋃ r : ℚ, (B ∩ slabSet (d := d) (r : ℝ)) := by
+    have hcov : B ⊆ ⋃ r : ℚ, (B ∩ slabSet (d := d) r) := by
       intro p hp
       obtain ⟨r, -, hr⟩ := exists_rat_slab p
       exact mem_iUnion.2 ⟨r, hp, hr⟩
@@ -82,7 +81,7 @@ theorem exists_global_density {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE
     by_cases hr : 0 < (r : ℝ)
     · have h1 : (Γ.restrict (slabSet (r : ℝ))) B = 0 := by
         rw [hGl _ hr, withDensity_apply _ hA', Measure.restrict_restrict hA']
-        have : (greenLebesgue d).restrict (B ∩ slabSet (r : ℝ)) = 0 :=
+        have : (greenLebesgue d).restrict (B ∩ slabSet r) = 0 :=
           Measure.restrict_eq_zero.2 (measure_mono_null inter_subset_left h0)
         rw [this]; simp
       rwa [Measure.restrict_apply hA'] at h1
@@ -90,18 +89,16 @@ theorem exists_global_density {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE
   refine ⟨(Γ.rnDeriv (greenLebesgue d)), Measure.measurable_rnDeriv _ _,
     (Measure.withDensity_rnDeriv_eq _ _ hac).symm, ?_⟩
   intro T hT
-  have hmeas := measurableSet_slabSet (d := d) T
   have hrest : Γ.restrict (slabSet T) =
       ((greenLebesgue d).restrict (slabSet T)).withDensity (Γ.rnDeriv (greenLebesgue d)) := by
     conv_lhs => rw [← Measure.withDensity_rnDeriv_eq Γ (greenLebesgue d) hac]
-    exact restrict_withDensity hmeas _
-  have h1 := hrest.symm.trans (hGl T hT)
+    exact restrict_withDensity (measurableSet_slabSet (d := d) T) _
   have hfin : ∫⁻ p, Γ.rnDeriv (greenLebesgue d) p ∂((greenLebesgue d).restrict (slabSet T))
       ≠ ⊤ := by
     rw [← setLIntegral_univ, ← withDensity_apply _ MeasurableSet.univ, ← hrest,
       Measure.restrict_apply_univ]
     exact (hslab_fin T hT).ne
   exact (withDensity_eq_iff (Measure.measurable_rnDeriv _ _).aemeasurable
-    (hGm T hT).aemeasurable hfin).1 h1
+    (hGm T hT).aemeasurable hfin).1 (hrest.symm.trans (hGl T hT))
 
 end HypoellipticAleksandrov.KineticAleksandrov.Green

@@ -43,8 +43,8 @@ theorem positionPositiveNorm_finsetSum {X ι : Type*} [MeasurableSpace X]
   induction S using Finset.induction_on with
   | empty =>
     simp only [Finset.sum_empty, positionPositiveNorm,
-      ENNReal.zero_rpow_of_pos (by linarith : 0 < q), lintegral_zero,
-      ENNReal.zero_rpow_of_pos (one_div_pos.mpr (by linarith : 0 < q)), le_refl]
+      ENNReal.zero_rpow_of_pos (by linarith), lintegral_zero,
+      ENNReal.zero_rpow_of_pos (one_div_pos.mpr (by linarith)), le_refl]
   | @insert i S hi ih =>
     simp_rw [Finset.sum_insert hi]
     exact (positionPositiveNorm_add m q hq _ _ (hf i)
@@ -59,7 +59,7 @@ theorem positionPositiveNorm_tsum {X ι : Type*} [MeasurableSpace X] [Countable 
   classical
   have hq0 : 0 < q := by linarith
   have hm (S : Finset ι) : Measurable (fun x => (∑ i ∈ S, f i x) ^ q) :=
-    (Finset.measurable_sum S (fun i _ => hf i)).pow_const q
+    by fun_prop
   have hd : Directed (· ≤ ·) (fun S : Finset ι => fun x => (∑ i ∈ S, f i x) ^ q) := by
     intro S T
     refine ⟨S ∪ T, ?_, ?_⟩
@@ -77,6 +77,6 @@ theorem positionPositiveNorm_tsum {X ι : Type*} [MeasurableSpace X] [Countable 
       position_rpow_iSup _ (1 / q) (one_div_pos.mpr hq0)]
   rw [he]
   refine iSup_le (fun S => (positionPositiveNorm_finsetSum m q hq f hf S).trans ?_)
-  exact ENNReal.sum_le_tsum S
+  apply ENNReal.sum_le_tsum
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

@@ -38,12 +38,11 @@ theorem absolutelyContinuous_of_smooth_tests (ν μ : Measure E)
   have hcompact : ∀ K : Set E, IsCompact K → K ⊆ U → ν K = 0 → μ K = 0 := by
     intro K hK hKU hνK
     let f : E → ℝ := K.indicator (fun _ => 1)
-    have hf : Measurable f := measurable_const.indicator hK.measurableSet
     have hsupport : Function.support f ⊆ K := Set.support_indicator_subset
     have hb : ∀ x, |f x| ≤ 1 := by
       intro x
       by_cases hx : x ∈ K <;> simp [f, hx]
-    have hfp := memLp_of_bounded_compact_support (ν + μ) hf hK hsupport hb p
+    have hfp := memLp_of_bounded_compact_support (ν + μ) (measurable_const.indicator hK.measurableSet) hK hsupport hb p
     have hn : eLpNorm f p (ν.restrict U) = 0 := by
       have hnull : (ν.restrict U) K = 0 := by
         rw [Measure.restrict_apply hK.measurableSet]
@@ -52,7 +51,7 @@ theorem absolutelyContinuous_of_smooth_tests (ν μ : Measure E)
       · simp
       · have hx0 : ∀ᵐ x ∂ν.restrict U, x ∉ K := by
           rw [ae_iff]
-          simpa only [not_not, Set.ofPred_mem_eq] using hnull
+          simpa using hnull
         filter_upwards [hx0] with x hx
         simp [f, hx]
     have hi := abs_integral_le_of_smooth_tests_compact ν μ hU hp hpt hC htest

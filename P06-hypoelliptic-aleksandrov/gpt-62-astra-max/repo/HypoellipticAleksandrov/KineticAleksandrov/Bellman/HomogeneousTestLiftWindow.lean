@@ -19,8 +19,7 @@ theorem bellmanRadiusWindow_isCompact (a b : ℝ) (ha : 0 < a) :
       Icc a b := by
     ext r
     constructor
-    · rintro ⟨s, hs, rfl⟩
-      exact hs
+    · simp_all
     · intro hr
       exact ⟨⟨r, lt_of_lt_of_le ha hr.1⟩, hr, rfl⟩
   rw [he]

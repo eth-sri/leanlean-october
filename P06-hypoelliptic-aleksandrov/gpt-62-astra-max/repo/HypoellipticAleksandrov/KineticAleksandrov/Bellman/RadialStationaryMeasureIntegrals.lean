@@ -11,9 +11,10 @@ noncomputable section
 open Set MeasureTheory
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
+variable {lam Lam : ℝ} (alpha : ℝ) (pi : Measure (BellmanSphere × BellmanCoefficient lam Lam))
+
 /-- Integrating the first radial measure integrates the actual radial density before projection. -/
-theorem integral_radialMu {lam Lam : ℝ} (alpha : ℝ)
-    (pi : Measure (BellmanSphere × BellmanCoefficient lam Lam)) [IsFiniteMeasure pi]
+theorem integral_radialMu [IsFiniteMeasure pi]
     (f : BellmanPuncturedPlane → ℝ) (hf : Continuous f) :
     (∫ q, f q ∂radialMu alpha pi) =
       ∫ w : BellmanPositiveTime × (BellmanSphere × BellmanCoefficient lam Lam),
@@ -33,12 +34,10 @@ theorem integral_radialMu {lam Lam : ℝ} (alpha : ℝ)
   apply integral_congr_ae
   apply ae_of_all
   intro w
-  simp only [bellmanRadiusWeight,
-    ENNReal.toReal_ofReal (Real.rpow_nonneg w.1.property.le _), smul_eq_mul]
+  simp [bellmanRadiusWeight, ENNReal.toReal_ofReal (Real.rpow_nonneg w.1.property.le _)]
 
 /-- Integrating the second radial measure also retains the literal coefficient weight. -/
-theorem integral_radialEta {lam Lam : ℝ} (alpha : ℝ)
-    (pi : Measure (BellmanSphere × BellmanCoefficient lam Lam)) [IsFiniteMeasure pi]
+theorem integral_radialEta [IsFiniteMeasure pi]
     (f : BellmanPuncturedPlane → ℝ) (hf : Continuous f) (hlam : 0 ≤ lam) :
     (∫ q, f q ∂radialEta alpha pi) =
       ∫ w : BellmanPositiveTime × (BellmanSphere × BellmanCoefficient lam Lam),
@@ -63,7 +62,6 @@ theorem integral_radialEta {lam Lam : ℝ} (alpha : ℝ)
   apply integral_congr_ae
   apply ae_of_all
   intro w
-  simp only [bellmanRadiusWeight, ENNReal.toReal_ofReal (Real.rpow_nonneg w.1.property.le _),
-    ENNReal.toReal_ofReal (hlam.trans w.2.2.property.1), smul_eq_mul]
+  simp [bellmanRadiusWeight, ENNReal.toReal_ofReal (Real.rpow_nonneg w.1.property.le _), ENNReal.toReal_ofReal (hlam.trans w.2.2.property.1)]
 
 end HypoellipticAleksandrov.KineticAleksandrov

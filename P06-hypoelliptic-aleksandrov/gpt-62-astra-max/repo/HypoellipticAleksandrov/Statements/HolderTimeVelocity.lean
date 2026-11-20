@@ -1,8 +1,10 @@
 module
 
-public import HypoellipticAleksandrov.KineticAleksandrov.MainAssembly
-public import HypoellipticAleksandrov.KineticAleksandrov.LocalA.FinalA
-public import HypoellipticAleksandrov.KineticAleksandrov.Holder.Setting
+public import HypoellipticAleksandrov.Statements.KineticAleksandrovTimeVelocityLocalised
+public import HypoellipticAleksandrov.KineticAleksandrov.Holder.Assembly
+public import HypoellipticAleksandrov.KineticAleksandrov.Holder.ClassicalAdmissibility
+public import HypoellipticAleksandrov.KineticAleksandrov.Maximum.BorelPhaseMeasure
+public import Mathlib.Tactic
 
 /-!
 # Hölder continuity for time–velocity coefficients
@@ -37,7 +39,15 @@ theorem kinetic_holder_timeVelocity
       ∀ P ∈ K, ∀ P' ∈ K,
         |u P - u P'| ≤ C * oscillationOn u (holderNeighbourhood R₀ K) *
           (quasiDistance P P' / R₀) ^ alpha := by
-  exact HypoellipticAleksandrov.KineticAleksandrov.kinetic_holder_timeVelocity_proof
-    d hd lam Lam hlam hLam
+  let p : ℝ := 2 * (d : ℝ) + 2
+  obtain ⟨C₀, _, hest⟩ := kinetic_aleksandrov_timeVelocity_localised d hd lam Lam p hlam hLam (by dsimp [p]; linarith)
+  obtain ⟨α, C, hα, hα1, h⟩ := kinetic_holder_of_aleksandrov_aux d hd lam Lam p C₀ hlam hLam (by dsimp [p]; linarith)
+  refine ⟨α, C, hα, hα1, ?_⟩
+  intro A hA hs hL hU Ω hΩ u hb hu he
+  have hE : FullElliptic lam Lam (ofTimeVelocityCoefficient A) :=
+    ⟨hA.comp (continuous_time.prodMk continuous_velocity).measurable, fun P => hs P.time P.velocity,
+      borel_timeVelocity_ae_lift hL, borel_timeVelocity_ae_lift hU⟩
+  exact h _ hE.1 hE.2.1 hE.2.2.1 hE.2.2.2 Ω hΩ u hb
+    (admissible_of_localized_estimate hE (fun P R hR => hest P R hR A hA hs hL hU) hΩ hu he)
 
 end HypoellipticAleksandrov.KineticAleksandrov

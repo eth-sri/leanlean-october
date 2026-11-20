@@ -38,7 +38,6 @@ theorem bellmanOpenDyadicAnnulus_iUnion :
     omega
   have hr : 0 < (2 : ℝ) ^ (j - 1) := zpow_pos (by norm_num) _
   refine mem_iUnion.mpr ⟨j - 1, ?_⟩
-  change 2 ^ (j - 1) < bellmanGauge q.val ∧ bellmanGauge q.val < 4 * 2 ^ (j - 1)
   rw [bellman_dyadic_succ] at hj
   constructor <;> nlinarith only [he, hr, hj.1, hj.2]
 
@@ -46,7 +45,7 @@ theorem bellmanOpenDyadicAnnulus_iUnion :
 theorem bellmanOpenDyadicAnnulus_subset (j : ℤ) :
     bellmanOpenDyadicAnnulus j ⊆ bellmanDyadicAnnulus j ∪ bellmanDyadicAnnulus (j + 1) := by
   intro q hq
-  rcases le_or_gt (bellmanGauge q.val) (2 * (2 : ℝ) ^ j) with h | h
+  rcases le_or_gt (bellmanGauge q.val) (2 * 2 ^ j) with h | h
   · exact Or.inl ((mem_bellmanDyadicAnnulus_iff j q).mpr ⟨hq.1.le, h⟩)
   · apply Or.inr
     apply (mem_bellmanDyadicAnnulus_iff (j + 1) q).mpr
@@ -63,8 +62,7 @@ theorem bellman_degree_factor_bounded (r : ℝ) (hr : 0 < r) (a b : ℝ) :
   intro beta hbeta
   have hb : r ^ (4 - beta) ≤ max 0 M :=
     (hM (mem_image_of_mem _ hbeta)).trans (le_max_right _ _)
-  have h := ENNReal.ofReal_le_ofReal hb
-  exact h.trans_eq (ENNReal.ofReal_eq_coe_nnreal (le_max_left 0 M))
+  exact (fun {a} {b} => ENNReal.ofReal_le_coe.mpr) hb
 
 /-- Bounded homogeneous degrees and a common annular mass bound control every compact. -/
 theorem bellman_homogeneous_compact_bound (beta : ℕ → ℝ)
@@ -80,20 +78,18 @@ theorem bellman_homogeneous_compact_bound (beta : ℕ → ℝ)
   choose C hC using hf
   have hclosed (n : ℕ) (j : ℤ) : mu n (bellmanDyadicAnnulus j) ≤ C j := by
     rw [bellmanDyadicAnnulus, hd n _ _ _ bellmanUnitAnnulus_isCompact.measurableSet]
-    calc ENNReal.ofReal ((2 ^ j) ^ (4 - beta n)) * mu n bellmanUnitAnnulus
-        ≤ ENNReal.ofReal ((2 ^ j) ^ (4 - beta n)) * 1 := mul_le_mul_right (hm n) _
-      _ ≤ C j := by rw [mul_one]; exact hC j _ (hb n)
+    exact mul_le_of_le_of_le_one (hC j (beta n) (hb n)) (hm n)
   have hopen (n : ℕ) (j : ℤ) :
-      mu n (bellmanOpenDyadicAnnulus j) ≤ (C j : ℝ≥0∞) + C (j + 1) :=
+      mu n (bellmanOpenDyadicAnnulus j) ≤ (C j) + C (j + 1) :=
     (measure_mono (bellmanOpenDyadicAnnulus_subset j)).trans
       ((measure_union_le _ _).trans (add_le_add (hclosed n j) (hclosed n (j + 1))))
   obtain ⟨s, hs⟩ := hK.elim_finite_subcover bellmanOpenDyadicAnnulus
-    bellmanOpenDyadicAnnulus_isOpen (by rw [bellmanOpenDyadicAnnulus_iUnion]; exact subset_univ K)
+    bellmanOpenDyadicAnnulus_isOpen (by rw [bellmanOpenDyadicAnnulus_iUnion]; apply subset_univ)
   refine ⟨∑ j ∈ s, (C j + C (j + 1)), ?_⟩
   intro n
   calc mu n K ≤ mu n (⋃ j ∈ s, bellmanOpenDyadicAnnulus j) := measure_mono hs
     _ ≤ ∑ j ∈ s, mu n (bellmanOpenDyadicAnnulus j) := measure_biUnion_finset_le _ _
     _ ≤ ∑ j ∈ s, ((C j : ℝ≥0∞) + C (j + 1)) := Finset.sum_le_sum (fun j _ => hopen n j)
-    _ = _ := by simp only [ENNReal.ofNNReal_finsetSum, ENNReal.coe_add]
+    _ = _ := by simp
 
 end HypoellipticAleksandrov.KineticAleksandrov

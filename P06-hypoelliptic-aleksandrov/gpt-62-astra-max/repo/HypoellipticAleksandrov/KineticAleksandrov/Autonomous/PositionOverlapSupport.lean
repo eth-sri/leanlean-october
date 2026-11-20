@@ -11,8 +11,12 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory Filter
 open scoped ENNReal
 
+variable (hpush : PushforwardStatement) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    (A : SmoothAutonomous lam Lam) (c : Clock) (hc : |c.vbar| = 2 * c.r)
+include hc
+
 /-- The source centred active interval has speed bounded by `3r`. -/
-theorem positionActive_speed (c : Clock) (hc : |c.vbar| = 2 * c.r) :
+theorem positionActive_speed :
     max |c.activeInterval.lo| |c.activeInterval.hi| ≤ 3 * c.r := by
   apply max_le
   · have h := abs_sub c.vbar (3 * c.r / 4)
@@ -24,38 +28,32 @@ theorem positionActive_speed (c : Clock) (hc : |c.vbar| = 2 * c.r) :
     change |c.vbar + 3 * c.r / 4| ≤ 3 * c.r
     linarith only [h, c.positive]
 
+include hpush in
 /-- Every nonzero canonical active density value lies in its strict future finite-speed cone. -/
-theorem positionActiveDensity_support (hpush : PushforwardStatement)
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (hc : |c.vbar| = 2 * c.r)
+theorem positionActiveDensity_support
     (e : Point) (he : e.velocity 0 ∈ c.active) :
     ∀ᵐ z ∂(volume : Measure Point),
-      positionActiveDensity hH hLE hlam hLam A c e z ≠ 0 →
+      positionActiveDensity hlam hLam A c e z ≠ 0 →
         e.time < z.time ∧ z.velocity 0 ∈ c.active ∧
           |z.position 0 - e.position 0| ≤ 3 * c.r * (z.time - e.time) := by
-  have hm : Measurable (positionActiveDensity hH hLE hlam hLam A c e) :=
-    (measurable_positionActiveDensity hH hLE hlam hLam A c).comp
+  have hm : Measurable (positionActiveDensity hlam hLam A c e) :=
+    (measurable_positionActiveDensity hlam hLam A c).comp
       (measurable_const.prodMk measurable_id)
   apply (ae_withDensity_iff hm).mp
-  rw [withDensity_positionActiveDensity hpush hH hLE hlam hLam,
-    enlargedActiveGreenKernel_apply hH hLE hlam hLam A c e he]
-  obtain ⟨C, _, hd⟩ := (hpush hH hLE lam Lam hlam hLam).2 (5 / 4) (by norm_num)
+  rw [withDensity_positionActiveDensity hpush hlam hLam,
+    enlargedActiveGreenKernel_apply hlam hLam A c e he]
+  obtain ⟨C, _, hd⟩ := (hpush lam Lam hlam hLam).2 (5 / 4) (by norm_num)
   obtain ⟨G, _, _, hG, _, _⟩ := hd A c e he
-  have hS : MeasurableSet (densityClockStrip c e) :=
-    (isOpen_lt continuous_const continuous_time).measurableSet.inter
-      (isOpen_Ioo.measurableSet.preimage
-        ((continuous_apply 0).comp continuous_velocity).measurable)
-  have hmem : ∀ᵐ z ∂stripGreen hH hLE hlam hLam A c.activeInterval ⊤
+  have hmem : ∀ᵐ z ∂stripGreen hlam hLam A c.activeInterval ⊤
       (densityClockPole c e he), z ∈ densityClockStrip c e := by
     rw [hG]
-    exact (ae_restrict_mem hS).filter_mono (withDensity_absolutelyContinuous _ _).ae_le
-  have hcone : ∀ᵐ z ∂stripGreen hH hLE hlam hLam A c.activeInterval ⊤
+    exact (ae_restrict_mem ((isOpen_lt continuous_const continuous_time).measurableSet.inter (isOpen_Ioo.measurableSet.preimage ((continuous_apply 0).comp continuous_velocity).measurable))).filter_mono (withDensity_absolutelyContinuous _ _).ae_le
+  have hcone : ∀ᵐ z ∂stripGreen hlam hLam A c.activeInterval ⊤
       (densityClockPole c e he),
       |z.position 0 - e.position 0| ≤
         max |c.activeInterval.lo| |c.activeInterval.hi| * (z.time - e.time) := by
     rw [ae_iff]
-    simpa only [not_le, densityClockPole] using strip_cone hH hLE hlam hLam A c.activeInterval ⊤
+    simpa [densityClockPole] using strip_cone hlam hLam A c.activeInterval ⊤
       (densityClockPole c e he)
   filter_upwards [hmem, hcone] with z hz hcZ
   exact ⟨hz.1, hz.2, hcZ.trans

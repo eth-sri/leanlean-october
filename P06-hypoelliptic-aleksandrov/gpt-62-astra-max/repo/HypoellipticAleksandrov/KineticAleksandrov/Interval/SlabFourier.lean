@@ -30,8 +30,6 @@ theorem interval_slab_height_exponent (γ : ℝ) :
 
 /-- Uniform interval slab Fourier densities, with both killing and frequency decay. -/
 theorem interval_slab_fourier
-    (hH : HormanderHypoellipticityStatement)
-    (hLE : LiebermanEllipsoidDirichletStatement)
     (lam Lam m Lb length : ℝ) (hlam : 0 < lam) (hlamLam : lam ≤ Lam)
     (hm : 0 < m) (hmLb : m ≤ Lb) (hlength : 0 < length) :
     ∃ C : ℝ → ℝ≥0, ∃ k : ℝ, 0 < k ∧
@@ -62,30 +60,22 @@ theorem interval_slab_fourier
             ∫⁻ ξ, eLpNorm (f ξ) (ENNReal.ofReal γ) (slabBase 1 T) ≤
           (C γ : ℝ≥0∞) * μ univ *
             ENNReal.ofReal (T ^ (3 / (2 * γ) - 2) * Real.exp (-k * T)) := by
-  obtain ⟨Co, hoc⟩ := intervalExtension_occupation hH hLE lam Lam hlam hlamLam
-  obtain ⟨Cd, kd, hCd, hkd, hdec⟩ := intervalExtension_fourier_decay hH hLE
+  obtain ⟨Co, hoc⟩ := intervalExtension_occupation lam Lam hlam hlamLam
+  obtain ⟨Cd, kd, hCd, hkd, hdec⟩ := intervalExtension_fourier_decay
     lam Lam m Lb length hlam hlamLam hm hmLb hlength
   refine ⟨slabConstant' 1 Co Cd kd, kd / 2, div_pos hkd (by norm_num), ?_⟩
   intro a c hac B b hs hJ S K hr hlen σ T hT μ _ Γ hΓ
   let Kw := intervalExtension hJ K
   let μw := μ.map (intervalStateInclusion σ)
-  have hc : IsTranslationCovariantEvolution (wholeSpace 1) (fun _ => (0 : PDE.Vec 1))
-      MeasurableSet.univ Kw := intervalExtension_covariance hJ K
-    (interval_evolution_clauses hH hLE hac B b hs hJ S K hr).2.2
-  have hcomp : Kw.HasComposition MeasurableSet.univ :=
-    intervalExtension_composition hJ K hr.2.2.2
-  have hΓw := intervalExtension_isGreenMeasure hJ K σ μ Γ hΓ
   obtain ⟨g, hgm, hgE, hgb, f, hfm, hfE, hfb⟩ := killed_slab_fourier_of_bounds
-    (by norm_num) Kw hc hcomp Co (hoc m Lb hm hmLb a c hac B b hs hJ S K hr)
-    Cd kd hCd hkd (hdec a c hac B b hs hJ S K hr hlen) σ μw Γ hΓw hT
+    (by norm_num) Kw (intervalExtension_covariance hJ K (interval_evolution_clauses hac B b hs hJ S K hr).2.2) (intervalExtension_composition hJ K hr.2.2.2) Co (hoc m Lb hm hmLb a c hac B b hs hJ S K hr)
+    Cd kd hCd hkd (hdec a c hac B b hs hJ S K hr hlen) σ μw Γ (intervalExtension_isGreenMeasure hJ K σ μ Γ hΓ) hT
   have hM : μw univ = μ univ := by
-    dsimp only [μw]
     rw [Measure.map_apply (measurable_intervalStateInclusion σ) MeasurableSet.univ,
       preimage_univ]
   refine ⟨g, hgm, hgE, ?_, f, hfm, hfE, ?_⟩
   · intro γ hγ1 hγ2
-    have h := hgb γ hγ1 (by norm_num [slabGamma0]; exact hγ2)
-    simpa only [hM, interval_slab_beta] using h
+    simpa only [hM, interval_slab_beta] using (hgb γ hγ1 (by norm_num [slabGamma0]; exact hγ2))
   · intro γ hγ1 hγ2
     obtain ⟨hf, hfreq⟩ := hfb γ hγ1 (by norm_num [slabGamma0]; exact hγ2)
     constructor

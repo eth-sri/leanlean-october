@@ -23,10 +23,9 @@ theorem bellman_density_le_of_measure_le (f h : ℝ → ℝ)
       (fun x => ENNReal.ofReal (h x)) := by
     apply ae_le_of_forall_setLIntegral_le_of_sigmaFinite hmf.ennreal_ofReal
     intro s hs _
-    simpa only [← withDensity_apply _ hs] using hm s
+    simpa [← withDensity_apply _ hs] using hm s
   filter_upwards [he, hnf, hnh] with x hx hfx hhx
-  have ht := ENNReal.toReal_mono (by simp) hx
-  simpa only [ENNReal.toReal_ofReal hfx, ENNReal.toReal_ofReal hhx] using ht
+  aesop
 
 /-- The Radon–Nikodym representative is an actual density of an absolutely continuous Radon
 measure. -/
@@ -47,7 +46,7 @@ theorem bellmanMeasurePrimitive_eq_rnMoment (F : Measure ℝ) [IsFiniteMeasureOn
     bellmanMeasurePrimitive F g 0 y =
       ∫ z in 0..y, g z * (F.rnDeriv volume z).toReal := by
   dsimp [bellmanMeasurePrimitive]
-  rcases le_total (0 : ℝ) y with hy | hy
+  rcases le_total 0 y with hy | hy
   · rw [intervalIntegral.integral_of_le hy, intervalIntegral.integral_of_le hy]
     rw [show (fun z => g z * (F.rnDeriv volume z).toReal) =
       (fun z => (F.rnDeriv volume z).toReal * g z) by funext z; ring]

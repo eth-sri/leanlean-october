@@ -30,7 +30,7 @@ theorem vecEuclideanNorm_deriv_le {d : ℕ} {v : ℝ → PDE.Vec d} {H : ℝ}
       rw [← map_sub, Real.norm_eq_abs]
       change ‖(v t - v s).toHilbertVec‖ ≤ H * |t - s|
       rw [← PDE.Vec.vecEuclideanNorm_eq_norm_toHilbertVec]
-      exact hLip t s
+      apply hLip
   have hnorm := norm_deriv_le_of_lip' hH hb
   rw [he.deriv] at hnorm
   rw [PDE.Vec.vecEuclideanNorm_eq_norm_toHilbertVec]
@@ -40,19 +40,15 @@ theorem vecEuclideanNorm_deriv_le {d : ℕ} {v : ℝ → PDE.Vec d} {H : ℝ}
 theorem acceleration_young {d : ℕ} {lam H : ℝ} (hlam : 0 < lam)
     (a p : PDE.Vec d) (ha : PDE.vecEuclideanNorm a ≤ H) :
     2 * PDE.vecDot a p ≤ (3 * lam / 2) * PDE.vecNormSq p + 2 * H ^ 2 / (3 * lam) := by
-  have hdot := (le_abs_self (PDE.vecDot a p)).trans
-    ((PDE.abs_vecDot_le_vecEuclideanNorm_mul a p).trans
-      (mul_le_mul_of_nonneg_right ha (PDE.vecEuclideanNorm_nonneg p)))
-  have hr := PDE.vecEuclideanNorm_sq p
   have hden : 0 < 3 * lam := by positivity
   have hy : 2 * H * PDE.vecEuclideanNorm p ≤
       (3 * lam / 2) * PDE.vecNormSq p + 2 * H ^ 2 / (3 * lam) := by
     apply (mul_le_mul_iff_right₀ hden).mp
     have hcancel : (3 * lam) * (2 * H ^ 2 / (3 * lam)) = 2 * H ^ 2 := by
       field_simp
-    rw [mul_add, hcancel, ← hr]
+    rw [mul_add, hcancel, ← (PDE.vecEuclideanNorm_sq p)]
     nlinarith only [sq_nonneg (3 * lam * PDE.vecEuclideanNorm p - 2 * H)]
-  exact (mul_le_mul_of_nonneg_left hdot (by norm_num)).trans (by
-    simpa only [mul_assoc] using hy)
+  exact (mul_le_mul_of_nonneg_left ((le_abs_self (PDE.vecDot a p)).trans ((PDE.abs_vecDot_le_vecEuclideanNorm_mul a p).trans (mul_le_mul_of_nonneg_right ha (PDE.vecEuclideanNorm_nonneg p)))) (by norm_num)).trans (by
+    simpa [mul_assoc] using hy)
 
 end HypoellipticAleksandrov.KineticAleksandrov.Holder

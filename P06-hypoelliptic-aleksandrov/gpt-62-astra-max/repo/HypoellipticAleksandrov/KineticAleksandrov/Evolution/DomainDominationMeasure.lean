@@ -65,7 +65,7 @@ theorem measure_le_of_smooth_integral_le {U : Set E} (hU : IsOpen U) {ν μ : Me
     refine iSup_le fun K => iSup_le fun hKV => iSup_le fun hK => ?_
     obtain ⟨f, hfs, hfc, hfV, hf01, hfK⟩ := exists_smooth_bump_of_isCompact_subset_isOpen hK hV hKV
     have hcont : Continuous f := hfs.continuous
-    have hnn : ∀ x, 0 ≤ f x := fun x => (hf01 x).1
+    have hnn := fun x => (hf01 x).1
     have hint_ν : Integrable f ν := hcont.integrable_of_hasCompactSupport hfc
     have hint_μ : Integrable f μ := hcont.integrable_of_hasCompactSupport hfc
     have hle := h f hfs hfc (hfV.trans hVU) hnn
@@ -98,10 +98,7 @@ theorem measure_le_of_smooth_integral_le {U : Set E} (hU : IsOpen U) {ν μ : Me
     by_contra hlt
     rw [not_le] at hlt
     obtain ⟨W, hAW, hW, hμW⟩ := Set.exists_isOpen_lt_of_lt (A ∩ U) _ hlt
-    have h1 : ν (A ∩ U) ≤ ν (W ∩ U) := measure_mono (subset_inter hAW inter_subset_right)
-    have h2 : ν (W ∩ U) ≤ μ (W ∩ U) := hopen _ (hW.inter hU) inter_subset_right
-    have h3 : μ (W ∩ U) ≤ μ W := measure_mono inter_subset_left
-    exact absurd (h1.trans (h2.trans h3)) (not_le.2 hμW)
+    exact absurd ((measure_mono (subset_inter hAW inter_subset_right)).trans ((hopen _ (hW.inter hU) inter_subset_right).trans (measure_mono inter_subset_left))) (not_le.2 hμW)
   rw [hνA]
   exact hmain.trans (measure_mono inter_subset_left)
 

@@ -22,7 +22,6 @@ open scoped ProbabilityTheory
 /-- Integration skeleton for the terminal evolution; the composition identity and the joint
 measurability of the master kernel remain explicit premises. -/
 theorem exists_terminalEvolution_aux
-    (hLE : LiebermanEllipsoidDirichletStatement) (hH : HormanderHypoellipticityStatement)
     (hComp : ∀
     (n : ℕ) (hn : 1 ≤ n)
     (lam Lam m L_b : ℝ)
@@ -41,7 +40,7 @@ theorem exists_terminalEvolution_aux
     (hb_lipschitz : HasEuclideanLipschitzDrift L_b b)
     (hb_coercive : HasUnitDirectionDriftCoercivity m b),
       let hEx := classicalTerminalExistence_holds n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
-        hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hLE hH
+        hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive
       let T := terminalOperators n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
         hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx
       ∀ (σ r τ : ℝ) (hσr : σ ≤ r) (hrτ : r ≤ τ),
@@ -64,7 +63,7 @@ theorem exists_terminalEvolution_aux
     (hb_lipschitz : HasEuclideanLipschitzDrift L_b b)
     (hb_coercive : HasUnitDirectionDriftCoercivity m b),
       let hEx := classicalTerminalExistence_holds n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
-        hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hLE hH
+        hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive
       let T := terminalFiberKernel n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
         hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx
       ∀ (σ r τ : ℝ) (hσr : σ ≤ r) (hrτ : r ≤ τ),
@@ -87,17 +86,15 @@ theorem exists_terminalEvolution_aux
     (hb_lipschitz : HasEuclideanLipschitzDrift L_b b)
     (hb_coercive : HasUnitDirectionDriftCoercivity m b),
       let hEx := classicalTerminalExistence_holds n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
-        hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hLE hH
+        hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive
       Measurable (fun q : EvolutionQuery Ω γ =>
         terminalMeasure n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
           hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx q)) :
     SectionTwo.TerminalEvolutionConclusion := by
   intro n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
     hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive
-  let hEx := classicalTerminalExistence_holds n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
-    hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hLE hH
   exact construction_terminalEvolution_assembly n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
-    hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx hH
+    hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive (classicalTerminalExistence_holds n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive)
     (hComp n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
       hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive)
     (hKComp n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
@@ -110,26 +107,17 @@ only to classical Dirichlet solvability on ellipsoids (Lieberman, Theorem 5.14) 
 Hörmander's hypoellipticity theorem. All intermediate existence, composition and
 joint-measurability premises are discharged by proved results. -/
 theorem exists_terminalEvolution_of_classical
-    (hLE : LiebermanEllipsoidDirichletStatement) (hH : HormanderHypoellipticityStatement) :
+    :
     SectionTwo.TerminalEvolutionConclusion := by
-  apply exists_terminalEvolution_aux hLE hH
+  apply exists_terminalEvolution_aux
   · intro n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
       hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive
-    exact terminalOperators_comp n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
-      hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive
-      (classicalTerminalExistence_holds n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
-        hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hLE hH)
+    apply terminalOperators_comp
   · intro n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
       hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive
-    exact terminalFiberKernel_comp n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
-      hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive
-      (classicalTerminalExistence_holds n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
-        hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hLE hH)
+    apply terminalFiberKernel_comp
   · intro n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
       hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive
-    exact measurable_terminalMeasure n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
-      hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive
-      (classicalTerminalExistence_holds n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
-        hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hLE hH)
+    apply measurable_terminalMeasure
 
 end HypoellipticAleksandrov.KineticAleksandrov

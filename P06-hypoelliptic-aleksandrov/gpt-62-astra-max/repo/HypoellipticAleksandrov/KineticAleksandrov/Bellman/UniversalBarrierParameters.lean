@@ -19,7 +19,7 @@ theorem bellman_barrier_parameter_range (lam Lam : ℝ) (hlam : 0 < lam)
       bellmanAdjointExponent (Lam / lam)
         (by apply (le_div_iff₀ hlam).2; simpa only [one_mul] using hLam) < 2 + alpha := by
   have ht := bellmanAdjointExponent_two_le (Lam / lam)
-    (by apply (le_div_iff₀ hlam).2; simpa only [one_mul] using hLam)
+    (by apply (le_div_iff₀ hlam).2; simpa using hLam)
   exact ⟨by linarith, ha1, by linarith⟩
 
 end HypoellipticAleksandrov.KineticAleksandrov

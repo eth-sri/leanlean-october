@@ -25,7 +25,7 @@ theorem exists_disjoint_cylinder_selection {d : ℕ} {ι : Type*}
       u.PairwiseDisjoint (fun i => backwardCylinder (P i) (r i)) ∧
       (⋃ i ∈ t, backwardCylinder (P i) (r i)) ⊆
         ⋃ i ∈ u, inflatedCylinder (P i) (r i) 8 := by
-  let : SecondCountableTopology (KineticPoint d) :=
+  let :=
     (KineticPoint.homeomorphProd d).secondCountableTopology
   obtain ⟨u, hut, hdisj, hcover⟩ :=
     Vitali.exists_disjoint_subfamily_covering_enlargement
@@ -33,7 +33,7 @@ theorem exists_disjoint_cylinder_selection {d : ℕ} {ι : Type*}
       (fun i hi => (hr i hi).le) R hR (fun i hi => cylinder_nonempty (P i) (hr i hi))
   have hcount : u.Countable := hdisj.countable_of_nonempty_interior fun i hi => by
     rw [(isOpen_cylinder (P i) (r i)).interior_eq]
-    exact cylinder_nonempty (P i) (hr i (hut hi))
+    apply_rules [cylinder_nonempty]
   refine ⟨u, hut, hcount, hdisj, ?_⟩
   intro X hX
   obtain ⟨i, hi, hXi⟩ := mem_iUnion₂.mp hX

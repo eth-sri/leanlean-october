@@ -26,18 +26,15 @@ theorem positionStartQuadratic_operator_bound {lam Lam : ℝ}
   intro A c Y p hc hv
   have hr := c.positive
   let chi := positionStartCutoff Y c.r c.positive
-  have hchi := (positionStartCutoff_properties Y c.r c.positive).1
   have h01 := (positionStartCutoff_properties Y c.r c.positive).2 (p.position 0)
   have hq0 := visitQuadratic_nonneg c (subset_closure hv)
   have hq := visitQuadratic_le c (p.velocity 0)
   have hva : |p.velocity 0| ≤ 3 * c.r := by
-    have hh := (c.active_abs_bounds hv).2
-    rw [hc] at hh
-    linarith only [hh]
+    linarith [(c.active_abs_bounds hv).2]
   have ha0 : 0 ≤ A.a (p.position 0) (p.velocity 0) :=
     hlam.le.trans (A.bounds _ _).1
   have ha := (A.bounds (p.position 0) (p.velocity 0)).2
-  rw [positionStartQuadratic_operator c chi hchi]
+  rw [positionStartQuadratic_operator c chi ((positionStartCutoff_properties Y c.r c.positive).1)]
   by_cases hp : (p.position 0, p.velocity 0) ∈ box 4 c.r Y
   · rw [indicator_of_mem hp, mul_one]
     apply (abs_sub _ _).trans
@@ -65,12 +62,10 @@ theorem positionStartQuadratic_operator_bound {lam Lam : ℝ}
       intro hx
       have hh := positionStartCutoff_tsupport Y c.r c.positive hx
       apply hp
-      change |p.position 0 - Y| ≤ 4 * c.r ^ 3 ∧ |p.velocity 0| ≤ 4 * c.r
       constructor
-      · apply abs_le.mpr
-        constructor <;> linarith [hh.1, hh.2, pow_pos c.positive 3]
+      · grind
       · linarith [c.positive]
     rw [image_eq_zero_of_notMem_tsupport hnot, deriv_of_notMem_tsupport hnot]
-    simp only [mul_zero, zero_mul, sub_zero, abs_zero, le_refl]
+    simp
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

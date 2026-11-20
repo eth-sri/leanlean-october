@@ -34,13 +34,10 @@ theorem measurable_scaledUnitCutoff_backwardOperator {d : ℕ}
     apply Finset.measurable_sum
     intro i _
     apply Finset.measurable_sum
-    intro j _
-    exact ((measurable_pi_apply j).comp ((measurable_pi_apply i).comp hA)).mul
-      ((measurable_pi_apply j).comp ((measurable_pi_apply i).comp hH))
-  have h := (measurable_const (a := ell * (R ^ 2)⁻¹)).mul (hT.sub hC)
-  convert h using 1
+    fun_prop
+  convert ((measurable_const (a := ell * (R ^ 2)⁻¹)).mul (hT.sub hC)) using 1
   funext P
-  exact scaledUnitCutoff_backwardOperator hf A P₀ P R ell
+  apply scaledUnitCutoff_backwardOperator <;> assumption
 
 /-- Smooth tests with a measurable operator have measurable localized sources on open sets. -/
 theorem localizedSource_aestronglyMeasurable {d : ℕ} (A : FullKineticCoefficient d)
@@ -49,7 +46,7 @@ theorem localizedSource_aestronglyMeasurable {d : ℕ} (A : FullKineticCoefficie
     (hop : Measurable (backwardOperator A psi)) :
     AEStronglyMeasurable (localizedSource A psi u) (volume.restrict Q) := by
   have hE : MeasurableSet (Q ∩ {P | u P < psi P}) := by
-    simpa only [Set.preimage, mem_Ioi, Pi.sub_apply, sub_pos] using
+    simpa [Set.preimage] using
       ((hpsi.sub hu).isOpen_inter_preimage hQ (isOpen_Ioi (a := 0))).measurableSet
   have hm : AEStronglyMeasurable
       ((Q ∩ {P | u P < psi P}).indicator
@@ -57,6 +54,6 @@ theorem localizedSource_aestronglyMeasurable {d : ℕ} (A : FullKineticCoefficie
     ((hop.max measurable_const).aestronglyMeasurable).indicator hE
   apply hm.restrict.congr
   filter_upwards [ae_restrict_mem hQ.measurableSet] with P hP
-  simp only [localizedSource, indicator, mem_inter_iff, mem_ofPred_eq, hP, true_and]
+  simp [localizedSource, indicator, mem_inter_iff, mem_ofPred_eq, hP]
 
 end HypoellipticAleksandrov.KineticAleksandrov.Holder

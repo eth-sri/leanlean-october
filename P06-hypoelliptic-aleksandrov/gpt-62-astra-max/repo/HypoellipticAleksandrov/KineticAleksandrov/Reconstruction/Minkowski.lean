@@ -36,7 +36,6 @@ lemma minkowski_aux [SFinite m] [SFinite ν] {p : ℝ} (hp : 1 < p) {F : α → 
   set B := ∫⁻ ξ, (∫⁻ y, F y ξ ^ p ∂m) ^ (1 / p) ∂ν with hBdef
   have hq := Real.HolderConjugate.conjExponent hp
   set q := p.conjExponent with hqdef
-  have hp0 : 0 < p := by linarith
   have hq0 : 0 < q := hq.symm.pos
   have hpq : 1 / p + 1 / q = 1 := by simpa using hq.inv_add_inv_eq_one
   have hq1 : p - 1 = p / q := by
@@ -81,9 +80,7 @@ lemma minkowski_aux [SFinite m] [SFinite ν] {p : ℝ} (hp : 1 < p) {F : α → 
     have hsplit : A = A ^ (1 / q) * A ^ (1 / p) := by
       rw [← ENNReal.rpow_add_of_nonneg _ _ hq'.le (by positivity), add_comm, hpq,
         ENNReal.rpow_one]
-    have hne0 : A ^ (1 / q) ≠ 0 := (ENNReal.rpow_pos (pos_iff_ne_zero.2 hA0) hA).ne'
-    have hneT : A ^ (1 / q) ≠ ∞ := ENNReal.rpow_ne_top_of_nonneg hq'.le hA
-    rw [← ENNReal.mul_le_mul_iff_right hne0 hneT]
+    rw [← ENNReal.mul_le_mul_iff_right ((ENNReal.rpow_pos (pos_iff_ne_zero.2 hA0) hA).ne') (ENNReal.rpow_ne_top_of_nonneg hq'.le hA)]
     calc A ^ (1 / q) * A ^ (1 / p) = A := hsplit.symm
       _ ≤ _ := key
 
@@ -143,14 +140,12 @@ lemma iSup_trunc (y : α) (ξ : β) : ⨆ n, trunc m ν F n y ξ = F y ξ := by
 lemma lintegral_trunc_ne_top {p : ℝ} (hp : 0 < p) (n : ℕ) :
     ∫⁻ y, (∫⁻ ξ, trunc m ν F n y ξ ∂ν) ^ p ∂m ≠ ∞ := by
   set c : ℝ≥0∞ := n * ν (spanningSets ν n) with hc
-  have hcT : c ≠ ∞ :=
-    ENNReal.mul_ne_top (ENNReal.natCast_ne_top n) (measure_spanningSets_lt_top ν n).ne
   have hI : ∀ y, ∫⁻ ξ, trunc m ν F n y ξ ∂ν ≤ (spanningSets m n).indicator (fun _ => c) y := by
     intro y
     by_cases hy : y ∈ spanningSets m n
     · rw [Set.indicator_of_mem hy]
       calc ∫⁻ ξ, trunc m ν F n y ξ ∂ν
-          ≤ ∫⁻ ξ, (spanningSets ν n).indicator (fun _ => (n : ℝ≥0∞)) ξ ∂ν := by
+          ≤ ∫⁻ ξ, (spanningSets ν n).indicator (fun _ => n) ξ ∂ν := by
             refine lintegral_mono fun ξ => ?_
             unfold trunc
             by_cases hξ : ξ ∈ spanningSets ν n
@@ -167,7 +162,7 @@ lemma lintegral_trunc_ne_top {p : ℝ} (hp : 0 < p) (n : ℕ) :
       simp [this]
   refine ne_top_of_le_ne_top (b := ∫⁻ y, (spanningSets m n).indicator (fun _ => c ^ p) y ∂m) ?_ ?_
   · rw [lintegral_indicator_const (measurableSet_spanningSets m n)]
-    exact ENNReal.mul_ne_top (ENNReal.rpow_ne_top_of_nonneg hp.le hcT)
+    exact ENNReal.mul_ne_top (ENNReal.rpow_ne_top_of_nonneg hp.le (ENNReal.mul_ne_top (ENNReal.natCast_ne_top n) (measure_spanningSets_lt_top ν n).ne))
       (measure_spanningSets_lt_top m n).ne
   · refine lintegral_mono fun y => ?_
     refine (ENNReal.rpow_le_rpow (hI y) hp.le).trans ?_
@@ -188,12 +183,11 @@ theorem minkowski_integral [SigmaFinite m] [SigmaFinite ν] {p : ℝ} (hp : 1 < 
   have hGm := measurable_trunc (m := m) (ν := ν) hF
   have hn : ∀ n, ∫⁻ y, (∫⁻ ξ, trunc m ν F n y ξ ∂ν) ^ p ∂m ≤ B ^ p := by
     intro n
-    have h1 := minkowski_aux (m := m) (ν := ν) hp (hGm n) (lintegral_trunc_ne_top hp0 n)
     have h2 : ∫⁻ ξ, (∫⁻ y, trunc m ν F n y ξ ^ p ∂m) ^ (1 / p) ∂ν ≤ B := by
       refine lintegral_mono fun ξ => ?_
       refine ENNReal.rpow_le_rpow (lintegral_mono fun y => ?_) (by positivity)
       exact ENNReal.rpow_le_rpow (trunc_le n y ξ) hp0.le
-    have h3 := ENNReal.rpow_le_rpow (h1.trans h2) hp0.le
+    have h3 := ENNReal.rpow_le_rpow ((minkowski_aux (m := m) (ν := ν) hp (hGm n) (lintegral_trunc_ne_top hp0 n)).trans h2) hp0.le
     rwa [← ENNReal.rpow_mul, one_div, inv_mul_cancel₀ hp0.ne', ENNReal.rpow_one] at h3
   have hI : ∀ y, ⨆ n, ∫⁻ ξ, trunc m ν F n y ξ ∂ν = ∫⁻ ξ, F y ξ ∂ν := by
     intro y
@@ -204,8 +198,6 @@ theorem minkowski_integral [SigmaFinite m] [SigmaFinite ν] {p : ℝ} (hp : 1 < 
     exact lintegral_congr fun ξ => iSup_trunc y ξ
   have hA : ∫⁻ y, (∫⁻ ξ, F y ξ ∂ν) ^ p ∂m =
       ⨆ n, ∫⁻ y, (∫⁻ ξ, trunc m ν F n y ξ ∂ν) ^ p ∂m := by
-    have hmono : ∀ y, Monotone fun n => ∫⁻ ξ, trunc m ν F n y ξ ∂ν :=
-      fun y a b hab => lintegral_mono fun ξ => trunc_mono y ξ hab
     rw [← lintegral_iSup]
     · refine lintegral_congr fun y => ?_
       rw [← hI y]

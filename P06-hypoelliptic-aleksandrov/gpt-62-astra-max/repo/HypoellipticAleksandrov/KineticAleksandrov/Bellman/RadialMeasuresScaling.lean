@@ -10,8 +10,10 @@ noncomputable section
 open MeasureTheory Set
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
+variable (alpha r : ℝ) (hr : 0 < r)
+
 /-- Inverse radius scaling gives the exact inverse homogeneous weight. -/
-theorem bellmanRadiusWeight_inverse_scale (alpha r : ℝ) (hr : 0 < r)
+theorem bellmanRadiusWeight_inverse_scale
     (s : BellmanPositiveTime) :
     bellmanRadiusWeight alpha ((bellmanRadialScale r hr).symm s) =
       ENNReal.ofReal (r ^ (alpha - 1)) * bellmanRadiusWeight alpha s := by
@@ -20,13 +22,12 @@ theorem bellmanRadiusWeight_inverse_scale (alpha r : ℝ) (hr : 0 < r)
     ENNReal.ofReal_mul (Real.rpow_nonneg (inv_nonneg.mpr hr.le) _)]
   have he : (r⁻¹) ^ (1 - alpha) = r ^ (alpha - 1) := by
     rw [← Real.rpow_neg_eq_inv_rpow]
-    congr 1
     ring
   rw [he]
   rfl
 
 /-- The radial pushforward factor is the degree-two-plus-alpha adjoint factor. -/
-theorem map_bellmanRadiusMeasure_radialScale (alpha r : ℝ) (hr : 0 < r) :
+theorem map_bellmanRadiusMeasure_radialScale :
     Measure.map (bellmanRadialScale r hr) (bellmanRadiusMeasure alpha) =
       ENNReal.ofReal (r ^ (alpha - 2)) • bellmanRadiusMeasure alpha := by
   unfold bellmanRadiusMeasure

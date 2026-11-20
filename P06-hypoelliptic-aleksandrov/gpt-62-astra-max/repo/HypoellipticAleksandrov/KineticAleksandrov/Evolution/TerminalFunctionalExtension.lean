@@ -40,13 +40,18 @@ def ccToBcfLinear : C_c(X, ℝ) →ₗ[ℝ] (X →ᵇ ℝ) where
 def ccSupSeminorm : Seminorm ℝ C_c(X, ℝ) :=
   (normSeminorm ℝ (X →ᵇ ℝ)).comp ccToBcfLinear
 
+section
+variable (f : C_c(X, ℝ))
+
 /-- A compactly supported function is pointwise bounded by its sup seminorm. -/
-theorem abs_apply_le_ccSupSeminorm (f : C_c(X, ℝ)) (x : X) : |f x| ≤ ccSupSeminorm f :=
+theorem abs_apply_le_ccSupSeminorm (x : X) : |f x| ≤ ccSupSeminorm f :=
   BoundedContinuousFunction.norm_coe_le_norm (f.toBoundedContinuousFunction) x
 
 /-- The sup seminorm is nonnegative. -/
-theorem ccSupSeminorm_nonneg (f : C_c(X, ℝ)) : 0 ≤ ccSupSeminorm f :=
+theorem ccSupSeminorm_nonneg : 0 ≤ ccSupSeminorm f :=
   norm_nonneg (f.toBoundedContinuousFunction)
+
+end
 
 /-- A uniform bound dominates the sup seminorm. -/
 theorem ccSupSeminorm_le {f : C_c(X, ℝ)} {c : ℝ} (hc : 0 ≤ c) (h : ∀ x, |f x| ≤ c) :
@@ -66,9 +71,9 @@ theorem eq_of_bounded_of_dense {P : Type*} (T : P → C_c(X, ℝ))
     intro ε hε
     obtain ⟨F, hF⟩ := hdense f ε hε
     have e₁ := h₁ (f - T F) ε hε.le (fun x => by
-      rw [CompactlySupportedContinuousMap.sub_apply, abs_sub_comm]; exact hF x)
+      rw [CompactlySupportedContinuousMap.sub_apply, abs_sub_comm]; apply hF)
     have e₂ := h₂ (f - T F) ε hε.le (fun x => by
-      rw [CompactlySupportedContinuousMap.sub_apply, abs_sub_comm]; exact hF x)
+      rw [CompactlySupportedContinuousMap.sub_apply, abs_sub_comm]; apply hF)
     have hsub : ℓ₁ f - ℓ₂ f = ℓ₁ (f - T F) - ℓ₂ (f - T F) := by
       rw [map_sub, map_sub, hagree F]; ring
     rw [hsub]
@@ -76,10 +81,8 @@ theorem eq_of_bounded_of_dense {P : Type*} (T : P → C_c(X, ℝ))
       _ ≤ 2 * ε := by linarith
   have : |ℓ₁ f - ℓ₂ f| ≤ 0 := by
     refine le_of_forall_pos_le_add fun ε hε => ?_
-    have := key (ε / 2) (half_pos hε)
-    linarith
-  have h0 : ℓ₁ f - ℓ₂ f = 0 := abs_nonpos_iff.mp this
-  linarith
+    linarith [key (ε / 2) (half_pos hε)]
+  linarith [abs_nonpos_iff.mp this]
 
 /-- Positive extension from a dense probe family closed under squaring. -/
 theorem exists_positive_extension_of_dense {P : Type*} [AddCommGroup P] [Module ℝ P]
@@ -136,7 +139,7 @@ theorem exists_positive_extension_of_dense {P : Type*} [AddCommGroup P] [Module 
     have hGx : ∀ x, T G x = T F x * T F x := fun x => by rw [hG]; rfl
     have hbound : ∀ x, |f x - T G x| ≤ δ * (2 * M + 1) := by
       intro x
-      have h1 : |T F x - k x| ≤ δ := hF x
+      have h1 := hF x
       have h2 : |k x| ≤ M := abs_apply_le_ccSupSeminorm k x
       have h3 : |T F x + k x| ≤ 2 * M + 1 := by
         have : T F x + k x = (T F x - k x) + 2 * k x := by ring
@@ -149,15 +152,14 @@ theorem exists_positive_extension_of_dense {P : Type*} [AddCommGroup P] [Module 
       rw [h4, abs_mul, abs_sub_comm, add_comm]
       exact mul_le_mul h1 h3 (abs_nonneg _) hδ0.le
     have hgGp : 0 ≤ g (T G) := by
-      rw [hgT]; exact hpos G (fun x => by rw [hGx]; exact mul_self_nonneg _)
+      rw [hgT]; exact hpos G (fun x => by rw [hGx]; apply mul_self_nonneg)
     have hrest' : |g (f - T G)| ≤ ε :=
       (hgbd (f - T G) (δ * (2 * M + 1)) (by positivity) (fun x => by
-        rw [CompactlySupportedContinuousMap.sub_apply]; exact hbound x)).trans hδε
-    have hsplit : g f = g (T G) + g (f - T G) := by rw [← map_add]; congr 1; abel
-    have hneg : -ε ≤ g (f - T G) := (neg_le_neg hrest').trans (neg_abs_le _)
-    linarith
+        apply hbound)).trans hδε
+    have hsplit : g f = g (T G) + g (f - T G) := by simp
+    linarith [(neg_le_neg hrest').trans (neg_abs_le _)]
   have hnn : ∀ f : C_c(X, ℝ), 0 ≤ f → 0 ≤ g f := fun f hf =>
-    hgpos f (fun x => by simpa using (CompactlySupportedContinuousMap.le_def.1 hf) x)
+    hgpos f (fun x => by exact (CompactlySupportedContinuousMap.le_def.1 hf) x)
   exact ⟨PositiveLinearMap.mk₀ g hnn, hgbd, hgT⟩
 
 end HypoellipticAleksandrov.KineticAleksandrov

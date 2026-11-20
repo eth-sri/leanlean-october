@@ -20,8 +20,7 @@ open scoped Topology ENNReal MatrixOrder Matrix.Norms.Elementwise
 theorem ae_spatial_lift {d : ℕ} {P : XV d → Prop} (hP : ∀ᵐ q ∂volume, P q) :
     ∀ᵐ z : KineticPoint d ∂volume, P (z.position, z.velocity) := by
   have hs : Measure.QuasiMeasurePreserving Prod.snd
-      (volume : Measure (ℝ × XV d)) (volume : Measure (XV d)) := by
-    rw [Measure.volume_eq_prod]
+      (volume : Measure (ℝ × XV d)) volume := by
     exact Measure.quasiMeasurePreserving_snd
   exact (hs.comp (KineticPoint.measurePreserving_equivProd d).quasiMeasurePreserving).ae hP
 
@@ -40,12 +39,10 @@ theorem smooth_coefficient_error_tendsto {d : ℕ}
         A (P.position, P.velocity)) (kineticVelocityHessian u P))
       p (volume.restrict (backwardCylinder P₀ R))) atTop (𝓝 0) := by
   let C := 3 * (|lam| + |Lam|)
-  have hC : 0 ≤ C := by dsimp [C]; positivity
   obtain ⟨M, hM, hH⟩ := kineticVelocityHessian_bound_on_cylinder P₀ R hR u hu
   have hcv := continuous_kineticVelocityHessian_of_joint_smooth u hu
   have hsp : Continuous (fun P : KineticPoint d => (P.position, P.velocity)) :=
     continuous_position.prodMk continuous_velocity
-  have hqmeas := (isOpen_backwardCylinder P₀ R hR).measurableSet
   let : IsFiniteMeasure (volume.restrict (backwardCylinder P₀ R)) :=
     ⟨by rw [Measure.restrict_apply_univ]; exact backwardCylinder_volume_lt_top P₀ R hR⟩
   have hs n := smooth_coefficients_same_bounds (standardMollifierSequence n)
@@ -57,7 +54,7 @@ theorem smooth_coefficient_error_tendsto {d : ℕ}
     (fun n P => matrixContraction
       (mollifiedMatrix (standardMollifierSequence n) A (P.position, P.velocity) -
         A (P.position, P.velocity)) (kineticVelocityHessian u P))
-    ?_ ((d : ℝ) * d * (2 * C * M)) ?_ ?_
+    ?_ (d * d * (2 * C * M)) ?_ ?_
   · intro n
     apply AEStronglyMeasurable.restrict
     apply Measurable.aestronglyMeasurable
@@ -66,12 +63,9 @@ theorem smooth_coefficient_error_tendsto {d : ℕ}
     apply Finset.measurable_sum
     intro i hi
     apply Finset.measurable_sum
-    intro k hk
-    exact (((hc n i k).measurable.comp hsp.measurable).sub
-      ((hA i k).comp hsp.measurable)).mul
-      (((continuous_apply k).comp ((continuous_apply i).comp hcv)).measurable)
+    fun_prop
   · intro n
-    apply ae_restrict_of_forall_mem hqmeas
+    apply ae_restrict_of_forall_mem ((isOpen_backwardCylinder P₀ R hR).measurableSet)
     intro P hP
     have hb i k : ‖(mollifiedMatrix (standardMollifierSequence n) A (P.position, P.velocity) i k -
         A (P.position, P.velocity) i k) * kineticVelocityHessian u P i k‖ ≤ 2 * C * M := by
@@ -83,8 +77,7 @@ theorem smooth_coefficient_error_tendsto {d : ℕ}
       apply mul_le_mul _ (hH P hP i k) (norm_nonneg _) (by positivity)
       exact (norm_sub_le _ _).trans (by
         simp only [Real.norm_eq_abs]
-        dsimp [C]
-        linarith only [h1, h2])
+        linarith)
     unfold matrixContraction
     simp only [Matrix.sub_apply]
     calc
@@ -109,8 +102,6 @@ theorem smooth_coefficient_error_tendsto {d : ℕ}
       simpa only [sub_self, zero_mul] using!
         (h.sub_const (A (P.position, P.velocity) i k)).mul_const
           (kineticVelocityHessian u P i k)
-    have hh := tendsto_finsetSum Finset.univ (fun i _ =>
-      tendsto_finsetSum Finset.univ (fun k _ => he i k))
-    simpa only [matrixContraction, Matrix.sub_apply, Finset.sum_const_zero] using! hh
+    simpa only [matrixContraction, Matrix.sub_apply, Finset.sum_const_zero] using! (tendsto_finsetSum Finset.univ (fun i _ => tendsto_finsetSum Finset.univ (fun k _ => he i k)))
 
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample

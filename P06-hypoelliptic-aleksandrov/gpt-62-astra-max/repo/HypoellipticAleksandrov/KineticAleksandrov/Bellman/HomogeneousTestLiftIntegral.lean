@@ -77,7 +77,7 @@ theorem bellman_compact_parameter_continuousAt (mu : Measure A) [IsFiniteMeasure
   · filter_upwards [hU.mem_nhds hq] with x hx
     exact (bellman_compact_parameter_integrable mu hf hx).aestronglyMeasurable
   · filter_upwards [hs] with x hx
-    exact ae_of_all _ (fun a => hC x hx a)
+    solve_by_elim [ae_of_all]
   · exact integrable_const C
   · apply ae_of_all
     intro a
@@ -105,11 +105,10 @@ theorem bellman_compact_parameter_contDiffOn_two (mu : Measure A) [IsFiniteMeasu
   apply contDiffAt_succ_iff_hasFDerivAt.mpr
   refine ⟨fun x => ∫ a, f' x a ∂mu, ⟨U, hU.mem_nhds hq, ?_⟩, ?_⟩
   · intro x hx
-    exact bellman_compact_parameter_hasFDerivAt mu hU f f' hf hf' hd hx
+    apply bellman_compact_parameter_hasFDerivAt <;> assumption
   · apply contDiffAt_succ_iff_hasFDerivAt.mpr
     refine ⟨fun x => ∫ a, f'' x a ∂mu, ⟨U, hU.mem_nhds hq, ?_⟩, ?_⟩
-    · intro x hx
-      exact bellman_compact_parameter_hasFDerivAt mu hU f' f'' hf' hf'' hd' hx
+    · apply bellman_compact_parameter_hasFDerivAt <;> assumption
     · exact contDiffAt_zero.mpr ⟨U, hU.mem_nhds hq, hc⟩
 
 end HypoellipticAleksandrov.KineticAleksandrov

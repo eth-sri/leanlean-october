@@ -25,16 +25,15 @@ theorem boundary_value_le_of_close_map {E : Type*} [MetricSpace E]
   refine ⟨η,hη,?_⟩
   intro T hTK hdist x hx
   have hd := hclose (T x) (hTK x hx) x (hSK hx) (hdist x hx)
-  have hb : BddAbove ((fun x => max (u x) 0) '' S) :=
-    (hK.bddAbove_image hc).mono (image_mono hSK)
-  have hs := le_csSup hb (mem_image_of_mem (fun x => max (u x) 0) hx)
+  have hs := le_csSup ((hK.bddAbove_image hc).mono (image_mono hSK)) (mem_image_of_mem (fun x => max (u x) 0) hx)
   rw [Real.dist_eq] at hd
-  have hle := (abs_lt.mp hd).2
-  linarith
+  linarith [(abs_lt.mp hd).2]
+
+variable {d : ℕ} (Z₀ : KineticPoint d) (P₀ : KineticPoint d) (R : ℝ) (hR : 0 < R)
+    (u : KineticPoint d → ℝ)
 
 /-- Exit-boundary values on inner cylinders approach the original exit-boundary bound. -/
-theorem comparison_exit_boundary_approx {d : ℕ}
-    (Z₀ : KineticPoint d) (R : ℝ) (hR : 0 < R) (u : KineticPoint d → ℝ)
+theorem comparison_exit_boundary_approx
     (hu : ContinuousOn u (closure (forwardCylinder Z₀ R hR)))
     {ε : ℝ} (hε : 0 < ε) :
     ∃ η : ℝ, 0 < η ∧ ∀ (δ : ℝ) (hδ0 : 0 < δ) (hδlt : δ < R ^ 2 / 2),
@@ -57,8 +56,7 @@ theorem comparison_exit_boundary_approx {d : ℕ}
   · exact fun y hy => hclose δ hδ0 hδlt hδη y (hS hy)
 
 /-- The same compact-boundary passage in the backward kinetic geometry. -/
-theorem comparison_kinetic_boundary_approx {d : ℕ}
-    (P₀ : KineticPoint d) (R : ℝ) (hR : 0 < R) (u : KineticPoint d → ℝ)
+theorem comparison_kinetic_boundary_approx
     (hu : ContinuousOn u (closure (backwardCylinder P₀ R)))
     {ε : ℝ} (hε : 0 < ε) :
     ∃ η : ℝ, 0 < η ∧ ∀ (δ : ℝ) (hδ0 : 0 < δ) (hδlt : δ < R ^ 2 / 2),
@@ -81,8 +79,7 @@ theorem comparison_kinetic_boundary_approx {d : ℕ}
   obtain ⟨x,hx,rfl⟩ := hP
   apply hbound (reflectedInnerRetraction P₀ R hR δ hδ0 hδlt) ?_ ?_ x hx
   · intro y hy
-    have hi := closure_reflected_innerCylinder_subset P₀ R hR δ hδ0 hδlt
-    apply subset_closure (hi ?_)
+    apply subset_closure ((closure_reflected_innerCylinder_subset P₀ R hR δ hδ0 hδlt) ?_)
     rw [kineticReflection_image_innerCylinder P₀ R hR δ hδ0 hδlt]
     rw [← reflectedInnerRetraction_image_closure P₀ R hR δ hδ0 hδlt]
     exact mem_image_of_mem _ (hS hy)

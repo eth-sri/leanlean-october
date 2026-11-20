@@ -69,7 +69,7 @@ lemma master_phase_integral
     fourierProjection_spec K (wholeSpaceQuery σ τ hστ v z) ξ E hE, ← integral_const_mul,
     ← integral_indicator (hE.prod MeasurableSet.univ)]
   refine integral_congr_ae (Filter.Eventually.of_forall (fun w => ?_))
-  by_cases hw : w ∈ E ×ˢ (univ : Set (PDE.Vec d))
+  by_cases hw : w ∈ E ×ˢ univ
   · simp only [Set.indicator_of_mem hw]
     exact fourierPhase_factor ξ 0 (v, z) w
   · simp only [Set.indicator_of_notMem hw]
@@ -85,26 +85,24 @@ lemma fibreMeasure_halfKernel
   rw [fibreMeasure_apply _ _ _ (measurable_halfPhase ξ r) (norm_halfPhase ξ r)
     (measurable_halfVelocity r) x hE]
   let G : EvolutionAmbientState d → ℂ := (E ×ˢ univ).indicator (fourierPhase ξ 0)
-  have hG : Measurable G := (continuous_fourierPhase ξ 0).measurable.indicator
-    (hE.prod MeasurableSet.univ)
-  have h1 : ∀ y : EvolutionState (wholeSpace d) (fun _ => (0 : PDE.Vec d)) r,
+  have h1 : ∀ y : EvolutionState (wholeSpace d) (fun _ => 0) r,
       (halfVelocity d r ⁻¹' E).indicator (halfPhase d ξ r) y = G y.1 := by
     intro y
     by_cases hy : y.1.1 ∈ E
     · have h2 : y ∈ halfVelocity d r ⁻¹' E := hy
-      have h3 : y.1 ∈ E ×ˢ (univ : Set (PDE.Vec d)) := ⟨hy, mem_univ _⟩
+      have h3 : y.1 ∈ E ×ˢ univ := ⟨hy, mem_univ _⟩
       rw [Set.indicator_of_mem h2]
       simp only [G, Set.indicator_of_mem h3]
       rfl
     · have h2 : y ∉ halfVelocity d r ⁻¹' E := hy
-      have h3 : y.1 ∉ E ×ˢ (univ : Set (PDE.Vec d)) := fun h => hy h.1
+      have h3 : y.1 ∉ E ×ˢ univ := fun h => hy h.1
       rw [Set.indicator_of_notMem h2]
       simp only [G, Set.indicator_of_notMem h3]
   simp_rw [h1]
   have h4 : ∫ y, G y.1 ∂(halfKernel K σ₀ r hσr) x =
       ∫ w, G w ∂K.master (evolutionQueryOfState (wholeSpace d) (fun _ => 0) σ₀ r hσr x) := by
     rw [← K.map_fiberKernel_eq_master MeasurableSet.univ σ₀ r hσr x,
-      integral_map measurable_subtype_coe.aemeasurable hG.aestronglyMeasurable]
+      integral_map measurable_subtype_coe.aemeasurable ((continuous_fourierPhase ξ 0).measurable.indicator (hE.prod MeasurableSet.univ)).aestronglyMeasurable]
     rfl
   rw [h4]
   exact master_phase_integral K hcov σ₀ r hσr ξ x.1.1 x.1.2 hE
@@ -138,7 +136,7 @@ lemma measurable_phaseSection (ξ : PDE.Vec d) {E : Set (PDE.Vec d)} (hE : Measu
 lemma norm_phaseSection_le (ξ : PDE.Vec d) (E : Set (PDE.Vec d)) (w : EvolutionAmbientState d) :
     ‖phaseSection d ξ E w‖ ≤ 1 := by
   unfold phaseSection
-  by_cases hw : w ∈ E ×ˢ (univ : Set (PDE.Vec d))
+  by_cases hw : w ∈ E ×ˢ univ
   · rw [Set.indicator_of_mem hw, norm_fourierPhase]
   · rw [Set.indicator_of_notMem hw, norm_zero]; exact zero_le_one
 
@@ -200,14 +198,11 @@ theorem slab_section_bound
         ∂(halfMeasure K σ₀ T hT.le μ ξ).variation := by
   have hrτ : σ₀ + T / 2 ≤ σ₀ + τ.1 := by linarith
   rw [slab_pairing K hcov hcomp σ₀ μ (σ₀ + T / 2) (le_halfTime σ₀ T hT.le) ξ τ hrτ hE]
-  have hb : ∃ C : ℝ, ∀ v : PDE.Vec d,
-      ‖fourierKernel K (σ₀ + T / 2) (σ₀ + τ.1) hrτ ξ v E‖ ≤ C :=
-    ⟨1, fun v => fourierKernel_apply_norm_le_one K _ _ hrτ ξ v E⟩
   refine (evolved_integral_enorm_le μ (halfKernel K σ₀ (σ₀ + T / 2) (le_halfTime σ₀ T hT.le))
     (halfPhase d ξ (σ₀ + T / 2)) (halfVelocity d (σ₀ + T / 2)) (measurable_halfPhase ξ _)
     (norm_halfPhase ξ _) (measurable_halfVelocity _)
     (fun v => fourierKernel K (σ₀ + T / 2) (σ₀ + τ.1) hrτ ξ v E)
-    (measurable_fourierKernel_apply K _ _ hrτ ξ E hE) hb).trans ?_
+    (measurable_fourierKernel_apply K _ _ hrτ ξ E hE) ⟨1, fun v => fourierKernel_apply_norm_le_one K _ _ hrτ ξ v E⟩).trans ?_
   refine lintegral_mono (fun v => ?_)
   rw [occupationKernel_half K σ₀ T τ.1 hτ hT v]
   refine (VectorMeasure.enorm_measure_le_variation _ E).trans ?_
@@ -258,19 +253,14 @@ theorem slab_domination_ineq
     evolved_variation_finite μ _ _ _ (measurable_halfPhase ξ _) (norm_halfPhase ξ _)
   have hSEm := measurableSet_slabPreimage T hE
   set SE : Set (GreenCarrier d) := {p | (p.1, p.2.1) ∈ E ∧ T < p.1.1 ∧ p.1.1 < 2 * T} with hSE
-  have hSEsub : SE ⊆ slabSet T := by
-    intro p hp; exact ⟨hp.2.1, hp.2.2⟩
-  have hf1m : Measurable (SE.indicator (greenPhase d ξ)) :=
-    (measurable_greenPhase ξ).indicator hSEm
+  have hSEsub : SE ⊆ slabSet T := fun p hp => ⟨hp.2.1, hp.2.2⟩
   have hf1b : ∀ p, ‖SE.indicator (greenPhase d ξ) p‖ ≤ 1 := by
     intro p
     by_cases hp : p ∈ SE
     · rw [Set.indicator_of_mem hp, norm_greenPhase]
     · rw [Set.indicator_of_notMem hp, norm_zero]; exact zero_le_one
-  have hf1s : ∀ p, p ∉ slabSet T → SE.indicator (greenPhase d ξ) p = 0 :=
-    fun p hp => Set.indicator_of_notMem (fun h => hp (hSEsub h)) _
   rw [← integral_indicator hSEm,
-    green_integral K σ₀ μ Γ hΓ hT _ hf1m hf1b hf1s]
+    green_integral K σ₀ μ Γ hΓ hT _ ((measurable_greenPhase ξ).indicator hSEm) hf1b (fun p hp => Set.indicator_of_notMem (fun h => hp (hSEsub h)) _)]
   refine (enorm_integral_le_lintegral_enorm _).trans ?_
   have hmeas : Measurable (fun x : ElapsedTime ⊤ × PDE.Vec d =>
       occupationKernel K (σ₀ + T / 2) (x.1.1 - T / 2) x.2 {w | (x.1, w) ∈ E}) := by
@@ -293,13 +283,10 @@ theorem slab_domination_ineq
             unfold phaseSection
             by_cases hw : (τ, w.1) ∈ E
             · have h1 : (τ, w) ∈ SE := ⟨hw, hτ.1, hτ.2⟩
-              have h2 : w ∈ ({w' : PDE.Vec d | (τ, w') ∈ E} ×ˢ (univ : Set (PDE.Vec d))) :=
+              have h2 : w ∈ ({w' : PDE.Vec d | (τ, w') ∈ E} ×ˢ univ) :=
                 ⟨hw, mem_univ _⟩
               rw [Set.indicator_of_mem h1, Set.indicator_of_mem h2, greenPhase_eq]
-            · have h1 : (τ, w) ∉ SE := fun h => hw h.1
-              have h2 : w ∉ ({w' : PDE.Vec d | (τ, w') ∈ E} ×ˢ (univ : Set (PDE.Vec d))) :=
-                fun h => hw h.1
-              rw [Set.indicator_of_notMem h1, Set.indicator_of_notMem h2]
+            · rw [Set.indicator_of_notMem (fun h => hw h.1), Set.indicator_of_notMem (fun h => hw h.1)]
           simp_rw [hfun]
           exact slab_section_bound K hcov hcomp σ₀ μ hT ξ τ hτ.1 hsec
         · rw [Set.indicator_of_notMem hτ]

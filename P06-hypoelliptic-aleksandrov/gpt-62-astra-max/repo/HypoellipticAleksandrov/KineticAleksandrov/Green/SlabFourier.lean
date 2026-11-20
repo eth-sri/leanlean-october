@@ -37,17 +37,23 @@ open MeasureTheory Set
 open HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 open scoped ENNReal NNReal ProbabilityTheory
 
+section
+variable (d : ℕ)
+include d
+
 /-- The Gauss-type constant `∫ exp(-c|ζ|^{2/3}) dζ` of the frequency integral. -/
-def slabFreqConstant (d : ℕ) (c : ℝ) : ℝ := (∫⁻ ζ, decayProfile d c ζ).toReal
+def slabFreqConstant (c : ℝ) : ℝ := (∫⁻ ζ, decayProfile d c ζ).toReal
 
 /-- The structural constant `K₁(γ) = 2^{β_γ} (1 + C)(1 + (2π)^{-d} A_{c/2})`. -/
-def slabK1 (d : ℕ) (Cdec cdec γ : ℝ) : ℝ :=
+def slabK1 (Cdec cdec γ : ℝ) : ℝ :=
   (2 : ℝ) ^ slabBeta d γ * (1 + Cdec) *
     (1 + ((2 * Real.pi) ^ d)⁻¹ * slabFreqConstant d (cdec / 2))
 
 /-- The constants `C_γ` of Lemma 5.1: `C_γ^{occ} · K₁(γ)`. -/
-def slabConstant' (d : ℕ) (Cocc : ℝ → ℝ) (Cdec cdec : ℝ) (γ : ℝ) : ℝ≥0 :=
+def slabConstant' (Cocc : ℝ → ℝ) (Cdec cdec : ℝ) (γ : ℝ) : ℝ≥0 :=
   Real.toNNReal (Cocc γ * slabK1 d Cdec cdec γ)
+
+end
 
 lemma one_le_slabK1_factor {d : ℕ} {Cdec : ℝ} (hCdec : 0 < Cdec) (cdec : ℝ) :
     1 ≤ (1 + Cdec) * (1 + ((2 * Real.pi) ^ d)⁻¹ * slabFreqConstant d (cdec / 2)) := by
@@ -77,7 +83,6 @@ lemma freq_ennreal (Co Cd a M t1 t2 A q K1 s : ℝ) (hCo : 0 ≤ Co) (hCd : 0 �
   have h1 : 0 ≤ Co * Cd * a := by positivity
   have h2 : 0 ≤ Co * Cd * a * M := by positivity
   have h3 : 0 ≤ Co * Cd * a * M * t1 := by positivity
-  have h4 : 0 ≤ t2 * A := by positivity
   have hK0 : 0 ≤ K1 := by rw [hK]; positivity
   rw [← ENNReal.ofReal_mul ht2, ← ENNReal.ofReal_mul h1, ← ENNReal.ofReal_mul h2,
     ← ENNReal.ofReal_mul h3, ← ENNReal.ofReal_mul hq, ← ENNReal.ofReal_mul (by positivity),
@@ -208,6 +213,10 @@ theorem slabFourierBounds_meas_of_occupation_decay_kernel {d : ℕ} (hd : 0 < d)
       nlinarith [mul_nonneg hC0 h2b]
     exact mul_le_mul' (mul_le_mul' hle le_rfl) le_rfl
 
+variable {d : ℕ} (hd : 1 ≤ d) (lam Lam : ℝ) (hocc : ParabolicOccupationFamily d lam Lam)
+    (hdec : FourierDecayFamily d lam Lam)
+include hd hocc hdec
+
 /-- **Lemma 5.1 (case W), family level.**  Conditional on the conclusions of Proposition 4.2
 (`ParabolicOccupationFamily`) and Proposition 3.1 (`FourierDecayFamily`) for the coefficient bounds
 `λ, Λ`: there are constants `C_γ, c` (depending only on `d` and the constants of the two premises)
@@ -217,8 +226,7 @@ of `(B, id)`, every `σ₀`, finite `μ`, Green measure `Γ` of `μ` (infinite h
 in `(ξ, y)` (so `ξ ↦ ‖k^ξ‖_{L^γ}` is measurable, see `measurable_eLpNorm_family`).  The translation
 covariance and composition clauses needed by the proof are derived from the realization
 (`isTranslationCovariant_of_realizes`). -/
-theorem slabFourierBounds_meas_of_occupation_decay {d : ℕ} (hd : 1 ≤ d) (lam Lam : ℝ)
-    (hocc : ParabolicOccupationFamily d lam Lam) (hdec : FourierDecayFamily d lam Lam) :
+theorem slabFourierBounds_meas_of_occupation_decay :
     ∃ (C : ℝ → ℝ≥0) (c : ℝ), ∀ (B : CoefficientField d),
       IsSectionTwoCoefficient lam Lam B →
       ∀ (S : TerminalOperatorFamily (wholeSpace d) (fun _ => (0 : PDE.Vec d)))
@@ -241,8 +249,7 @@ theorem slabFourierBounds_meas_of_occupation_decay {d : ℕ} (hd : 1 ≤ d) (lam
 conclusion of `slabFourierBounds_meas_of_occupation_decay` without the measurability clause: the
 `hbounds` premise of `Green.green_density_of_slab_marginals` and of
 `TheoremA.green_density_bound_of_slabFourierBounds`. -/
-theorem slabFourierBounds_of_occupation_decay {d : ℕ} (hd : 1 ≤ d) (lam Lam : ℝ)
-    (hocc : ParabolicOccupationFamily d lam Lam) (hdec : FourierDecayFamily d lam Lam) :
+theorem slabFourierBounds_of_occupation_decay :
     ∃ (C : ℝ → ℝ≥0) (c : ℝ), ∀ (B : CoefficientField d),
       IsSectionTwoCoefficient lam Lam B →
       ∀ (S : TerminalOperatorFamily (wholeSpace d) (fun _ => (0 : PDE.Vec d)))

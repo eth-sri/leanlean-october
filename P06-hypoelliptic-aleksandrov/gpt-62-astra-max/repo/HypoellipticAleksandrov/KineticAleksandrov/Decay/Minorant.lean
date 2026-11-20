@@ -21,9 +21,11 @@ open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic Set MeasureTheory
 open HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 open scoped MatrixOrder
 
+variable (d : ℕ) (hd : 1 ≤ d) (lam Lam : ℝ) (hlam : 0 < lam) (hlamLam : lam ≤ Lam)
+include hd hlam hlamLam
+
 /-- The measure comparison after arbitrary parabolic translation and scaling. -/
-theorem scaled_minorant_comparison (d : ℕ) (hd : 1 ≤ d)
-    (lam Lam : ℝ) (hlam : 0 < lam) (hlamLam : lam ≤ Lam) :
+theorem scaled_minorant_comparison :
     ∃ h : ℝ, 0 < h ∧
       ∀ (B : CoefficientField d), IsSectionTwoCoefficient lam Lam B →
       ∀ (v0 : PDE.Vec d) (ρ T : ℝ), 0 < ρ →
@@ -49,37 +51,32 @@ theorem scaled_minorant_comparison (d : ℕ) (hd : 1 ≤ d)
   obtain ⟨hσ', hτ', hy0⟩ := hql
   subst y'
   subst hσ hσ'
-  have hT1 : T = τ := hτ.symm
-  have hT2 : T = τ' := hτ'.symm
+  have hT1 := hτ.symm
+  have hT2 := hτ'.symm
   subst hT1 hT2
   have hfin : IsFiniteMeasure (ENNReal.ofReal (hf ^ 6) •
       P K hΩo.measurableSet ⟨(T - ρ ^ 2, T, v0), hστ', hy'⟩) := by
     refine ⟨?_⟩
-    rw [Measure.smul_apply, smul_eq_mul]
     exact ENNReal.mul_lt_top ENNReal.ofReal_lt_top (measure_lt_top _ _)
   refine measure_le_of_smooth_integral_le hΩo ?_ ?_
   · rw [Measure.smul_apply, P_compl_eq_zero_stationary, smul_zero]
   · intro φ hφ hφc hφsupp h01
     obtain ⟨V, hV, -, hVeval⟩ := exists_scalar_probe hΩo.measurableSet B K hpar
       φ hφ hφc hφsupp T
-    let φ' : PDE.Vec d → ℝ := fun w => φ (parabolicAffine v0 ρ w)
-    have hφ' : ContDiff ℝ (⊤ : ℕ∞) φ' := hφ.comp (contDiff_parabolicAffine v0 ρ)
-    have hc' : HasCompactSupport φ' := hφc.comp_homeomorph (parabolicAffineHomeo v0 hρ)
+    let φ' := fun w => φ (parabolicAffine v0 ρ w)
     have hV0 : ParabolicProbe.IsClassicalScalarTerminalSolution
         (PDE.euclideanBall v0 (4 * ρ)) stationary (zIndependentCoefficient B)
         (T + ρ ^ 2 * 0) (smoothTestBorel φ hφ.continuous hφc) V := by
-      simpa only [mul_zero, add_zero] using hV
-    let B' := normalizedParabolicCoefficient B T ρ v0
-    let W : TimeVelocity d → ℝ := fun p => V (minorantAffine T ρ v0 p)
+      simpa using hV
+    let W := fun p => V (minorantAffine T ρ v0 p)
     have hW := isClassicalScalarTerminalSolution_comp_minorantAffine hΩo B T v0 hρ
       (parabolicAffine_preimage_ball v0 hρ).symm 0
-      (smoothTestBorel φ hφ.continuous hφc) (smoothTestBorel φ' hφ'.continuous hc')
+      (smoothTestBorel φ hφ.continuous hφc) (smoothTestBorel φ' (hφ.comp (contDiff_parabolicAffine v0 ρ)).continuous (hφc.comp_homeomorph (parabolicAffineHomeo v0 hρ)))
       (fun _ => rfl) hV0
     have hB' := normalizedParabolicCoefficient_sectionTwo lam Lam B hB T v0 ρ hρ
-    have hcontB := continuous_coefficientAt_of_smooth hB'.2.2.1
-    let w : PDE.Vec d := ρ⁻¹ • (y - v0)
+    let w := ρ⁻¹ • (y - v0)
     have hwpoint : parabolicAffine v0 ρ w = y := by
-      simp [w, parabolicAffine, smul_smul, ne_of_gt hρ]
+      simp [w, parabolicAffine, ne_of_gt hρ]
     have hw : w ∈ PDE.euclideanBall 0 1 := by
       change PDE.vecNormSq (w - 0) < 1 ^ 2
       simp only [sub_zero, one_pow]
@@ -87,30 +84,29 @@ theorem scaled_minorant_comparison (d : ℕ) (hd : 1 ≤ d)
         rw [← hwpoint]
         change PDE.euclideanSqDist (v0 + ρ • w) v0 = _
         rw [add_comm, PDE.euclideanSqDist_affine_center]
-        simp only [PDE.euclideanSqDist, sub_zero]
+        simp [PDE.euclideanSqDist]
       change PDE.vecNormSq (y - v0) < ρ ^ 2 at hv
       nlinarith [sq_pos_of_pos hρ]
     have hnonneg : IsNonnegativeOn (fun p => W (timeReversal 0 p))
-        (Ioi (0 : ℝ) ×ˢ PDE.euclideanBall 0 4) := by
+        (Ioi 0 ×ˢ PDE.euclideanBall 0 4) := by
       intro p hp
       have hpball : parabolicAffine v0 ρ p.2 ∈ PDE.euclideanBall v0 (4 * ρ) := by
         rw [← parabolicAffine_preimage_ball v0 hρ] at hp
         exact hp.2
       have ht : T + ρ ^ 2 * (-p.1) ≤ T := by
-        have hprod := mul_nonneg (sq_nonneg ρ) (show 0 ≤ p.1 from hp.1.le)
-        nlinarith only [hprod]
+        nlinarith [mul_nonneg (sq_nonneg ρ) (show 0 ≤ p.1 from hp.1.le)]
       have heval := hVeval _ ht (parabolicAffine v0 ρ p.2)
-        (by simpa only [movingDomain_stationary] using hpball)
+        (by simpa using hpball)
       have he : timeReversal 0 p = (-p.1, p.2) := by
-        simpa only [zero_sub] using timeReversal_apply 0 p.1 p.2
+        simpa using timeReversal_apply 0 p.1 p.2
       change 0 ≤ W (timeReversal 0 p)
       rw [he]
       change 0 ≤ V (T + ρ ^ 2 * (-p.1), parabolicAffine v0 ρ p.2)
       rw [heval]
       exact integral_nonneg fun x => (h01 x).1
-    have key := hfH (fun θ v => B' (0 + -1 * θ) (0 + (1 : ℝ) • v))
+    have key := hfH (fun θ v => (normalizedParabolicCoefficient B T ρ v0) (0 + -1 * θ) (0 + 1 • v))
       (fun p => W (timeReversal 0 p))
-      (hcontB.continuousOn.comp (contDiff_scalarAffine 0 (-1) 0 1).continuous.continuousOn
+      ((continuous_coefficientAt_of_smooth hB'.2.2.1).continuousOn.comp (contDiff_scalarAffine 0 (-1) 0 1).continuous.continuousOn
         (fun p _ => mem_univ _))
       (fun p _ => hB'.2.2.2.1 _ _)
       (fun p _ => hB'.2.2.2.2.1 _ _) (fun p _ => hB'.2.2.2.2.2 _ _)
@@ -125,23 +121,19 @@ theorem scaled_minorant_comparison (d : ℕ) (hd : 1 ≤ d)
       simp only [zero_sub]
       change (T + ρ ^ 2 * (-4), parabolicAffine v0 ρ w) = _
       rw [hwpoint]
-      congr 1
       ring
     change hf ^ 6 * V (minorantAffine T ρ v0 (timeReversal 0 (1, 0))) ≤
       V (minorantAffine T ρ v0 (timeReversal 0 (4, w))) at key
     rw [e1, e4] at key
-    have hlate := hVeval (T - ρ ^ 2) hστ' v0 hy'
-    have hearly := hVeval (T - 4 * ρ ^ 2) hστ y hy
     rw [integral_smul_measure, ENNReal.toReal_ofReal (pow_pos hfpos 6).le, smul_eq_mul]
     change hf ^ 6 * ∫ x, φ x ∂(P K hΩo.measurableSet
         (scalarQuery (T - ρ ^ 2) T hστ' v0 hy')) ≤
       ∫ x, φ x ∂(P K hΩo.measurableSet (scalarQuery (T - 4 * ρ ^ 2) T hστ y hy))
-    rw [← hlate, ← hearly]
+    rw [← (hVeval (T - ρ ^ 2) hστ' v0 hy'), ← (hVeval (T - 4 * ρ ^ 2) hστ y hy)]
     exact key
 
 /-- The source common terminal minorant for the same supplied marginal kernel. -/
-theorem common_terminal_minorant (d : ℕ) (hd : 1 ≤ d)
-    (lam Lam : ℝ) (hlam : 0 < lam) (hlamLam : lam ≤ Lam) :
+theorem common_terminal_minorant :
     ∃ h q0 : ℝ, 0 < h ∧ 0 < q0 ∧
       ∀ (m Lb : ℝ) (D : Set (PDE.Vec d)) (B : CoefficientField d)
         (b : PDE.Vec d → PDE.Vec d), SourceSetting lam Lam m Lb D B b →
@@ -171,7 +163,6 @@ theorem common_terminal_minorant (d : ℕ) (hd : 1 ≤ d)
   refine ⟨h, q, hh, hqpos, ?_⟩
   intro m Lb D B b hset v0 ρ T hv0 hρ hsub S K hreal hpar hmono
     qearly qlate hqe hql hv
-  have _ := And.intro hv0 (And.intro hsub (And.intro hreal hmono))
   exact ⟨hcomp B hset.1 v0 ρ T hρ K hpar qearly qlate hqe hql hv,
     hmass B hset.1 v0 ρ T (4 * ρ) hρ rfl K hpar qlate hql⟩
 

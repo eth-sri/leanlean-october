@@ -25,22 +25,19 @@ theorem initial_corridor_subset_cap {d : ℕ} (P0 : KineticPoint d) {r : ℝ}
     simp only [relativePosition, stackStartTime, stackStartPosition, Pi.sub_apply,
       Pi.add_apply, Pi.smul_apply, smul_eq_mul]
     ring
-  have hsq : 0 < r^2 := pow_pos hr 2
-  have hcube : 0 < r^3 := pow_pos hr 3
+  have hsq := pow_pos hr 2
   refine ⟨?_, ?_, ?_, ?_⟩
-  · change -(1/4 : ℝ) < (Z.time-P0.time)/r^2
-    apply (lt_div_iff₀ hsq).mpr
+  · apply (lt_div_iff₀ hsq).mpr
     have := hZ.1.1
     dsimp [stackStartTime] at this
     nlinarith
-  · change (Z.time-P0.time)/r^2 < -(1/8 : ℝ)
-    apply (div_lt_iff₀ hsq).mpr
+  · apply (div_lt_iff₀ hsq).mpr
     have := hZ.1.2
     dsimp [stackStartTime] at this
     nlinarith
   · apply (PDE.mem_euclideanBall_iff_vecEuclideanNorm_lt (by norm_num)).mpr
     rw [sub_zero, inverse_position_norm P0 Z hr, hrel]
-    apply (div_lt_iff₀ hcube).mpr
+    apply (div_lt_iff₀ (pow_pos hr 3)).mpr
     have := hZ.2.1
     norm_num at *
     nlinarith
@@ -63,8 +60,8 @@ theorem full_corridor_subset_comparison {d : ℕ} (P0 P : KineticPoint d) {r : �
       (r^3/(2*8^3)) (r/16) x v ⊆ kineticAffine P0 r '' stackComparisonRegion d m := by
   intro Z hZ
   apply (mem_kineticAffine_image_iff P0 Z hr.ne' _).mpr
-  have hsq : 0 < r^2 := pow_pos hr 2
-  have hcube : 0 < r^3 := pow_pos hr 3
+  have hsq := pow_pos hr 2
+  have hcube := pow_pos hr 3
   obtain ⟨hx, hv⟩ := hb _ hZ.1
   have hrel : relativePosition P0 Z =
       (Z.position-x (Z.time-stackStartTime P0 r))+
@@ -84,21 +81,18 @@ theorem full_corridor_subset_comparison {d : ℕ} (P0 P : KineticPoint d) {r : �
     (v (Z.time-stackStartTime P0 r)-P0.velocity)
   rw [sub_add_sub_cancel] at hvn
   refine ⟨?_, ?_, ?_, ?_⟩
-  · change -2 < (Z.time-P0.time)/r^2
-    apply (lt_div_iff₀ hsq).mpr
+  · apply (lt_div_iff₀ hsq).mpr
     have := hZ.1.1
     dsimp [stackStartTime] at this
     nlinarith
-  · change (Z.time-P0.time)/r^2 < (m : ℝ)+1
-    apply (div_lt_iff₀ hsq).mpr
+  · apply (div_lt_iff₀ hsq).mpr
     have := hZ.1.2
     dsimp [stackStartTime] at this
     nlinarith
   · rw [inverse_position_norm P0 Z hr]
     apply (div_lt_iff₀ hcube).mpr
     have := hZ.2.1
-    norm_num at this
-    nlinarith only [hn, hx, this, hcube]
+    linarith
   · rw [inverse_velocity_norm P0 Z hr]
     apply (div_lt_iff₀ hr).mpr
     have := hZ.2.2

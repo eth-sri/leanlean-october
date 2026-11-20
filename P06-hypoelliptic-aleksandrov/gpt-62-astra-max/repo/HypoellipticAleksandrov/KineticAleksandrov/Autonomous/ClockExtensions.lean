@@ -44,16 +44,21 @@ def Clock.extendedDiffusion (c : Clock) (lam : ℝ) (a : ℝ → ℝ → ℝ)
     (e : Point) (s y : ℝ) : ℝ :=
   clockCutoff y * c.diffusion a e s y + (1 - clockCutoff y) * lam
 
+section
+variable {lam Lam : ℝ} (c : Clock) (y : ℝ)
+
+include c y in
 /-- The exact convex derivative to be integrated for the transport extension. -/
-def Clock.extendedDriftDerivative (c : Clock) (y : ℝ) : ℝ :=
+def Clock.extendedDriftDerivative : ℝ :=
   clockCutoff y * (c.vbar ^ 2 / (c.vbar + c.r * y) ^ 2) + 1 - clockCutoff y
 
+include c y in
 /-- The exact integral transport extension, normalized to vanish at zero. -/
-def Clock.extendedDrift (c : Clock) (y : ℝ) : ℝ :=
+def Clock.extendedDrift : ℝ :=
   ∫ t in (0 : ℝ)..y, c.extendedDriftDerivative t
 
 /-- The diffusion extension is genuinely smooth, including outside the raw denominator region. -/
-theorem Clock.extendedDiffusion_smooth {lam Lam : ℝ} (c : Clock)
+theorem Clock.extendedDiffusion_smooth
     (A : SmoothAutonomous lam Lam) (e : Point) :
     ContDiff ℝ (⊤ : ℕ∞) (Function.uncurry (c.extendedDiffusion lam A.a e)) := by
   apply contDiff_iff_contDiffAt.mpr
@@ -71,7 +76,7 @@ theorem Clock.extendedDiffusion_smooth {lam Lam : ℝ} (c : Clock)
     simp only [Function.uncurry, Clock.extendedDiffusion, hp, zero_mul, sub_zero, one_mul, zero_add]
 
 /-- The extended drift derivative is globally smooth. -/
-theorem Clock.extendedDriftDerivative_smooth (c : Clock) :
+theorem Clock.extendedDriftDerivative_smooth :
     ContDiff ℝ (⊤ : ℕ∞) c.extendedDriftDerivative := by
   apply contDiff_iff_contDiffAt.mpr
   intro y
@@ -86,6 +91,8 @@ theorem Clock.extendedDriftDerivative_smooth (c : Clock) :
     filter_upwards [clockCutoff_eventually_zero hy] with t ht
     simp only [Clock.extendedDriftDerivative, ht, zero_mul, zero_add, sub_zero]
 
+end
+
 /-- The extension agrees with the raw diffusion on the normalized active interval. -/
 theorem Clock.extendedDiffusion_eq {lam : ℝ} (c : Clock) (a : ℝ → ℝ → ℝ)
     (e : Point) (s y : ℝ) (hy : y ∈ normalizedActive) :
@@ -96,9 +103,11 @@ theorem Clock.extendedDiffusion_eq {lam : ℝ} (c : Clock) (a : ℝ → ℝ → 
   simp only [Clock.extendedDiffusion, clockCutoff_eq_one hb, one_mul, sub_self, zero_mul,
     add_zero]
 
+variable {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam) (c : Clock) (y : ℝ)
+
+include hlam hLam in
 /-- The global diffusion bounds depend only on the original ellipticity constants. -/
-theorem Clock.extendedDiffusion_bounds {lam Lam : ℝ} (hlam : 0 < lam)
-    (hLam : lam ≤ Lam) (c : Clock) (A : SmoothAutonomous lam Lam)
+theorem Clock.extendedDiffusion_bounds (A : SmoothAutonomous lam Lam)
     (e : Point) (s y : ℝ) :
     3 * lam / 5 ≤ c.extendedDiffusion lam A.a e s y ∧
       c.extendedDiffusion lam A.a e s y ≤ 3 * Lam := by
@@ -122,7 +131,7 @@ theorem Clock.extendedDiffusion_bounds {lam Lam : ℝ} (hlam : 0 < lam)
     constructor <;> linarith only [hlam, hLam]
 
 /-- The convex extension of the derivative retains the universal source bounds. -/
-theorem Clock.extendedDriftDerivative_bounds (c : Clock) (y : ℝ) :
+theorem Clock.extendedDriftDerivative_bounds :
     (9 / 25 : ℝ) ≤ c.extendedDriftDerivative y ∧ c.extendedDriftDerivative y ≤ 9 := by
   by_cases hy : |y| < 1
   · have hb := c.drift_deriv_bounds hy
@@ -141,14 +150,14 @@ theorem Clock.extendedDriftDerivative_bounds (c : Clock) (y : ℝ) :
     norm_num
 
 /-- The integrated extension has exactly the constructed derivative at every point. -/
-theorem Clock.hasDerivAt_extendedDrift (c : Clock) (y : ℝ) :
+theorem Clock.hasDerivAt_extendedDrift :
     HasDerivAt c.extendedDrift (c.extendedDriftDerivative y) y := by
   have hc := c.extendedDriftDerivative_smooth.continuous
   exact intervalIntegral.integral_hasDerivAt_right
     (hc.intervalIntegrable _ _) hc.stronglyMeasurable.stronglyMeasurableAtFilter hc.continuousAt
 
 /-- The transport extension is globally C-infinity, not merely continuously differentiable. -/
-theorem Clock.extendedDrift_smooth (c : Clock) :
+theorem Clock.extendedDrift_smooth :
     ContDiff ℝ (⊤ : ℕ∞) c.extendedDrift := by
   rw [contDiff_infty_iff_deriv]
   refine ⟨fun y => (c.hasDerivAt_extendedDrift y).differentiableAt, ?_⟩
@@ -158,13 +167,13 @@ theorem Clock.extendedDrift_smooth (c : Clock) :
   exact c.extendedDriftDerivative_smooth
 
 /-- The derivative of the extension has the universal bounds everywhere. -/
-theorem Clock.extendedDrift_deriv_bounds (c : Clock) (y : ℝ) :
+theorem Clock.extendedDrift_deriv_bounds :
     (9 / 25 : ℝ) ≤ deriv c.extendedDrift y ∧ deriv c.extendedDrift y ≤ 9 := by
   rw [(c.hasDerivAt_extendedDrift y).deriv]
   exact c.extendedDriftDerivative_bounds y
 
 /-- The integrated transport extension agrees with the original drift on `J*`. -/
-theorem Clock.extendedDrift_eq (c : Clock) {y : ℝ} (hy : y ∈ normalizedActive) :
+theorem Clock.extendedDrift_eq {y : ℝ} (hy : y ∈ normalizedActive) :
     c.extendedDrift y = c.drift y := by
   have hy' : (-3 / 4 : ℝ) < y ∧ y < 3 / 4 := hy
   have hd : ∀ t ∈ Set.uIcc (0 : ℝ) y, |t| ≤ 3 / 4 := by

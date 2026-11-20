@@ -14,18 +14,24 @@ namespace HypoellipticAleksandrov.KineticAleksandrov
 open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic MeasureTheory Set Function Filter
 open scoped Topology
 
+variable {n : ℕ} {Ω : Set (PDE.Vec n)} (hΩ : IsOpen Ω) {γ : ℝ → PDE.Vec n}
+    (Φ : BoundedBorel (ℝ × EvolutionAmbientState n)) (hΦ : ContDiff ℝ (⊤ : ℕ∞) Φ)
+    (hc : HasCompactSupport Φ)
+    (hs : tsupport Φ ⊆ {q : ℝ × EvolutionAmbientState n |
+      q.2 ∈ evolutionStateSet Ω γ q.1})
+    (τ : ℝ)
+
+include Φ τ in
 /-- Restrict a bounded Borel time-state probe to a terminal time. -/
-def jointTerminalProbeSlice {n : ℕ}
-    (Φ : BoundedBorel (ℝ × EvolutionAmbientState n)) (τ : ℝ) :
+def jointTerminalProbeSlice :
     BoundedBorel (EvolutionAmbientState n) :=
   ⟨fun x => Φ (τ, x), Φ.measurable.comp (measurable_const.prodMk measurable_id), by
     obtain ⟨C, hC0, hC⟩ := Φ.exists_bound
     exact ⟨C, hC0, fun x => hC (τ, x)⟩⟩
 
+include hΦ hc in
 /-- Every slice of a smooth compact time-state probe is smooth and compactly supported. -/
-theorem jointTerminalProbeSlice_regular {n : ℕ}
-    (Φ : BoundedBorel (ℝ × EvolutionAmbientState n))
-    (hΦ : ContDiff ℝ (⊤ : ℕ∞) Φ) (hc : HasCompactSupport Φ) (τ : ℝ) :
+theorem jointTerminalProbeSlice_regular :
     ContDiff ℝ (⊤ : ℕ∞) (jointTerminalProbeSlice Φ τ) ∧
       HasCompactSupport (jointTerminalProbeSlice Φ τ) := by
   refine ⟨hΦ.comp (contDiff_const.prodMk contDiff_id), ?_⟩
@@ -35,14 +41,10 @@ theorem jointTerminalProbeSlice_regular {n : ℕ}
   intro hnon
   exact hx ⟨(τ, x), subset_closure hnon, rfl⟩
 
+include hΩ hΦ hc hs in
 /-- Near a fixed terminal time, all neighboring slices of a compact graph-supported
 probe are supported inside that fixed terminal fiber. -/
-theorem eventually_jointTerminalProbeSlice_admissible {n : ℕ}
-    {Ω : Set (PDE.Vec n)} (hΩ : IsOpen Ω) {γ : ℝ → PDE.Vec n}
-    (Φ : BoundedBorel (ℝ × EvolutionAmbientState n))
-    (hΦ : ContDiff ℝ (⊤ : ℕ∞) Φ) (hc : HasCompactSupport Φ)
-    (hs : tsupport Φ ⊆ {q : ℝ × EvolutionAmbientState n |
-      q.2 ∈ evolutionStateSet Ω γ q.1}) (τ : ℝ) :
+theorem eventually_jointTerminalProbeSlice_admissible :
     ∀ᶠ t in 𝓝 τ, IsSmoothCompactTerminalDatum Ω γ τ (jointTerminalProbeSlice Φ t) := by
   let K : Set (ℝ × EvolutionAmbientState n) :=
     tsupport Φ ∩ {z | z.2 ∉ evolutionStateSet Ω γ τ}

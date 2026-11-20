@@ -16,7 +16,7 @@ scalar datum in the moving terminal domain.
 
 1. The cutoff solutions `u_N` of `F(y) χ_N(z)` (from the premise `hEx`) converge on the whole past
    closed cylinder to a classical solution `V` of the `z`-independent datum `F(y)`
-   (`exists_cutoff_limit_classical`, uses the Hörmander input `hH`).
+   (`exists_cutoff_limit_classical`, uses the Hörmander input ``).
 2. `V` is the canonical integral `∫ F(y') dμ_{σ,y,z}(y', z')` of the terminal measures,
    by bounded convergence, and is `z`-independent by the translation covariance.
 3. Restricting to `z = 0` gives the scalar classical solution; the scalar solution is unique
@@ -88,8 +88,7 @@ theorem terminalMeasure_integral_lowerDatum_limit {τ : ℝ}
     refine tendsto_integral_of_dominated_convergence (fun _ => C)
       (fun N => (cutoffDatum F N).measurable.aestronglyMeasurable) (integrable_const C)
       (fun N => Eventually.of_forall fun x => ?_) (Eventually.of_forall fun x => ?_)
-    · rw [Real.norm_eq_abs]
-      exact abs_cutoffDatum_le hC hC0 N x
+    · exact abs_cutoffDatum_le hC hC0 N x
     · refine tendsto_const_nhds.congr' ?_
       obtain ⟨N₀, hN₀⟩ := exists_nat_ge ‖x.2‖
       filter_upwards [eventually_ge_atTop N₀] with N hN
@@ -103,10 +102,9 @@ theorem terminalMeasure_integral_lowerDatum_limit {τ : ℝ}
 every moving fiber kernel `K` whose master measures are the terminal measures `μ q`.  If `B` does
 not depend on the transported coordinate, the canonical marginal integral
 `V(σ, y) = ∫ F(y') dK_{σ,τ}` is the unique classical scalar terminal solution with datum
-`F` and zero lateral trace.  The Hörmander input `hH` is used for the interior smoothness
+`F` and zero lateral trace.  The Hörmander input `` is used for the interior smoothness
 of the cutoff limit. -/
 theorem exists_classical_terminalMarginal_of_master_eq
-    (hH : HormanderHypoellipticityStatement)
     (K : MovingFiberKernel Ω γ) (hK : ∀ q, K.master q = μ q)
     (hBz : ∀ (σ : ℝ) (y z z' : PDE.Vec n), B σ y z = B σ y z')
     (τ : ℝ) (F : BoundedBorel (PDE.Vec n))
@@ -121,16 +119,16 @@ theorem exists_classical_terminalMarginal_of_master_eq
           EqOn W V (ParabolicProbe.scalarPastClosedCylinder Ω γ τ)) := by
   have hΩo := isOpen_of_isAdmissibleEvolutionDomain hΩ
   obtain ⟨C, hC0, hC⟩ := F.exists_bound
-  have hFN := fun N => cutoffDatum_isSmoothCompact hF N
-  choose u hu hub _ using fun N => hEx τ (cutoffDatum F N) (hFN N)
-  have hbd : ∀ N, ∀ p ∈ evolutionPastClosedCylinder Ω γ τ, |u N p| ≤ C :=
-    fun N => hub N C hC0 (fun q => abs_cutoffDatum_le hC hC0 N q)
-  obtain ⟨V, hVlim, hVcl⟩ := exists_cutoff_limit_classical hH n hn lam Lam m L_b hlam hlamLam hm
-    hmLb Ω γ B b hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive τ F C hC0 hC
-    u hu hbd
-  have hint : ∀ (σ : ℝ) (hστ : σ ≤ τ) (s : EvolutionState Ω γ σ),
-      V ⟨σ, s.1.1, s.1.2⟩ =
-        ∫ x, lowerDatum F x ∂(μ (evolutionQueryOfState Ω γ σ τ hστ s)) := fun σ hστ s =>
+  choose u hu hub _ using fun N => hEx τ (cutoffDatum F N) ((fun N => cutoffDatum_isSmoothCompact hF N) N)
+  obtain ⟨V, hVlim, hVcl⟩ := classical_limit_of_quadratic_tails hΩo hγ.1 hlam hB_smooth hB_ell hb_smooth hm hb_coercive hb_lipschitz hC0 hC0
+    (G := cutoffDatum F) (F := lowerDatum F) (abs_cutoffDatum_sub_le hC hC0) (fun x => by
+      obtain ⟨k,hk⟩ := exists_nat_ge ‖x.2‖
+      filter_upwards [eventually_ge_atTop k] with i hi
+      have : (k : ℝ) ≤ i := by exact_mod_cast hi
+      simp only [cutoffDatum_apply,lowerDatum_apply,zCutoffN_eq_one (show ‖x.2‖ ≤ (i : ℝ)+1 by linarith),mul_one]) u hu
+    (fun N => hub N C hC0 (fun q => abs_cutoffDatum_le hC hC0 N q))
+
+  have hint := fun σ hστ s =>
     terminalMeasure_integral_lowerDatum_limit n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
       hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx F C hC0 hC hF u hu
       σ hστ s _ (hVlim _ (mk_mem_evolutionPastClosedCylinder hστ s))
@@ -138,12 +136,11 @@ theorem exists_classical_terminalMarginal_of_master_eq
       V ⟨σ, s.1.1, s.1.2 + h⟩ = V ⟨σ, s.1.1, s.1.2⟩ := by
     intro σ hστ s h
     have e1 := hint σ hστ (evolutionStateShift Ω γ σ h s)
-    have e2 := hint σ hστ s
     rw [← terminalMeasure_shift n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
       hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx hBz σ τ hστ h s,
       integral_map (measurable_ambientShift h).aemeasurable
         (lowerDatum F).measurable.aestronglyMeasurable] at e1
-    exact e1.trans e2.symm
+    exact e1.trans (hint σ hστ s).symm
   have hzind : ∀ p ∈ evolutionPastClosedCylinder Ω γ τ, V p = V ⟨p.time, p.position, 0⟩ := by
     intro p hp
     by_cases hy : p.position ∈ movingDomain Ω γ p.time
@@ -155,7 +152,6 @@ theorem exists_classical_terminalMarginal_of_master_eq
       rw [hVcl.2.2.2.2.2 p ⟨hp.1, hf⟩, hVcl.2.2.2.2.2 ⟨p.time, p.position, 0⟩ ⟨hp.1, hf⟩]
   refine ⟨fun q => V ⟨q.1, q.2, 0⟩, hVcl.toScalar hzind, ?_, ?_⟩
   · intro σ hστ y
-    have e := hint σ hστ (positionStateZero Ω γ σ y)
     have hrhs : ∫ y', F y'.1 ∂(parabolicMarginalKernel K
         (measurableSet_of_isAdmissibleEvolutionDomain hΩ) σ τ hστ y) =
         ∫ x, lowerDatum F x ∂(μ (evolutionQueryOfState Ω γ σ τ hστ
@@ -163,7 +159,7 @@ theorem exists_classical_terminalMarginal_of_master_eq
       rw [parabolicMarginalKernel_apply, MovingFiberKernel.fiberFirstMarginal,
         ProbabilityTheory.Kernel.map_apply _ (MovingFiberKernel.measurable_firstPosition Ω γ τ),
         integral_map (MovingFiberKernel.measurable_firstPosition Ω γ τ).aemeasurable
-          (f := fun y' : EvolutionPosition Ω γ τ => (F : PDE.Vec n → ℝ) y'.1)
+          (f := fun y' : EvolutionPosition Ω γ τ => F y'.1)
           (F.measurable.comp measurable_subtype_coe).aestronglyMeasurable, ← hK,
         ← MovingFiberKernel.map_fiberKernel_eq_master K
           (measurableSet_of_isAdmissibleEvolutionDomain hΩ) σ τ hστ (positionStateZero Ω γ σ y),
@@ -171,11 +167,11 @@ theorem exists_classical_terminalMarginal_of_master_eq
           (lowerDatum F).measurable.aestronglyMeasurable]
       rfl
     rw [hrhs]
-    exact e
+    exact (hint σ hστ (positionStateZero Ω γ σ y))
   · intro W hW q hq
     have hEq := IsClassicalTerminalSolution.eqOn_of_lam hΩo hγ.1 hlam hB_ell hb_lipschitz
       (hW.toKinetic (b := b) hBz) hVcl
-    exact hEq (show (⟨q.1, q.2, 0⟩ : KineticPoint n) ∈ evolutionPastClosedCylinder Ω γ τ from hq)
+    exact hEq (show (⟨q.1, q.2, 0⟩) ∈ evolutionPastClosedCylinder Ω γ τ from hq)
 
 end EvolutionData
 

@@ -25,7 +25,6 @@ theorem bellmanAngularPositiveTail_limit (R β : ℝ) (hR : 1 ≤ R) (hβ : 3 �
       J 0 = ((β - 2) / 3) * L ∧ ∀ y : ℝ, 0 < y → h 0 ≤ h y := by
   have hi := bellmanAngularFirstMoment_integrable β f h J hβ hf hn hh he
   let L := ∫ z in Ioi 0, z * f z
-  have hL : 0 ≤ L := bellmanAngularFirstMoment_total_nonneg f hn
   have hI := bellmanAngularFirstMoment_tendsto f hi
   have hM := bellmanAngularSecondMoment_div_tendsto f hf hi
   have h0 : Tendsto (fun y : ℝ => h 0 / y) atTop (𝓝 0) :=
@@ -35,19 +34,18 @@ theorem bellmanAngularPositiveTail_limit (R β : ℝ) (hR : 1 ≤ R) (hβ : 3 �
       (hI.const_mul ((β - 2) / 3))).add (hM.const_mul ((β - 3) / 3))
     simp only [zero_add, mul_zero, add_zero] at ht
     apply ht.congr'
-    filter_upwards [eventually_gt_atTop (0 : ℝ)] with y hy
+    filter_upwards [eventually_gt_atTop 0] with y hy
     rw [he y]
     field_simp
   have hlower : 0 ≤ J 0 - ((β - 2) / 3) * L := by
     apply ge_of_tendsto hdiv
-    filter_upwards [eventually_ge_atTop (0 : ℝ)] with y hy
-    exact div_nonneg (hh y) hy
+    filter_upwards [eventually_ge_atTop 0] with y hy
+    apply_rules [div_nonneg]
   have hz : J 0 - ((β - 2) / 3) * L = 0 := by
     by_contra hne
-    have hp : 0 < J 0 - ((β - 2) / 3) * L := lt_of_le_of_ne hlower (Ne.symm hne)
-    exact bellmanAngularTail_no_positive_linear_limit R β hR hβ f h htail hcomp _ hp hdiv
+    exact bellmanAngularTail_no_positive_linear_limit R β hR hβ f h htail hcomp _ (lt_of_le_of_ne hlower (Ne.symm hne)) hdiv
   have hj : J 0 = ((β - 2) / 3) * L := by linarith
-  refine ⟨L, hL, hI, hM, hj, ?_⟩
+  refine ⟨L, (bellmanAngularFirstMoment_total_nonneg f hn), hI, hM, hj, ?_⟩
   intro y hy
   have hIy : bellmanAngularFirstMoment f y ≤ L := by
     rw [bellmanAngularFirstMoment, intervalIntegral.integral_of_le hy.le]
@@ -60,7 +58,6 @@ theorem bellmanAngularPositiveTail_limit (R β : ℝ) (hR : 1 ≤ R) (hβ : 3 �
   have hc : 0 ≤ (β - 2) / 3 := by linarith
   have hd : 0 ≤ (β - 3) / 3 := by linarith
   have hp := mul_nonneg (mul_nonneg hc hy.le) (sub_nonneg.mpr hIy)
-  have hq := mul_nonneg hd hMy
   nlinarith
 
 end HypoellipticAleksandrov.KineticAleksandrov

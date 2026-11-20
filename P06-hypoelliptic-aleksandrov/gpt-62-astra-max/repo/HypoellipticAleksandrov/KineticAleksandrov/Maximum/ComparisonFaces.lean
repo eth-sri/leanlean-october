@@ -22,17 +22,17 @@ theorem comparison_inward_segment {d : ℕ} (Y V : PDE.Vec d) (r : ℝ)
       PDE.continuous_vecNormSq.comp (continuous_const.add (continuous_id.smul continuous_const))
     have he : ∀ᶠ h in 𝓝 (0 : ℝ), PDE.vecNormSq (Y + h • V) < r ^ 2 := by
       apply hc.continuousAt.eventually_lt continuousAt_const
-      simpa only [zero_smul, add_zero] using hstrict
+      simpa using hstrict
     obtain ⟨η,hη,he⟩ := Metric.eventually_nhds_iff.mp he
     refine ⟨η,hη,fun h hh hhη => (he ?_).le⟩
     simpa only [Real.dist_eq, sub_zero, abs_of_nonneg hh] using hhη
-  · have heq : PDE.vecNormSq Y = r ^ 2 := le_antisymm hY (le_of_not_gt hstrict)
-    have hdot : PDE.vecDot V Y < 0 := lt_of_not_ge (fun h => hin ⟨heq,h⟩)
+  · have heq := le_antisymm hY (le_of_not_gt hstrict)
+    have hdot := lt_of_not_ge (fun h => hin ⟨heq,h⟩)
     have hnorm := PDE.vecNormSq_nonneg V
     have hden : 0 < PDE.vecNormSq V + 1 := by positivity
     refine ⟨-PDE.vecDot V Y / (PDE.vecNormSq V + 1), div_pos (neg_pos.mpr hdot) hden,?_⟩
     intro h hh hhη
-    have hb : h * (PDE.vecNormSq V + 1) < -PDE.vecDot V Y :=
+    have hb :=
       (lt_div_iff₀ hden).mp hhη
     have hm : h * (2 * PDE.vecDot V Y + h * PDE.vecNormSq V) ≤ 0 :=
       mul_nonpos_of_nonneg_of_nonpos hh (by linarith)
@@ -52,10 +52,8 @@ theorem comparison_freeTransport_stays {d : ℕ}
     ∃ η : ℝ, 0 < η ∧ ∀ h : ℝ, 0 ≤ h → h < η →
       (⟨P.time + h,P.position + h • P.velocity,P.velocity⟩ : KineticPoint d) ∈
         closure (forwardCylinder Z₀ R hR) := by
-  have hb := closure_forwardCylinder_bounds Z₀ R hR hP
-  rcases hb with ⟨⟨ht0,ht1⟩,hx,hv⟩
+  rcases (closure_forwardCylinder_bounds Z₀ R hR hP) with ⟨⟨ht0,ht1⟩,hx,hv⟩
   change Z₀.time ≤ P.time at ht0
-  change P.time ≤ Z₀.time + R ^ 2 at ht1
   have htime : P.time < Z₀.time + R ^ 2 := by
     apply lt_of_le_of_ne ht1
     intro heq
@@ -65,11 +63,10 @@ theorem comparison_freeTransport_stays {d : ℕ}
     intro hh
     apply hnot ((mem_exitBoundary_iff Z₀ P R hR).2 ⟨hP,Or.inr (Or.inr ?_)⟩)
     refine ⟨?_,hh.2⟩
-    simpa only [PDE.euclideanSphere, PDE.euclideanSqDist, mem_ofPred_eq,
-      relativeHomeomorph, sub_zero] using hh.1
+    simpa [PDE.euclideanSphere, PDE.euclideanSqDist, mem_ofPred_eq, relativeHomeomorph] using hh.1
   have hx' : PDE.vecNormSq (relativePosition Z₀ P) ≤ (R ^ 3) ^ 2 := by
     change PDE.vecNormSq (relativePosition Z₀ P - 0) ≤ (R ^ 3) ^ 2 at hx
-    simpa only [sub_zero] using hx
+    simpa using hx
   obtain ⟨r,hr,hstay⟩ := comparison_inward_segment _ _ _ hx' hin
   refine ⟨min r (Z₀.time + R ^ 2 - P.time), lt_min hr (sub_pos.mpr htime),?_⟩
   intro h hh hη

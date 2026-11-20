@@ -20,7 +20,7 @@ def enlargedVisitMassConstant (lam Lam : ℝ) : ℝ :=
 /-- The explicit counting constant is positive under the source ellipticity assumptions. -/
 theorem enlargedVisitMassConstant_pos {lam Lam : ℝ}
     (hlam : 0 < lam) (hLam : lam ≤ Lam) : 0 < enlargedVisitMassConstant lam Lam := by
-  have hLp : 0 < Lam := hlam.trans_le hLam
+  have hLp := hlam.trans_le hLam
   unfold enlargedVisitMassConstant
   positivity
 

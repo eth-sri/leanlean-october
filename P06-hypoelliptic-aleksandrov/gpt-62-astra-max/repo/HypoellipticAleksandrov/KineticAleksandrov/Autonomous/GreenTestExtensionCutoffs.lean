@@ -30,32 +30,33 @@ theorem reconstructionUnitBump_properties :
     fun x => ⟨reconstructionUnitBump.nonneg, reconstructionUnitBump.le_one⟩,
     max D 0, le_max_right _ _, fun x => (hD x).trans (le_max_left _ _)⟩
 
+section
+variable (R : ℝ) (hR : 0 < R) (D : ℝ) (hD : ∀ x, |deriv reconstructionUnitBump x| ≤ D) (x : ℝ)
+
+include hR in
 /-- A position cutoff with radius `R` and outer radius `2R`. -/
-def reconstructionPositionBump (R : ℝ) (hR : 0 < R) : ContDiffBump (0 : ℝ) :=
+def reconstructionPositionBump : ContDiffBump (0 : ℝ) :=
   ⟨R, 2 * R, hR, by linarith⟩
 
 /-- Radius rescaling agrees with the previously verified scalar cutoff calculus. -/
-theorem reconstructionPositionBump_eq_scaled (R : ℝ) (hR : 0 < R) :
+theorem reconstructionPositionBump_eq_scaled :
     (reconstructionPositionBump R hR : ℝ → ℝ) =
       scaledScalarCutoff reconstructionUnitBump R := by
   funext x
   simp only [ContDiffBump.apply, reconstructionPositionBump, reconstructionUnitBump,
     scaledScalarCutoff, sub_zero, smul_eq_mul]
-  congr 1
-  · field_simp
-  · simp only [inv_one, one_mul, div_eq_mul_inv]
-    ring
+  grind
 
+include hD in
 /-- The cutoff derivative has a uniform inverse-radius bound. -/
-theorem reconstructionPositionBump_deriv_bound (R : ℝ) (hR : 0 < R) (D : ℝ)
-    (hD : ∀ x, |deriv reconstructionUnitBump x| ≤ D) (x : ℝ) :
+theorem reconstructionPositionBump_deriv_bound :
     |deriv (reconstructionPositionBump R hR) x| ≤ D / R := by
   rw [reconstructionPositionBump_eq_scaled]
   exact scaledScalarCutoff_deriv_bound _
     (reconstructionUnitBump_properties.1.of_le (by simp)) hR D hD x
 
 /-- Expanding position cutoffs eventually equal one at every fixed position. -/
-theorem reconstructionPositionBump_tendsto (x : ℝ) :
+theorem reconstructionPositionBump_tendsto :
     Tendsto (fun n : ℕ => reconstructionPositionBump ((n : ℝ) + 1) (by positivity) x)
       atTop (𝓝 1) := by
   apply tendsto_const_nhds.congr'
@@ -68,7 +69,7 @@ theorem reconstructionPositionBump_tendsto (x : ℝ) :
   linarith
 
 /-- The expanding position cutoff derivative converges to zero. -/
-theorem reconstructionPositionBump_deriv_tendsto (x : ℝ) :
+theorem reconstructionPositionBump_deriv_tendsto :
     Tendsto (fun n : ℕ => deriv
       (reconstructionPositionBump ((n : ℝ) + 1) (by positivity)) x) atTop (𝓝 0) := by
   obtain ⟨D, _, hD⟩ := reconstructionUnitBump_properties.2.2.2
@@ -76,8 +77,9 @@ theorem reconstructionPositionBump_deriv_tendsto (x : ℝ) :
     (show Tendsto (fun n : ℕ => D / ((n : ℝ) + 1)) atTop (𝓝 0) from by
       simpa only [div_eq_mul_inv, one_mul, mul_zero] using
         tendsto_one_div_add_atTop_nhds_zero_nat.const_mul D)
-  rw [Real.norm_eq_abs]
-  exact reconstructionPositionBump_deriv_bound _ (by positivity) D hD x
+  apply reconstructionPositionBump_deriv_bound <;> assumption
+
+end
 
 /-- Coordinatewise smooth cutoffs make an arbitrary smooth test compact. -/
 theorem reconstruction_product_cutoff_compact
@@ -92,21 +94,19 @@ theorem reconstruction_product_cutoff_compact
   intro x hx
   have hn : bt (timeCoord 1 x) ≠ 0 ∧ bv (diffusedCoord 1 x 0) ≠ 0 ∧
       bx (transportedCoord 1 x 0) ≠ 0 := by
-    have hh := mul_ne_zero_iff.mp hx
-    have hh' := mul_ne_zero_iff.mp hh.1
-    exact ⟨(mul_ne_zero_iff.mp hh'.1).1, (mul_ne_zero_iff.mp hh'.1).2, hh'.2⟩
+    aesop
   have ht : |timeCoord 1 x| < bt.rOut := by
     have hh : timeCoord 1 x ∈ Function.support bt := hn.1
     rw [bt.support_eq] at hh
-    simpa only [mem_ball, Real.dist_eq, sub_zero] using hh
+    simp_all
   have hv : |diffusedCoord 1 x 0| < bv.rOut := by
     have hh : diffusedCoord 1 x 0 ∈ Function.support bv := hn.2.1
     rw [bv.support_eq] at hh
-    simpa only [mem_ball, Real.dist_eq, sub_zero] using hh
+    simp_all
   have hz : |transportedCoord 1 x 0| < bx.rOut := by
     have hh : transportedCoord 1 x 0 ∈ Function.support bx := hn.2.2
     rw [bx.support_eq] at hh
-    simpa only [mem_ball, Real.dist_eq, sub_zero] using hh
+    simp_all
   rw [mem_closedBall_zero_iff, pi_norm_le_iff_of_nonneg hR]
   intro i
   fin_cases i

@@ -20,8 +20,6 @@ open scoped ENNReal NNReal
 
 /-- Uniform interval slab density with exponential killing. -/
 theorem interval_slab_density
-    (hH : HormanderHypoellipticityStatement)
-    (hLE : LiebermanEllipsoidDirichletStatement)
     (lam Lam m Lb length : ℝ) (hlam : 0 < lam) (hlamLam : lam ≤ Lam)
     (hm : 0 < m) (hmLb : m ≤ Lb) (hlength : 0 < length)
     (q : ℝ) (hq : 1 < q) (hq2 : q < 2) :
@@ -41,14 +39,14 @@ theorem interval_slab_density
       ∫⁻ p in slabSet T, G p ^ q ∂greenLebesgue 1 ≤
         ENNReal.ofReal C * μ univ ^ q *
           ENNReal.ofReal (T ^ (3 - 2 * q) * Real.exp (-k * T)) := by
-  obtain ⟨C, k, hk, hfourier⟩ := interval_slab_fourier hH hLE
+  obtain ⟨C, k, hk, hfourier⟩ := interval_slab_fourier
     lam Lam m Lb length hlam hlamLam hm hmLb hlength
-  refine ⟨(slabConstant 1 q C : ℝ) + 1, k * (q - 1),
+  refine ⟨(slabConstant 1 q C) + 1, k * (q - 1),
     by positivity, mul_pos hk (by linarith), ?_⟩
   intro a c hac B b hs hJ S K hr hlen σ T hT μ _ Γ hΓ
   obtain ⟨g, hgm, hgE, hgb, f, _hfm, hf, hfb⟩ :=
     hfourier a c hac B b hs hJ S K hr hlen σ T hT μ Γ hΓ
-  have hqd : q < 1 + 1 / ((1 : ℕ) : ℝ) := by norm_num; exact hq2
+  have hqd : q < 1 + 1 / ((1 : ℕ)) := by norm_num; exact hq2
   have hγ1 := (slab_gamma_one_lt (d := 1) hq hqd).le
   have hγ2 : slabGamma 1 q ≤ 2 := by
     have := (slab_q_lt_gamma (d := 1) hq hqd).2.le

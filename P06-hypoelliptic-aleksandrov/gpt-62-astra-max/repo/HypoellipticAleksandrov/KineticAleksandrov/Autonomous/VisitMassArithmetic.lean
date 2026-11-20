@@ -32,8 +32,6 @@ theorem exists_visit_mass_arithmetic_constant {lam Lam : ℝ}
   refine ⟨9 / 5 + K, by linarith, ?_⟩
   intro R r M hR hr h
   have hb := visit_mass_quadratic_bound hlam hr h
-  change M ≤ 9 / 5 + K * (R / r) at hb
-  have hp : 0 < R / r := div_pos hR hr
-  nlinarith only [hb, hp, hK]
+  nlinarith only [hb, (div_pos hR hr), hK]
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

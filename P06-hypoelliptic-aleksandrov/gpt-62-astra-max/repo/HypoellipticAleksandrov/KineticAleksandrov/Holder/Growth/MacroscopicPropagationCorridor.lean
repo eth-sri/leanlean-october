@@ -54,19 +54,14 @@ theorem physical_corridor_subset_image {d : ℕ} (P0 : KineticPoint d) {scale : 
     · exact (div_le_iff₀ (pow_pos hscale 2)).mpr
         (hQ.1.2.trans_eq (mul_comm (scale ^ 2) T))
   · rw [hx, PDE.vecEuclideanNorm_smul, abs_of_pos (inv_pos.mpr (pow_pos hscale 3))]
-    have he := mul_le_mul_of_nonneg_left hQ.2.1
-      (inv_nonneg.mpr (pow_nonneg hscale.le 3))
-    exact he.trans_eq (inv_mul_cancel₀ (pow_ne_zero 3 hscale.ne'))
+    exact (mul_le_mul_of_nonneg_left hQ.2.1 (inv_nonneg.mpr (pow_nonneg hscale.le 3))).trans_eq (inv_mul_cancel₀ (pow_ne_zero 3 hscale.ne'))
   · rw [hv, PDE.vecEuclideanNorm_smul, abs_of_pos (inv_pos.mpr hscale)]
-    have he := mul_le_mul_of_nonneg_left hQ.2.2 (inv_nonneg.mpr hscale.le)
-    exact he.trans_eq (inv_mul_cancel₀ hscale.ne')
+    exact (mul_le_mul_of_nonneg_left hQ.2.2 (inv_nonneg.mpr hscale.le)).trans_eq (inv_mul_cancel₀ hscale.ne')
 
 /-- Smaller closed intervals and Euclidean widths preserve corridor inclusion. -/
 theorem corridor_mono {d : ℕ} (tminus : ℝ) {a a' b b' kx kx' kv kv' : ℝ}
     (ha : a ≤ a') (hb : b' ≤ b) (hx : kx' ≤ kx) (hv : kv' ≤ kv)
     (x v : ℝ → PDE.Vec d) :
-    corridor tminus a' b' kx' kv' x v ⊆ corridor tminus a b kx kv x v := by
-  intro P hP
-  exact ⟨⟨ha.trans hP.1.1, hP.1.2.trans hb⟩, hP.2.1.trans hx, hP.2.2.trans hv⟩
+    corridor tminus a' b' kx' kv' x v ⊆ corridor tminus a b kx kv x v := fun P hP => ⟨⟨ha.trans hP.1.1, hP.1.2.trans hb⟩, hP.2.1.trans hx, hP.2.2.trans hv⟩
 
 end HypoellipticAleksandrov.KineticAleksandrov.Holder.Growth

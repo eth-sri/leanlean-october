@@ -14,8 +14,11 @@ open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic SectionTwo Measur
 open scoped ENNReal
 variable {d : ℕ}
 
+variable (hEvol : TerminalEvolutionStatement) (hd : 0 < d) (lam Lam : ℝ) (hlam : 0 < lam)
+    (hLam : lam ≤ Lam)
+
 /-- Forget the scaled representative after scaling the unit-time duality theorem. -/
-theorem occupation_of_duality (lam Lam : ℝ) (hDuality :
+theorem occupation_of_duality (hDuality :
     ∃ C : ℝ → ℝ,
       (∀ γ, 1 ≤ γ → γ ≤ ((d : ℝ) + 1) / d → 0 ≤ C γ) ∧
       ∀ (B : CoefficientField d) (_hB : IsSectionTwoCoefficient lam Lam B)
@@ -54,10 +57,9 @@ theorem occupation_of_duality (lam Lam : ℝ) (hDuality :
   intro γ hγ0 hγ1
   exact ⟨(hb γ hγ0 hγ1).1, (hb γ hγ0 hγ1).2.2.2⟩
 
+include hd hlam hLam in
 /-- The whole-space occupation theorem with all its original premises. -/
-theorem occupation
-    (hH : HormanderHypoellipticityStatement)
-    (hd : 0 < d) (lam Lam : ℝ) (hlam : 0 < lam) (hLam : lam ≤ Lam) :
+theorem occupation :
     ∃ C : ℝ → ℝ,
       (∀ γ, 1 ≤ γ → γ ≤ ((d : ℝ) + 1) / d → 0 ≤ C γ) ∧
       ∀ (B : CoefficientField d) (_hB : IsSectionTwoCoefficient lam Lam B)
@@ -74,22 +76,19 @@ theorem occupation
               (volume.restrict (Ioo (0 : ℝ) T ×ˢ univ)) ∧
             occupationLpNorm T γ g ≤
               C γ * (ρ univ).toReal * T ^ occupationBeta d γ := by
-  exact occupation_of_duality lam Lam (occupation_duality hH hd lam Lam hlam hLam)
+  exact occupation_of_duality lam Lam (occupation_duality hd lam Lam hlam hLam)
 
+include hEvol hd hlam hLam in
 /-- The occupation family, relative to the terminal evolution statement and Hörmander's theorem. -/
-theorem parabolicOccupationFamily_holds (hEvol : TerminalEvolutionStatement)
-    (hH : HormanderHypoellipticityStatement)
-    (hd : 0 < d) (lam Lam : ℝ) (hlam : 0 < lam) (hLam : lam ≤ Lam) :
+theorem parabolicOccupationFamily_holds :
     Green.ParabolicOccupationFamily d lam Lam := by
-  obtain ⟨C, hC0, hocc⟩ := occupation hH hd lam Lam hlam hLam
+  obtain ⟨C, hC0, hocc⟩ := occupation hd lam Lam hlam hLam
   refine ⟨C, ?_⟩
   intro B hB S K hreal
   refine ⟨hC0, ?_⟩
   intro ρ _ σ₀ T hT
-  have hP := wholeSpace_marginalBundle_of_evolution hEvol hd hB S K hreal
-  obtain ⟨g, hg, hb⟩ := hocc B hB S K hreal hP ρ σ₀ T hT
+  obtain ⟨g, hg, hb⟩ := hocc B hB S K hreal (wholeSpace_marginalBundle_of_evolution hEvol hd hB S K hreal) ρ σ₀ T hT
   refine ⟨g, (isOccupationDensity_iff_slabOccupationDensity K σ₀ T ρ g).mp hg, ?_⟩
-  intro γ hγ0 hγ1
-  exact hb γ hγ0 hγ1
+  exact hb
 
 end HypoellipticAleksandrov.KineticAleksandrov.Occupation

@@ -20,8 +20,8 @@ theorem bellman_test_lift (alpha : ℝ) (_ha : 0 < alpha) (_ha1 : alpha < 1)
           r ^ 2 * bellmanOperator b zeta (bellmanPlaneDilation r q) := by
   refine ⟨⟨bellman_lift_contDiffOn alpha zeta hz hc hs, ?_⟩, ?_⟩
   · intro r hr q _
-    exact bellman_lift_scaling alpha zeta r hr q
+    apply bellman_lift_scaling <;> assumption
   · intro r hr q hq b
-    exact bellmanOperator_comp_dilation r hr zeta hz q hq b
+    apply bellmanOperator_comp_dilation <;> assumption
 
 end HypoellipticAleksandrov.KineticAleksandrov

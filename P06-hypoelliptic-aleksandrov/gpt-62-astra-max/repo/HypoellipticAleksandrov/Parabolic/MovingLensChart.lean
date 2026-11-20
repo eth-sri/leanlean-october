@@ -15,21 +15,25 @@ namespace HypoellipticAleksandrov.Parabolic
 
 noncomputable section
 
+section
+variable {d : Nat} (xi eps : Real) (y : PDE.Vec d)
+
+include xi eps y in
 /-- The time-preserving chart which normalizes moving-lens velocity displacement. -/
-def movingLensChart {d : Nat} (xi eps : Real) (y : PDE.Vec d) :
+def movingLensChart :
     TimeVelocity d → TimeVelocity d :=
   fun z => (z.1,
     (Real.sqrt (movingLensDenominator xi eps z.1))⁻¹ •
       movingLensDisplacement y z)
 
+include xi eps y in
 /-- The inverse time-preserving chart from the normalized velocity coordinate. -/
-def movingLensChartInv {d : Nat} (xi eps : Real) (y : PDE.Vec d) :
+def movingLensChartInv :
     TimeVelocity d → TimeVelocity d :=
   fun z => (z.1,
     z.1 • y + Real.sqrt (movingLensDenominator xi eps z.1) • z.2)
 
-private theorem movingLensDisplacement_chartInv {d : Nat} (xi eps : Real)
-    (y : PDE.Vec d) (z : TimeVelocity d) :
+private theorem movingLensDisplacement_chartInv (z : TimeVelocity d) :
     movingLensDisplacement y (movingLensChartInv xi eps y z) =
       Real.sqrt (movingLensDenominator xi eps z.1) • z.2 := by
   ext i
@@ -37,12 +41,18 @@ private theorem movingLensDisplacement_chartInv {d : Nat} (xi eps : Real)
     Pi.add_apply, Pi.sub_apply, Pi.smul_apply, smul_eq_mul]
   ring
 
-private theorem movingLensChart_velocity_sq {d : Nat} {xi eps : Real} {y : PDE.Vec d}
-    {z : TimeVelocity d} (hxi : 0 ≤ xi) (heps : 0 < eps) (hz : 0 ≤ z.1) :
+end
+
+section
+variable {d : Nat} {xi eps : Real} {y : PDE.Vec d} {z : TimeVelocity d} (hxi : 0 ≤ xi)
+    (heps : 0 < eps) (hz : 0 ≤ z.1)
+include hxi heps hz
+
+private theorem movingLensChart_velocity_sq :
     PDE.vecNormSq (movingLensChart xi eps y z).2 =
       PDE.vecNormSq (movingLensDisplacement y z) /
         movingLensDenominator xi eps z.1 := by
-  have hden : 0 < movingLensDenominator xi eps z.1 :=
+  have hden :=
     movingLensDenominator_pos hxi heps hz
   change PDE.vecNormSq
       ((Real.sqrt (movingLensDenominator xi eps z.1))⁻¹ •
@@ -52,24 +62,18 @@ private theorem movingLensChart_velocity_sq {d : Nat} {xi eps : Real} {y : PDE.V
   rw [PDE.vecNormSq_smul, inv_pow, Real.sq_sqrt hden.le, div_eq_mul_inv]
   ring
 
-private theorem movingLensChartInv_displacement_sq {d : Nat} {xi eps : Real}
-    {y : PDE.Vec d} {z : TimeVelocity d} (hxi : 0 ≤ xi) (heps : 0 < eps)
-    (hz : 0 ≤ z.1) :
+private theorem movingLensChartInv_displacement_sq :
     PDE.vecNormSq (movingLensDisplacement y (movingLensChartInv xi eps y z)) =
       movingLensDenominator xi eps z.1 * PDE.vecNormSq z.2 := by
-  have hden : 0 < movingLensDenominator xi eps z.1 :=
-    movingLensDenominator_pos hxi heps hz
-  rw [movingLensDisplacement_chartInv, PDE.vecNormSq_smul, Real.sq_sqrt hden.le]
+  rw [movingLensDisplacement_chartInv, PDE.vecNormSq_smul, Real.sq_sqrt (movingLensDenominator_pos hxi heps hz).le]
 
 /-- Applying the inverse chart after the moving-lens chart recovers a nonnegative-time
 point. -/
-@[simp] theorem movingLensChartInv_apply_movingLensChart
-    {d : Nat} {xi eps : Real} {y : PDE.Vec d} {z : TimeVelocity d}
-    (hxi : 0 ≤ xi) (heps : 0 < eps) (hz : 0 ≤ z.1) :
+@[simp] theorem movingLensChartInv_apply_movingLensChart :
     movingLensChartInv xi eps y (movingLensChart xi eps y z) = z := by
-  have hden : 0 < movingLensDenominator xi eps z.1 :=
+  have hden :=
     movingLensDenominator_pos hxi heps hz
-  have hsqrt : 0 < Real.sqrt (movingLensDenominator xi eps z.1) :=
+  have hsqrt :=
     Real.sqrt_pos.2 hden
   apply Prod.ext
   · rfl
@@ -78,18 +82,15 @@ point. -/
         ((Real.sqrt (movingLensDenominator xi eps z.1))⁻¹ •
           (z.2 - z.1 • y))) i = z.2 i
     rw [smul_smul, mul_inv_cancel₀ hsqrt.ne', one_smul]
-    simp only [Pi.add_apply, Pi.sub_apply, Pi.smul_apply, smul_eq_mul]
-    ring
+    simp
 
 /-- Applying the moving-lens chart after its inverse recovers a nonnegative-time
 normalized point. -/
-@[simp] theorem movingLensChart_apply_movingLensChartInv
-    {d : Nat} {xi eps : Real} {y : PDE.Vec d} {z : TimeVelocity d}
-    (hxi : 0 ≤ xi) (heps : 0 < eps) (hz : 0 ≤ z.1) :
+@[simp] theorem movingLensChart_apply_movingLensChartInv :
     movingLensChart xi eps y (movingLensChartInv xi eps y z) = z := by
-  have hden : 0 < movingLensDenominator xi eps z.1 :=
+  have hden :=
     movingLensDenominator_pos hxi heps hz
-  have hsqrt : 0 < Real.sqrt (movingLensDenominator xi eps z.1) :=
+  have hsqrt :=
     Real.sqrt_pos.2 hden
   apply Prod.ext
   · rfl
@@ -98,27 +99,28 @@ normalized point. -/
         movingLensDisplacement y (movingLensChartInv xi eps y z)) i = z.2 i
     rw [movingLensDisplacement_chartInv, smul_smul, inv_mul_cancel₀ hsqrt.ne', one_smul]
 
+end
+
+variable {d : Nat} {xi eps tau : Real} {y : PDE.Vec d} (hxi : 0 ≤ xi) (heps : 0 < eps)
+include hxi heps
+
 /-- The chart maps the closed moving lens exactly onto the closed unit cylinder. -/
-theorem movingLensChart_image_closed
-    {d : Nat} {xi eps tau : Real} {y : PDE.Vec d}
-    (hxi : 0 ≤ xi) (heps : 0 < eps) :
+theorem movingLensChart_image_closed :
     movingLensChart xi eps y '' movingLensClosed xi eps tau y =
       closedParabolicCylinder tau (0 : PDE.Vec d) := by
   apply Set.Subset.antisymm
   · rintro q ⟨z, hz, rfl⟩
     rw [mem_closedParabolicCylinder_iff]
     refine ⟨hz.1, hz.2.1, ?_⟩
-    have hden : 0 < movingLensDenominator xi eps z.1 :=
-      movingLensDenominator_pos hxi heps hz.1
     have hvelocity : PDE.vecNormSq (movingLensChart xi eps y z).2 ≤ 1 := by
       rw [movingLensChart_velocity_sq hxi heps hz.1]
-      exact (div_le_one₀ hden).mpr (by simpa using hz.2.2)
+      exact (div_le_one₀ (movingLensDenominator_pos hxi heps hz.1)).mpr (by exact hz.2.2)
     simpa [PDE.euclideanClosedBall, PDE.euclideanSqDist] using hvelocity
   · intro q hq
     rw [mem_closedParabolicCylinder_iff] at hq
     refine ⟨movingLensChartInv xi eps y q, ?_, ?_⟩
     · refine ⟨hq.1, hq.2.1, ?_⟩
-      have hden : 0 < movingLensDenominator xi eps q.1 :=
+      have hden :=
         movingLensDenominator_pos hxi heps hq.1
       have hvelocity : PDE.vecNormSq q.2 ≤ 1 := by
         simpa [PDE.euclideanClosedBall, PDE.euclideanSqDist] using hq.2.2
@@ -127,14 +129,6 @@ theorem movingLensChart_image_closed
       rw [movingLensChartInv_displacement_sq hxi heps hq.1]
       simpa using mul_le_mul_of_nonneg_left hvelocity hden.le
     · exact movingLensChart_apply_movingLensChartInv hxi heps hq.1
-
-/-- The moving-lens terminal center is sent to the normalized terminal origin. -/
-@[simp] theorem movingLensChart_terminalCenter
-    {d : Nat} {xi eps tau : Real} {y : PDE.Vec d}
-    (hxi : 0 ≤ xi) (heps : 0 < eps) (htau : 0 ≤ tau) :
-    movingLensChart xi eps y (tau, tau • y) = (tau, 0) := by
-  have _ := movingLensDenominator_pos hxi heps htau
-  ext <;> simp [movingLensChart, movingLensDisplacement]
 
 end
 

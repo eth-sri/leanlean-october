@@ -1,7 +1,14 @@
 module
 
-public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.BorelTransfer
-public import HypoellipticAleksandrov.KineticAleksandrov.ClassicalInputs
+public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.AutonomousReflection
+public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.ScalarBorelPassage
+public import Mathlib.MeasureTheory.Function.LpSeminorm.Indicator
+public import Mathlib.MeasureTheory.Function.LpSpace.Indicator
+public import HypoellipticAleksandrov.KineticAleksandrov.Hormander
+public import HypoellipticAleksandrov.KineticAleksandrov.EllipsoidDirichlet
+public import HypoellipticAleksandrov.Parabolic.ScalarDirichletData
+public import HypoellipticAleksandrov.Parabolic.KrylovCylinder
+public import PDEFoundation.Geometry.EuclideanBall.Basic
 import HypoellipticAleksandrov.KineticAleksandrov.TheoremA.LocalisedSource
 
 /-! # Localized autonomous estimate conditional on improved cylinder density
@@ -19,7 +26,6 @@ open scoped ENNReal
 /-- The scalar Borel passage applies with the coefficient-uniform smooth constant. -/
 theorem autonomous_localised_borel_of_below_four_density
     (hdensity : BelowFourDensityStatement)
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
     (lam Lam : ℝ) (hlam : 0 < lam) (hLam : lam ≤ Lam) (p : ℝ)
     (hp : criticalP ⟨Lam / lam, (le_div_iff₀ hlam).2
       (by simpa only [one_mul] using hLam)⟩ < p) :
@@ -38,7 +44,7 @@ theorem autonomous_localised_borel_of_below_four_density
             (eLpNorm ({P | 0 < u P}.indicator (fun P => max (f P) 0))
               (ENNReal.ofReal p) (volume.restrict (backwardCylinder P₀ R))).toReal := by
   obtain ⟨C, hC, hsm⟩ := autonomous_smooth_localised_of_below_four_density hdensity
-    hH hLE lam Lam hlam hLam p hp
+    lam Lam hlam hLam p hp
   have hcritical := (criticalP_bounds ⟨Lam / lam, (le_div_iff₀ hlam).2
     (by simpa only [one_mul] using hLam)⟩).1
   have hp1 : 1 ≤ p := by linarith only [hcritical, hp]
@@ -65,13 +71,10 @@ theorem autonomous_localised_borel_of_below_four_density
   exact autonomous_abp_smooth_to_borel lam Lam hlam hLam p hp1 (2 - 6 / p) C true
     hsmooth a ha hb P₀ R hR u f hcont hreg hf hLp hsub
 
-
 /-- Localized autonomous estimate relative to the density assertion and the
 Hörmander and Lieberman theorems. -/
 theorem kinetic_aleksandrov_autonomous_localised_relative_of_below_four_density
     (hdensity : Autonomous.BelowFourDensityStatement)
-    (hH : HormanderHypoellipticityStatement)
-    (hLE : LiebermanEllipsoidDirichletStatement)
     (lam Lam p : ℝ) (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (hp : 1 + bellmanAdjointExponent (Lam / lam)
       ((le_div_iff₀ hlam).2 (by simpa only [one_mul] using hLam)) < p) :
@@ -94,7 +97,7 @@ theorem kinetic_aleksandrov_autonomous_localised_relative_of_below_four_density
               (eLpNorm ({P | 0 < u P}.indicator (fun P => max (f P) 0)) (ENNReal.ofReal p)
                 (volume.restrict (backwardCylinder P₀ R))).toReal := by
   obtain ⟨C, hC, hborel⟩ := autonomous_localised_borel_of_below_four_density hdensity
-    hH hLE lam Lam hlam hLam p hp
+    lam Lam hlam hLam p hp
   refine ⟨C, hC.le, ?_⟩
   intro P₀ R hR a ha hb f u hf hcont hreg hsub hLp P hP
   have hQ := (isOpen_backwardCylinder P₀ R hR).measurableSet

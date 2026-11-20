@@ -33,7 +33,7 @@ variable {n : ℕ} {Ω : Set (PDE.Vec n)} {γ : ℝ → PDE.Vec n} {B : FullKine
 theorem classicalGradient_const_eq_zero (c : ℝ) (x : PDE.Vec n) :
     PDE.classicalGradient (fun _ : PDE.Vec n => c) x = 0 := by
   ext i
-  simp [PDE.classicalGradient]
+  simp
 
 /-- A classical scalar terminal solution, lifted along `(σ, y, z) ↦ (σ, y)`, is a classical
 kinetic terminal solution for the `z`-independent datum, when `B` does not depend on `z`. -/
@@ -44,18 +44,14 @@ theorem ParabolicProbe.IsClassicalScalarTerminalSolution.toKinetic
     IsClassicalTerminalSolution Ω γ B b τ (lowerDatum F)
       (fun p => W (p.time, p.position)) := by
   obtain ⟨⟨C, hC0, hC⟩, hcont, hsmooth, hop, hterm, hlat⟩ := hW
-  have hpr : Continuous (fun p : KineticPoint n => (p.time, p.position)) :=
-    continuous_time.prodMk continuous_position
-  refine ⟨⟨C, hC0, fun p hp => hC _ hp⟩, hcont.comp hpr.continuousOn (fun p hp => hp), ?_, ?_,
+  refine ⟨⟨C, hC0, fun p hp => hC _ hp⟩, hcont.comp (continuous_time.prodMk continuous_position).continuousOn (fun p hp => hp), ?_, ?_,
     ?_, ?_⟩
-  · have h2 : ContDiff ℝ (⊤ : ℕ∞) (fun q : ℝ × (PDE.Vec n × PDE.Vec n) => (q.1, q.2.1)) :=
-      contDiff_fst.prodMk (contDiff_fst.comp contDiff_snd)
-    exact hsmooth.comp h2.contDiffOn (fun q hq => hq)
+  · exact hsmooth.comp (contDiff_fst.prodMk (contDiff_fst.comp contDiff_snd)).contDiffOn (fun q hq => hq)
   · intro p hp
     have h0 := hop (p.time, p.position) hp
     have hz : kineticVelocityGradient (fun p : KineticPoint n => W (p.time, p.position)) p = 0 :=
       classicalGradient_const_eq_zero (n := n) (W (p.time, p.position)) p.velocity
-    have hv1 : PDE.vecDot (b p.position) (0 : PDE.Vec n) = 0 := by simp [PDE.vecDot]
+    have hv1 : PDE.vecDot (b p.position) 0 = 0 := by simp [PDE.vecDot]
     have hv2 : ∀ g : PDE.Vec n,
         PDE.vecDot ((0 : ℝ → PDE.Vec n → PDE.Vec n) p.time p.position) g = 0 := by
       intro g
@@ -65,9 +61,9 @@ theorem ParabolicProbe.IsClassicalScalarTerminalSolution.toKinetic
     rw [scalarParabolicOperator_apply, hv2, add_zero] at h0
     exact h0
   · intro p hp
-    exact hterm (p.time, p.position) hp
+    apply hterm <;> assumption
   · intro p hp
-    exact hlat (p.time, p.position) hp
+    apply hlat <;> assumption
 
 /-- A classical kinetic terminal solution of the `z`-independent datum which does not depend on
 `z` on the past closed cylinder restricts, at `z = 0`, to a classical scalar terminal solution. -/
@@ -80,17 +76,10 @@ theorem IsClassicalTerminalSolution.toScalar
   obtain ⟨⟨C, hC0, hC⟩, hcont, hsmooth, hop, hterm, hlat⟩ := hV
   have hin : ∀ q : TimeVelocity n,
       q ∈ ParabolicProbe.scalarPastClosedCylinder Ω γ τ →
-        (⟨q.1, q.2, 0⟩ : KineticPoint n) ∈ evolutionPastClosedCylinder Ω γ τ :=
+        (⟨q.1, q.2, 0⟩) ∈ evolutionPastClosedCylinder Ω γ τ :=
     fun q hq => hq
-  have hemb : Continuous (fun q : TimeVelocity n => (⟨q.1, q.2, 0⟩ : KineticPoint n)) :=
-    (KineticPoint.homeomorphProd n).symm.continuous.comp
-      (continuous_fst.prodMk (continuous_snd.prodMk continuous_const))
-  refine ⟨⟨C, hC0, fun q hq => hC _ (hin q hq)⟩, hcont.comp hemb.continuousOn hin, ?_, ?_, ?_, ?_⟩
-  · have h2 : ContDiff ℝ (⊤ : ℕ∞)
-        (fun q : TimeVelocity n => ((q.1, (q.2, (0 : PDE.Vec n))) :
-          ℝ × (PDE.Vec n × PDE.Vec n))) :=
-      contDiff_fst.prodMk (contDiff_snd.prodMk contDiff_const)
-    exact hsmooth.comp h2.contDiffOn (fun q hq => hq)
+  refine ⟨⟨C, hC0, fun q hq => hC _ (hin q hq)⟩, hcont.comp ((KineticPoint.homeomorphProd n).symm.continuous.comp (continuous_fst.prodMk (continuous_snd.prodMk continuous_const))).continuousOn hin, ?_, ?_, ?_, ?_⟩
+  · exact hsmooth.comp (contDiff_fst.prodMk (contDiff_snd.prodMk contDiff_const)).contDiffOn (fun q hq => hq)
   · intro q hq
     have h0 := hop ⟨q.1, q.2, 0⟩ hq
     have hconst : (fun v : PDE.Vec n => V ⟨q.1, q.2, v⟩) = fun _ => V ⟨q.1, q.2, 0⟩ := by
@@ -99,24 +88,21 @@ theorem IsClassicalTerminalSolution.toScalar
     have hg : kineticVelocityGradient V ⟨q.1, q.2, 0⟩ = 0 := by
       show PDE.classicalGradient (fun v : PDE.Vec n => V ⟨q.1, q.2, v⟩) 0 = 0
       rw [hconst]
-      exact classicalGradient_const_eq_zero _ _
-    have hv1 : PDE.vecDot (b q.2) (0 : PDE.Vec n) = 0 := by simp [PDE.vecDot]
+      apply classicalGradient_const_eq_zero
+    have hv1 : PDE.vecDot (b q.2) 0 = 0 := by simp [PDE.vecDot]
     have hv2 : ∀ g : PDE.Vec n,
         PDE.vecDot ((0 : ℝ → PDE.Vec n → PDE.Vec n) q.1 q.2) g = 0 := by
       intro g
       simp [PDE.vecDot]
     rw [transportedForwardOperator_apply, hg] at h0
-    change kineticTimeDerivative V ⟨q.1, q.2, 0⟩ +
-      matrixContraction (B q.1 q.2 0) (diffusedHessian V ⟨q.1, q.2, 0⟩) +
-        PDE.vecDot (b q.2) (0 : PDE.Vec n) = 0 at h0
     rw [hv1, add_zero] at h0
     rw [scalarParabolicOperator_apply, hv2, add_zero]
     exact h0
   · intro q hq
     have := hterm ⟨q.1, q.2, 0⟩ hq
-    simpa using this
+    exact this
   · intro q hq
-    exact hlat ⟨q.1, q.2, 0⟩ hq
+    apply hlat <;> assumption
 
 end Scalar
 

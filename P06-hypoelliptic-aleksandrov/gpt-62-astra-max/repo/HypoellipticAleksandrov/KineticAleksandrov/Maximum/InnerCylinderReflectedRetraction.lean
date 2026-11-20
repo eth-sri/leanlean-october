@@ -10,17 +10,17 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov
 open Set
 
-private theorem reflection_closure_backward {d : ℕ}
-    (P₀ : KineticPoint d) (R : ℝ) (hR : 0 < R) :
+variable {d : ℕ} (P₀ : KineticPoint d) (R : ℝ) (hR : 0 < R) (δ : ℝ) (hδ0 : 0 < δ)
+    (hδlt : δ < R ^ 2 / 2)
+
+private theorem reflection_closure_backward :
     kineticReflection '' closure (backwardCylinder P₀ R) =
       closure (forwardCylinder (kineticReflection P₀) R hR) := by
   rw [kineticReflection_image_closure,
     kineticReflection_image_backwardCylinder]
 
 /-- Reflected retraction maps the original closure onto the inner backward closure. -/
-theorem reflectedInnerRetraction_image_closure {d : ℕ}
-    (P₀ : KineticPoint d) (R : ℝ) (hR : 0 < R)
-    (δ : ℝ) (hδ0 : 0 < δ) (hδlt : δ < R ^ 2 / 2) :
+theorem reflectedInnerRetraction_image_closure :
     reflectedInnerRetraction P₀ R hR δ hδ0 hδlt '' closure (backwardCylinder P₀ R) =
       closure (backwardCylinder
         ⟨P₀.time - δ, P₀.position - δ • P₀.velocity, P₀.velocity⟩
@@ -37,9 +37,7 @@ theorem reflectedInnerRetraction_image_closure {d : ℕ}
     kineticReflection_image_innerCylinder]
 
 /-- Reflected retraction is onto the inner kinetic boundary used by Borel passage. -/
-theorem reflectedInnerRetraction_image_kineticBoundary {d : ℕ}
-    (P₀ : KineticPoint d) (R : ℝ) (hR : 0 < R)
-    (δ : ℝ) (hδ0 : 0 < δ) (hδlt : δ < R ^ 2 / 2) :
+theorem reflectedInnerRetraction_image_kineticBoundary :
     reflectedInnerRetraction P₀ R hR δ hδ0 hδlt '' kineticBoundary P₀ R =
       kineticBoundary
         ⟨P₀.time - δ, P₀.position - δ • P₀.velocity, P₀.velocity⟩
@@ -55,15 +53,14 @@ theorem reflectedInnerRetraction_image_kineticBoundary {d : ℕ}
     innerRetraction_image_exitBoundary,kineticReflection_image_innerExitBoundary]
 
 /-- Reflection preserves the existing product-metric distance, used only topologically. -/
-theorem dist_kineticReflection {d : ℕ} (P Q : KineticPoint d) :
+theorem dist_kineticReflection (P Q : KineticPoint d) :
     dist (kineticReflection P) (kineticReflection Q) = dist P Q := by
   change dist (-P.time,(-P.position,P.velocity)) (-Q.time,(-Q.position,Q.velocity)) =
     dist (P.time,(P.position,P.velocity)) (Q.time,(Q.position,Q.velocity))
-  simp only [Prod.dist_eq, dist_neg_neg]
+  simp [Prod.dist_eq]
 
 /-- Uniform convergence of reflected retractions on the original backward closure. -/
-theorem reflectedInnerRetraction_uniformly_to_identity {d : ℕ}
-    (P₀ : KineticPoint d) (R : ℝ) (hR : 0 < R) :
+theorem reflectedInnerRetraction_uniformly_to_identity :
     ∀ ε : ℝ, 0 < ε → ∃ η : ℝ, 0 < η ∧
       ∀ (δ : ℝ) (hδ0 : 0 < δ) (hδlt : δ < R ^ 2 / 2), δ < η →
         ∀ P ∈ closure (backwardCylinder P₀ R),
@@ -75,7 +72,6 @@ theorem reflectedInnerRetraction_uniformly_to_identity {d : ℕ}
   have hp : kineticReflection P ∈ closure (forwardCylinder (kineticReflection P₀) R hR) := by
     rw [← reflection_closure_backward P₀ R hR]
     exact mem_image_of_mem _ hP
-  have h := he δ hδ0 hδlt hδη (kineticReflection P) hp
   have hd := dist_kineticReflection
     (innerRetraction (kineticReflection P₀) R hR δ hδ0 hδlt (kineticReflection P))
     (kineticReflection P)
@@ -83,6 +79,6 @@ theorem reflectedInnerRetraction_uniformly_to_identity {d : ℕ}
   change dist (kineticReflection
     (innerRetraction (kineticReflection P₀) R hR δ hδ0 hδlt (kineticReflection P))) P < ε
   rw [hd]
-  exact h
+  exact (he δ hδ0 hδlt hδη (kineticReflection P) hp)
 
 end HypoellipticAleksandrov.KineticAleksandrov

@@ -26,19 +26,23 @@ theorem isCompact_smallSeedBall (d : ℕ) : IsCompact (smallSeedBall d) := by
     (isClosed_eq (PDE.continuous_vecNormSq.comp continuous_snd) continuous_const).inter
       (isClosed_le (PDE.continuous_vecEuclideanNorm.comp (continuous_fst.sub continuous_snd))
         continuous_const)
-  apply (isCompact_closedBall (0 : PDE.Vec d × PDE.Vec d) 2).of_isClosed_subset hclosed
+  apply (isCompact_closedBall 0 2).of_isClosed_subset hclosed
   intro q hq
   obtain ⟨he, hy⟩ := hq
   have hen : PDE.vecEuclideanNorm q.2 = 1 := by simp [PDE.vecEuclideanNorm, he]
   have he' : ‖q.2‖ ≤ 1 := by simpa [hen] using PDE.norm_le_vecEuclideanNorm q.2
-  have hy' : ‖q.1 - q.2‖ ≤ 1 / 4 := (PDE.norm_le_vecEuclideanNorm _).trans hy
+  have hy' := (PDE.norm_le_vecEuclideanNorm _).trans hy
   have htri : ‖q.1‖ ≤ ‖q.1 - q.2‖ + ‖q.2‖ := by
-    simpa only [sub_add_cancel] using norm_add_le (q.1 - q.2) q.2
+    simpa using norm_add_le (q.1 - q.2) q.2
   rw [Metric.mem_closedBall, dist_zero_right, Prod.norm_def, max_le_iff]
   constructor <;> linarith
 
+section
+variable {d : ℕ} (alpha C₀ sigma : ℝ) (hsigma : 0 < sigma)
+include hsigma
+
 /-- Increasing the additive seed constant has exactly the source's transport effect. -/
-theorem ansatzTransport_seed_shift {d : ℕ} (alpha C₀ sigma : ℝ) (hsigma : 0 < sigma)
+theorem ansatzTransport_seed_shift
     (y e : PDE.Vec d) :
     ansatzTransport alpha (seed alpha C₀ sigma) y e =
       ansatzTransport alpha (seed alpha 0 sigma) y e +
@@ -48,10 +52,10 @@ theorem ansatzTransport_seed_shift {d : ℕ} (alpha C₀ sigma : ℝ) (hsigma : 
   ring
 
 /-- The seed transport is continuous in both vector variables. -/
-theorem continuous_seed_transport {d : ℕ} (alpha C₀ sigma : ℝ) (hsigma : 0 < sigma) :
+theorem continuous_seed_transport :
     Continuous (fun q : PDE.Vec d × PDE.Vec d =>
       ansatzTransport alpha (seed alpha C₀ sigma) q.1 q.2) := by
-  have hb : ContDiff ℝ (⊤ : ℕ∞)
+  have hb : ContDiff ℝ ⊤
       (fun q : PDE.Vec d × PDE.Vec d => seedBase sigma q.1 q.2) := by
     unfold seedBase PDE.vecNormSq PDE.vecDot
     fun_prop
@@ -63,6 +67,8 @@ theorem continuous_seed_transport {d : ℕ} (alpha C₀ sigma : ℝ) (hsigma : 0
   simp_rw [ansatzTransport_seed alpha C₀ sigma hsigma]
   unfold PDE.vecDot
   fun_prop
+
+end
 
 /-- A single positive additive seed constant makes transport at least one on the small ball. -/
 theorem seed_transport_pos (d : ℕ) (alpha sigma : ℝ) (ha : 0 < alpha)
@@ -83,15 +89,13 @@ theorem seed_transport_pos (d : ℕ) (alpha sigma : ℝ) (ha : 0 < alpha)
   have hbound : |f (y, e)| ≤ B :=
     (hB₀ ⟨(y, e), ⟨he, hy⟩, rfl⟩).trans (le_max_right _ _)
   have hlow := (abs_le.mp hbound).1
-  have hdot := seed_ball_dot_lower y e he hy
   have hc : 0 < alpha / 3 * C₀ := mul_pos (div_pos ha (by norm_num)) hC₀
-  have hmul := mul_le_mul_of_nonneg_right hdot hc.le
-  have heq : (3 / 4 : ℝ) * (alpha / 3 * C₀) = B + 1 := by
+  have hmul := mul_le_mul_of_nonneg_right (seed_ball_dot_lower y e he hy) hc.le
+  have heq : (3 / 4) * (alpha / 3 * C₀) = B + 1 := by
     dsimp [C₀]
     field_simp
   rw [heq] at hmul
   rw [ansatzTransport_seed_shift alpha C₀ sigma hsigma]
-  change 1 ≤ f (y, e) + PDE.vecDot y e * (alpha / 3 * C₀)
   linarith
 
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample

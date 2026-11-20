@@ -16,6 +16,6 @@ theorem visit_measure_mass_tendsto_zero (mu : ℕ → Measure Point)
     Tendsto (fun n => mu n univ) atTop (𝓝 0) := by
   apply ENNReal.tendsto_atTop_zero_of_tsum_ne_top
   rw [← Measure.sum_apply _ MeasurableSet.univ]
-  exact measure_ne_top _ _
+  apply measure_ne_top
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

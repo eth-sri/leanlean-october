@@ -36,8 +36,11 @@ theorem bellmanReflection_dilation (r : ℝ) (hr : 0 < r) (q : BellmanPuncturedP
   · change -(r * q.val.2) = r * (-q.val.2)
     ring
 
+variable (φ : ℝ × ℝ → ℝ) (hφ : ContDiff ℝ (⊤ : ℕ∞) φ)
+include hφ
+
 /-- The first reflected test jet changes sign. -/
-theorem bellman_reflected_fderiv (φ : ℝ × ℝ → ℝ) (hφ : ContDiff ℝ (⊤ : ℕ∞) φ)
+theorem bellman_reflected_fderiv
     (q e : ℝ × ℝ) :
     fderiv ℝ (fun z => φ (-z)) q e = -fderiv ℝ φ (-q) e := by
   have hd := (hφ.differentiable (by simp) (-q)).hasFDerivAt.comp q
@@ -45,11 +48,10 @@ theorem bellman_reflected_fderiv (φ : ℝ × ℝ → ℝ) (hφ : ContDiff ℝ (
   change fderiv ℝ (φ ∘ Neg.neg) q e = _
   rw [hd.fderiv]
   change fderiv ℝ φ (-q) (-e) = -fderiv ℝ φ (-q) e
-  exact map_neg _ _
+  apply map_neg
 
 /-- The second velocity jet of a reflected test retains its sign. -/
-theorem bellman_reflected_second_velocity (φ : ℝ × ℝ → ℝ)
-    (hφ : ContDiff ℝ (⊤ : ℕ∞) φ) (q : ℝ × ℝ) :
+theorem bellman_reflected_second_velocity (q : ℝ × ℝ) :
     fderiv ℝ (fun z => fderiv ℝ (fun w => φ (-w)) z (0, 1)) q (0, 1) =
       fderiv ℝ (fun z => fderiv ℝ φ z (0, 1)) (-q) (0, 1) := by
   have hjet := bellman_contDiff_direction hφ (0, 1)

@@ -21,7 +21,7 @@ open HypoellipticAleksandrov Parabolic SectionTwo Evolution Occupation Set Measu
 /-- A C² test with a bounded terminal error obeys the same error bound against
 its actual signed Green potential. No Green identity is taken as a premise. -/
 theorem fullspace_green_terminal_error
-    (hH : HormanderHypoellipticityStatement) {lam Lam : ℝ}
+    {lam Lam : ℝ}
     (hlam : 0 < lam) (A : SmoothAutonomous lam Lam)
     (E : FullSpaceEvolution) (hE : IsFullSpaceEvolution A E) (T : ℝ)
     (u g : Point → ℝ)
@@ -44,15 +44,12 @@ theorem fullspace_green_terminal_error
   have hD : IsOpen D := isOpen_duhamelCylinder
     (isOpen_of_isAdmissibleEvolutionDomain autonomousWholeDomain_admissible)
     continuous_const T
-  have hU : IsOpen U := hD.preimage (evolutionHomeomorph 1).continuous
+  have hU := hD.preimage (evolutionHomeomorph 1).continuous
   have hwk := duhamel_bounded_isKineticWeakTransportedSolution
     autonomousWholeDomain_admissible autonomousWholeDomain_measurable continuous_const
     (evolutionCoefficient A.a) (identityDrift 1) E.1 E.2 hE
     (evolutionCoefficient_smooth A) (evolutionCoefficient_symmetric A.a)
     (identityDrift_smooth 1) g hg M hM hgb T
-  have hw : IsWeakTransportedSolution (evolutionCoefficient A.a) (identityDrift 1) U
-      (W ∘ evolutionHomeomorph 1) ((fun p => -g p) ∘ evolutionHomeomorph 1) :=
-    (isWeakTransportedSolution_comp_iff _ _ _ _ _).2 hwk
   have huw := c2_isWeakTransportedSolution A hU hu
   have hue : IsWeakTransportedSolution (evolutionCoefficient A.a) (identityDrift 1) U
       (u ∘ evolutionHomeomorph 1) ((fun p => -g p) ∘ evolutionHomeomorph 1) := by
@@ -65,9 +62,9 @@ theorem fullspace_green_terminal_error
       (b := identityDrift 1) ((hu.contDiffAt (hU.mem_nhds hx)).of_le (by simp)) (x := x)
     dsimp only [Function.comp_apply]
     rw [he, hop _ hx.1]
-  have hvw := weak_same_source_sub A hw hue
-  have hWc : ContinuousOn W D :=
-    continuousOn_duhamelPotential_bounded_signed hH autonomousWholeDomain_admissible
+  have hvw := weak_same_source_sub A ((isWeakTransportedSolution_comp_iff _ _ _ _ _).2 hwk) hue
+  have hWc :=
+    continuousOn_duhamelPotential_bounded_signed autonomousWholeDomain_admissible
       autonomousWholeDomain_measurable continuous_const (evolutionCoefficient A.a)
       (identityDrift 1) E.1 E.2 hE (evolutionCoefficient_smooth A)
       (evolutionCoefficient_symmetric A.a) (identityDrift_smooth 1)
@@ -80,9 +77,9 @@ theorem fullspace_green_terminal_error
         exact ⟨lt_of_not_ge hn, by
           change p.position ∈ movingDomain (wholeSpace 1) (fun _ => 0) p.time
           rw [movingDomain_wholeSpace]; trivial⟩)
-  have hvc : ContinuousOn v D := hWc.sub (huc.mono (fun _ hp => ⟨hp.1.le, subset_closure hp.2⟩))
+  have hvc := hWc.sub (huc.mono (fun _ hp => ⟨hp.1.le, subset_closure hp.2⟩))
   have hvs : ContDiffOn ℝ (⊤ : ℕ∞) (v ∘ evolutionHomeomorph 1) U :=
-    homogeneous_weak_contDiffOn hH hlam A hU hvw
+    homogeneous_weak_contDiffOn hlam A hU hvw
       (hvc.comp (evolutionHomeomorph 1).continuous.continuousOn (fun _ hx => hx))
   have hve := duhamel_operator_eq_of_smooth_weak hU (evolutionCoefficient_smooth A)
     (evolutionCoefficient_symmetric A.a) (identityDrift_smooth 1) hvs
@@ -113,12 +110,11 @@ theorem fullspace_green_terminal_error
     exact hut p ht
   have hbound (p : Point) (hp : p ∈ movingClosedSlab autonomousWholeDomain
       (fun _ => 0) p₀.time T) : |v p| ≤ (T - p₀.time) * M + Cu := by
-    have hh := abs_duhamelPotential_le_abs_time E.2 g M hM hgb p T
     dsimp [v, W]
     calc
       |duhamelPotential E.2 T g p - u p| ≤
           |duhamelPotential E.2 T g p| + |u p| := abs_sub _ _
-      _ ≤ |T - p.time| * M + Cu := add_le_add hh (hub p hp.2.1)
+      _ ≤ |T - p.time| * M + Cu := add_le_add (abs_duhamelPotential_le_abs_time E.2 g M hM hgb p T) (hub p hp.2.1)
       _ ≤ (T - p₀.time) * M + Cu := by
         rw [abs_of_nonneg (sub_nonneg.mpr hp.2.1)]
         exact add_le_add (mul_le_mul_of_nonneg_right (by linarith [hp.1]) hM) le_rfl
@@ -151,16 +147,15 @@ theorem fullspace_green_terminal_error
     exact hh p₀ ⟨le_rfl, hp₀.le, by
       change p₀.position ∈ closure (movingDomain (wholeSpace 1) (fun _ => 0) p₀.time)
       rw [movingDomain_wholeSpace, closure_univ]; trivial⟩
-  have h1 := hcmp v hclosed hvr hvop (fun p ht => (le_abs_self _).trans (hvterm p ht)) hbound
   have h2 := hcmp (fun p => -v p) hclosed.neg (fun p hp => (hvr p hp).neg)
     (fun p hp => by
       have hh := viscousTransportedOperator_const_mul
         (B := evolutionCoefficient A.a) (b := identityDrift 1) (ε := 0) (-1) (hvr p hp)
       rw [viscousTransportedOperator_zero, viscousTransportedOperator_zero,
         hvop p hp, mul_zero] at hh
-      simpa only [neg_one_mul] using hh)
+      simpa using hh)
     (fun p ht => (neg_le_abs _).trans (hvterm p ht))
     (fun p hp => by rw [abs_neg]; exact hbound p hp)
-  exact abs_le.mpr ⟨by linarith only [h2], h1⟩
+  exact abs_le.mpr ⟨by linarith only [h2], (hcmp v hclosed hvr hvop (fun p ht => (le_abs_self _).trans (hvterm p ht)) hbound)⟩
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

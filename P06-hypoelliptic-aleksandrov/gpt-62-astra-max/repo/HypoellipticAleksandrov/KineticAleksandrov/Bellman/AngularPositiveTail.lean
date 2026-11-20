@@ -29,9 +29,7 @@ theorem angular_positive_tail_limit (R β : ℝ) (hR : 1 ≤ R) (hβ : 3 ≤ β)
     ∃ L : ℝ, 0 ≤ L ∧ Tendsto (bellmanAngularFirstMoment f) atTop (𝓝 L) ∧
       Tendsto (fun y => bellmanAngularSecondMoment f y / y) atTop (𝓝 0) ∧
       J 0 = ((β - 2) / 3) * L ∧ ∀ y : ℝ, 0 < y → h 0 ≤ h y := by
-  have hh := bellmanAngularDensity_nonneg hd.2.2.2.2.1 hd.2.2.2.1
-    (hd.2.2.2.2.2.2.1.mono (fun _ hx => hx.1))
-  exact bellmanAngularPositiveTail_limit R β hR hβ f h J hd.2.2.1 hd.2.2.2.1 hh
+  exact bellmanAngularPositiveTail_limit R β hR hβ f h J hd.2.2.1 hd.2.2.2.1 (bellmanAngularDensity_nonneg hd.2.2.2.2.1 hd.2.2.2.1 (hd.2.2.2.2.2.2.1.mono (fun _ hx => hx.1)))
     (hd.2.2.2.2.2.2.1.mono (fun _ hx => hx.2)) he htail
 
 end HypoellipticAleksandrov.KineticAleksandrov

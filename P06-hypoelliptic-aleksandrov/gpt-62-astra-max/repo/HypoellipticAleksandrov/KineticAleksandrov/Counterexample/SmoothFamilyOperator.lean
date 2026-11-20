@@ -12,9 +12,12 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 open MeasureTheory HypoellipticAleksandrov.Parabolic
 open scoped ENNReal Matrix.Norms.Elementwise
 
+variable {d : ℕ} (A B : XV d → PDE.Mat d) (hA : ∀ i k, Measurable (fun q => A q i k))
+    (hB : ∀ i k, Measurable (fun q => B q i k)) (u : KineticPoint d → ℝ)
+
 /-- Entrywise measurable autonomous coefficients and genuine smooth jets
 give a measurable operator. -/
-theorem measurable_backwardOperator_of_joint_smooth {d : ℕ}
+theorem measurable_backwardOperator_of_joint_smooth
     (A : XV d → PDE.Mat d) (hA : ∀ i k, Measurable (fun q => A q i k))
     (u : KineticPoint d → ℝ)
     (hu : ContDiff ℝ (⊤ : ℕ∞) (fun q : ℝ × XV d =>
@@ -29,21 +32,17 @@ theorem measurable_backwardOperator_of_joint_smooth {d : ℕ}
   have hsp : Measurable (fun P : KineticPoint d => (P.position, P.velocity)) :=
     (continuous_position.prodMk continuous_velocity).measurable
   have hT : Measurable (fun P => PDE.vecDot P.velocity (kineticPositionGradient u P)) := by
-    unfold PDE.vecDot
     exact Finset.measurable_sum _ (fun i _ =>
       ((measurable_pi_apply i).comp continuous_velocity.measurable).mul
         ((measurable_pi_apply i).comp hx))
   have hC : Measurable (fun P => matrixContraction (A (P.position, P.velocity))
       (kineticVelocityHessian u P)) := by
     unfold matrixContraction
-    exact Finset.measurable_sum _ (fun i _ => Finset.measurable_sum _ (fun k _ =>
-      ((hA i k).comp hsp).mul
-        (hv i k)))
+    fun_prop
   exact (ht.add hT).sub hC
 
 /-- The full backward-operator change is minus the exact coefficient Hessian error. -/
-theorem backwardOperator_coefficient_change {d : ℕ} (A B : XV d → PDE.Mat d)
-    (u : KineticPoint d → ℝ) (P : KineticPoint d) :
+theorem backwardOperator_coefficient_change (P : KineticPoint d) :
     backwardOperator (fun _t x v => B (x, v)) u P =
       backwardOperator (fun _t x v => A (x, v)) u P -
         matrixContraction (B (P.position, P.velocity) - A (P.position, P.velocity))
@@ -52,12 +51,9 @@ theorem backwardOperator_coefficient_change {d : ℕ} (A B : XV d → PDE.Mat d)
   simp only [Matrix.sub_apply, sub_mul, Finset.sum_sub_distrib]
   ring
 
+include hA hB in
 /-- The positive source norm increases by at most the full contraction-error norm. -/
-theorem positive_source_norm_le_coefficient_error {d : ℕ}
-    (A B : XV d → PDE.Mat d)
-    (hA : ∀ i k, Measurable (fun q => A q i k))
-    (hB : ∀ i k, Measurable (fun q => B q i k))
-    (u : KineticPoint d → ℝ)
+theorem positive_source_norm_le_coefficient_error
     (hu : ContDiff ℝ (⊤ : ℕ∞) (fun q : ℝ × XV d =>
       u ((KineticPoint.equivProd d).symm q)))
     (nu : Measure (KineticPoint d)) (p : ℝ≥0∞) (hp : 1 ≤ p) :
@@ -70,15 +66,12 @@ theorem positive_source_norm_le_coefficient_error {d : ℕ}
   have hma := measurable_backwardOperator_of_joint_smooth A hA u hu
   have hmb := measurable_backwardOperator_of_joint_smooth B hB u hu
   have he : Measurable E := by
-    have h := hma.sub hmb
-    convert h using 1
+    convert (hma.sub hmb) using 1
     funext P
     simp only [Pi.sub_apply]
     rw [backwardOperator_coefficient_change A B u P]
-    dsimp [E]
     ring
-  have hf := (hmb.max (measurable_const (a := (0 : ℝ)))).aestronglyMeasurable (μ := nu)
-  have hm := eLpNorm_mono_ae_real (p := p) hf
+  have hm := eLpNorm_mono_ae_real (p := p) ((hmb.max (measurable_const (a := (0 : ℝ)))).aestronglyMeasurable (μ := nu))
     (Filter.Eventually.of_forall (fun P => show
       ‖max (backwardOperator (fun _t x v => B (x, v)) u P) 0‖ ≤
         max (backwardOperator (fun _t x v => A (x, v)) u P) 0 + ‖E P‖ from by

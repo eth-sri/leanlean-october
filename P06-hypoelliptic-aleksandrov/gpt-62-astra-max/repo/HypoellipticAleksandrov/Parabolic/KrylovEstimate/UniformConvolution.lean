@@ -24,9 +24,7 @@ theorem eventually_uniform_parabolicConvolution_close
   have hn := tendsto_parabolicMollifierScale_zero.eventually (gt_mem_nhds hδ)
   filter_upwards [hn] with n hn z
   have he := (parabolicMollifierBump N n).dist_normed_convolution_le
-    hf.aestronglyMeasurable (μ := volume) (x₀ := z) (ε := ε) (by
-      intro x hx
-      exact (hd (lt_trans hx hn)).le)
+    hf.aestronglyMeasurable (μ := volume) (x₀ := z) (ε := ε) (fun x hx => (hd (lt_trans hx hn)).le)
   change dist ((parabolicMollifier N n ⋆[ContinuousLinearMap.lsmul ℝ ℝ,
     volume] f) z) (f z) ≤ ε at he
   have heq : (parabolicMollifier N n ⋆[ContinuousLinearMap.lsmul ℝ ℝ,
@@ -35,8 +33,7 @@ theorem eventually_uniform_parabolicConvolution_close
     unfold parabolicConvolution convolution
     congr 1
     funext x
-    change parabolicMollifier N n (z - x) * f x = f x * parabolicMollifier N n (z - x)
-    exact mul_comm _ _
+    apply mul_comm
   simpa only [heq, Real.dist_eq] using he
 
 end HypoellipticAleksandrov.Parabolic.KrylovEstimate

@@ -19,6 +19,6 @@ theorem visit_sum_mass_le_of_partial_mass_le {X : Type*} [MeasurableSpace X]
   rw [Measure.sum_apply _ MeasurableSet.univ]
   apply ENNReal.tsum_le_of_sum_range_le
   intro N
-  simpa only [Measure.finsetSum_apply, MeasurableSet.univ] using hC N
+  simpa using hC N
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

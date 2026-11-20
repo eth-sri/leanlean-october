@@ -72,7 +72,7 @@ theorem exists_density_of_smooth_tests (ν μ : Measure E)
         ENNReal.ofReal C := by
     rw [eLpNorm_indicator_eq_eLpNorm_restrict (hK n).measurableSet]
     exact (ENNReal.toReal_le_toReal (hlocal n).1.eLpNorm_ne_top
-      ENNReal.ofReal_ne_top).mp (by simpa only [ENNReal.toReal_ofReal hC] using (hlocal n).2)
+      ENNReal.ofReal_ne_top).mp (by simpa [ENNReal.toReal_ofReal hC] using (hlocal n).2)
   have hlim : ∀ᵐ x ∂ν.restrict U,
       Tendsto (fun n => (K n).indicator g x) atTop (𝓝 (g x)) := by
     filter_upwards [ae_restrict_mem hU.measurableSet] with x hx
@@ -86,6 +86,6 @@ theorem exists_density_of_smooth_tests (ν μ : Measure E)
     exact liminf_le_of_frequently_le (Frequently.of_forall hnorm)
   refine ⟨hac, g, hprops.1, hprops.2.1, hprops.2.2.1,
     hglobal.trans_lt ENNReal.ofReal_lt_top, ?_, hprops.2.2.2.2, hprops.2.2.2.1⟩
-  simpa only [ENNReal.toReal_ofReal hC] using ENNReal.toReal_mono ENNReal.ofReal_ne_top hglobal
+  simpa [ENNReal.toReal_ofReal hC] using ENNReal.toReal_mono ENNReal.ofReal_ne_top hglobal
 
 end HypoellipticAleksandrov.KineticAleksandrov.Occupation

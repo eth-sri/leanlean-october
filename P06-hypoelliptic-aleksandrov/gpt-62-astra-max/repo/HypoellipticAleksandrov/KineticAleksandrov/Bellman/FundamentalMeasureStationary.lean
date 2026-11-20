@@ -17,19 +17,19 @@ open MeasureTheory Set
 theorem bellmanFundamentalMeasure_stationary :
     IsBellmanStationaryAdjointPair bellmanFundamentalMeasure bellmanFundamentalMeasure := by
   intro φ hφ hc hs
-  let fx : ℝ × ℝ → ℝ := fun q => q.2 * fderiv ℝ φ q (1, 0)
-  let fv : ℝ × ℝ → ℝ := fun q =>
+  let fx := fun q => q.2 * fderiv ℝ φ q (1, 0)
+  let fv := fun q =>
     fderiv ℝ (fun z => fderiv ℝ φ z (0, 1)) q (0, 1)
   have hcx : HasCompactSupport fx := (hc.fderiv_apply ℝ (1, 0)).mul_left
-  have hcv : HasCompactSupport fv :=
+  have hcv :=
     (hc.fderiv_apply ℝ (0, 1)).fderiv_apply ℝ (0, 1)
   have hx : Continuous fx := continuous_snd.mul
     (bellman_contDiff_direction hφ (1, 0)).continuous
-  have hv : Continuous fv :=
+  have hv :=
     (bellman_contDiff_direction (bellman_contDiff_direction hφ (0, 1)) (0, 1)).continuous
   have hsx : tsupport fx ⊆ {q | q ≠ (0, 0)} :=
     tsupport_mul_subset_right.trans ((tsupport_fderiv_apply_subset ℝ (1, 0)).trans hs)
-  have hsv : tsupport fv ⊆ {q | q ≠ (0, 0)} :=
+  have hsv :=
     (tsupport_fderiv_apply_subset ℝ (0, 1)).trans
       ((tsupport_fderiv_apply_subset ℝ (0, 1)).trans hs)
   have hiX := bellman_integrable_fundamental_test hx hcx hsx
@@ -45,7 +45,6 @@ theorem bellmanFundamentalMeasure_stationary :
       bellmanGaussianTimeCoefficient t.val q * bellmanGaussianKernel t q := by
     rw [bellmanGaussianKernel_fderiv_position, bellmanGaussianKernel_fderiv_velocity_twice]
     dsimp [bellmanGaussianTimeCoefficient]
-    field_simp [ne_of_gt t.property]
     ring
   change (∫ t : BellmanPositiveTime, (∫ q : ℝ × ℝ, bellmanGaussianKernel t q *
     (q.2 * fderiv ℝ φ q (1, 0) +

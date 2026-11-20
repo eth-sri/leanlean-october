@@ -25,7 +25,7 @@ theorem kinetic_aleksandrov_timeVelocity_localised_of_terminalEvolution
     (d : ℕ) (hd : 1 ≤ d) (lam Lam p : ℝ)
     (hlam : 0 < lam) (hLam : lam ≤ Lam) (hp : 2 * (d : ℝ) + 1 < p)
     (hEv : SectionTwo.TerminalEvolutionConclusion)
-    (hH : HormanderHypoellipticityStatement) :
+    :
     ∃ C : ℝ, 0 ≤ C ∧
       ∀ (P₀ : KineticPoint d) (R : ℝ), 0 < R →
       ∀ (A : CoefficientField d),
@@ -46,13 +46,10 @@ theorem kinetic_aleksandrov_timeVelocity_localised_of_terminalEvolution
                 (ENNReal.ofReal p)
                 (volume.restrict (backwardCylinder P₀ R))).toReal := by
   have hIter := SectionTwo.iterationEvolutionStatement_of_conclusion hEv
-  have hOcc := Occupation.parabolicOccupationFamily_holds
-    (SectionTwo.occupationEvolutionStatement_of_conclusion hEv) hH hd lam Lam hlam hLam
-  have hBlock := Decay.unit_frequency_block_W hIter d hd lam Lam hlam hLam
-  have hDecay := Decay.fourierDecayFamily_of_unitBlock d hd lam Lam hlam hLam hIter hBlock
+  have hDecay := Decay.fourierDecayFamily_of_unitBlock d hd lam Lam hlam hLam hIter (Decay.unit_frequency_block_W hIter d hd lam Lam hlam hLam)
   exact kinetic_aleksandrov_timeVelocity_localised_of_slabFourierBounds
-    d hd lam Lam p hlam hLam hp hH
-    (Green.slabFourierBounds_of_occupation_decay hd lam Lam hOcc hDecay)
+    d hd lam Lam p hlam hLam hp
+    (Green.slabFourierBounds_of_occupation_decay hd lam Lam (Occupation.parabolicOccupationFamily_holds (SectionTwo.occupationEvolutionStatement_of_conclusion hEv) hd lam Lam hlam hLam) hDecay)
     (SectionTwo.taAssemblyEvolution_of_conclusion hEv d hd lam Lam hlam hLam)
 
 end HypoellipticAleksandrov.KineticAleksandrov

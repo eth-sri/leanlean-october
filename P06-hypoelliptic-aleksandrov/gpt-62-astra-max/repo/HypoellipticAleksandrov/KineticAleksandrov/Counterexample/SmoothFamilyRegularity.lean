@@ -12,10 +12,13 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 open Set HypoellipticAleksandrov.Parabolic HypoellipticAleksandrov.KineticAleksandrov.Evolution
 open scoped Matrix.Norms.Elementwise
 
-/-- Native joint smoothness supplies all genuine kinetic derivative continuity properties. -/
-theorem isKineticC112On_univ_of_joint_smooth {d : ℕ} (u : KineticPoint d → ℝ)
+variable {d : ℕ} (P₀ : KineticPoint d) (R : ℝ) (hR : 0 < R) (u : KineticPoint d → ℝ)
     (hu : ContDiff ℝ (⊤ : ℕ∞) (fun z : ℝ × (PDE.Vec d × PDE.Vec d) =>
-      u ((KineticPoint.equivProd d).symm z))) : IsKineticC112On u univ := by
+      u ((KineticPoint.equivProd d).symm z)))
+include hu
+
+/-- Native joint smoothness supplies all genuine kinetic derivative continuity properties. -/
+theorem isKineticC112On_univ_of_joint_smooth : IsKineticC112On u univ := by
   have hs : ContDiff ℝ (⊤ : ℕ∞) (u ∘ evolutionHomeomorph d) := by
     simpa only [Function.comp_def, evolutionHomeomorph, Homeomorph.trans_apply] using!
       hu.comp (evolutionProdCLE d).contDiff
@@ -23,19 +26,14 @@ theorem isKineticC112On_univ_of_joint_smooth {d : ℕ} (u : KineticPoint d → �
     (by simpa only [preimage_univ] using hs.contDiffOn)
 
 /-- Native joint smoothness gives continuity of the actual kinetic velocity Hessian. -/
-theorem continuous_kineticVelocityHessian_of_joint_smooth {d : ℕ}
-    (u : KineticPoint d → ℝ)
-    (hu : ContDiff ℝ (⊤ : ℕ∞) (fun z : ℝ × (PDE.Vec d × PDE.Vec d) =>
-      u ((KineticPoint.equivProd d).symm z))) : Continuous (kineticVelocityHessian u) :=
+theorem continuous_kineticVelocityHessian_of_joint_smooth : Continuous (kineticVelocityHessian u) :=
   continuousOn_univ.mp
     (isKineticC112On_univ_of_joint_smooth u hu).continuousOn_kineticVelocityHessian
 
+include hR in
 /-- The Hessian of each fixed smooth function is bounded on the entire cylinder.
 The bound is chosen after the function and is not claimed uniform across a sequence. -/
-theorem kineticVelocityHessian_bound_on_cylinder {d : ℕ}
-    (P₀ : KineticPoint d) (R : ℝ) (hR : 0 < R) (u : KineticPoint d → ℝ)
-    (hu : ContDiff ℝ (⊤ : ℕ∞) (fun z : ℝ × (PDE.Vec d × PDE.Vec d) =>
-      u ((KineticPoint.equivProd d).symm z))) :
+theorem kineticVelocityHessian_bound_on_cylinder :
     ∃ M : ℝ, 0 ≤ M ∧ ∀ P ∈ backwardCylinder P₀ R, ∀ i k,
       ‖kineticVelocityHessian u P i k‖ ≤ M := by
   obtain ⟨K, hK, hQK⟩ := backwardCylinder_subset_compact P₀ R hR

@@ -21,7 +21,7 @@ private theorem normalized_half_mass {d : ℕ}
     (a : ℝ) (ha : 0 < a) (hμ : a ≤ μ.real univ) :
     (ENNReal.ofReal (a / (2 * μ.real univ)) • μ).real univ = a / 2 ∧
     ENNReal.ofReal (a / (2 * μ.real univ)) • μ ≤ ENNReal.ofReal (1 / 2) • μ := by
-  have hp : 0 < μ.real univ := ha.trans_le hμ
+  have hp := ha.trans_le hμ
   have hc : 0 ≤ a / (2 * μ.real univ) := by positivity
   constructor
   · rw [measureReal_ennreal_smul_apply, ENNReal.toReal_ofReal hc]
@@ -32,7 +32,6 @@ private theorem normalized_half_mass {d : ℕ}
       apply (div_le_iff₀ (by positivity : 0 < 2 * μ.real univ)).mpr
       linarith only [hμ]
     intro A
-    simp only [Measure.smul_apply, smul_eq_mul]
     exact mul_le_mul_left hcoef _
 
 
@@ -90,9 +89,8 @@ theorem corridors_retained_dominated (d : ℕ) (hd : 1 ≤ d)
   intro m Lb σ D B b hsetting SD KD hD hrealD hmono γ1 γ2 v0 z0
     hγ1 hγ2 hstart1 hstart2 hend1 hend2 hspeed1 hspeed2 hfit1 hfit2
     S1 K1 S2 K2 hreal1 hreal2 hpar1 hpar2 q1 q2 qD hq1 hq2 hqD
-  have hm : 0 < m := hsetting.2.2.1
-  have hLb : 0 < Lb := hm.trans_le hsetting.2.2.2.1
-  have hη := blockEta_pos hm hLb
+  have hm := hsetting.2.2.1
+  have hη := blockEta_pos hm (hm.trans_le hsetting.2.2.2.1)
   have htime : σ ≤ σ + blockL0 m := le_add_of_nonneg_right (blockL0_pos hm).le
   have hball (γ : ℝ → PDE.Vec d) (hs : γ σ = v0) :
       v0 ∈ movingDomain (PDE.euclideanBall 0 (blockEta m Lb)) γ σ := by
@@ -106,21 +104,20 @@ theorem corridors_retained_dominated (d : ℕ) (hd : 1 ≤ d)
     Subtype.ext hq2
   have hmass1 := hret m Lb D B b hsetting σ (σ + blockL0 m) (1 / 2)
     (blockEta m Lb) γ1 htime hη hγ1 hspeed1 (fun r _ => hfit1 r)
-    S1 K1 hreal1 hpar1 z0 htime (by simpa only [hstart1] using hball γ1 hstart1)
+    S1 K1 hreal1 hpar1 z0 htime (by simpa [hstart1] using hball γ1 hstart1)
   have hmass2 := hret m Lb D B b hsetting σ (σ + blockL0 m) (1 / 2)
     (blockEta m Lb) γ2 htime hη hγ2 hspeed2 (fun r _ => hfit2 r)
-    S2 K2 hreal2 hpar2 z0 htime (by simpa only [hstart2] using hball γ2 hstart2)
+    S2 K2 hreal2 hpar2 z0 htime (by simpa [hstart2] using hball γ2 hstart2)
   have hfloor1 : blockMass Cstar m Lb ≤ (K1.master q1).real univ := by
     have hmass : ENNReal.ofReal (Real.exp (-Cstar *
         ((blockEta m Lb)⁻¹ ^ 2 + (1 / 2) ^ 2) * (σ + blockL0 m - σ))) ≤
         K1.master q1 (PDE.euclideanBall v0 (blockEta m Lb) ×ˢ univ) := by
       simpa only [hq1', hstart1, hend1] using hmass1
-    have h := hmass.trans (measure_mono (subset_univ _))
     have hf : IsFiniteMeasure (K1.master q1) :=
       ⟨(K1.mass_le_one q1).trans_lt ENNReal.one_lt_top⟩
-    have hh := ENNReal.toReal_mono (measure_ne_top _ _) h
+    have hh := ENNReal.toReal_mono (measure_ne_top _ _) (hmass.trans (measure_mono (subset_univ _)))
     simpa only [measureReal_def, blockMass, add_sub_cancel_left, one_div, div_pow,
-      one_pow, show (2 : ℝ) ^ 2 = 4 by norm_num,
+      one_pow, show 2 ^ 2 = 4 by norm_num,
       show (2 : ℝ)⁻¹ ^ 2 = 4⁻¹ by norm_num,
       ENNReal.toReal_ofReal (Real.exp_pos _).le] using hh
   have hfloor2 : blockMass Cstar m Lb ≤ (K2.master q2).real univ := by
@@ -128,12 +125,11 @@ theorem corridors_retained_dominated (d : ℕ) (hd : 1 ≤ d)
         ((blockEta m Lb)⁻¹ ^ 2 + (1 / 2) ^ 2) * (σ + blockL0 m - σ))) ≤
         K2.master q2 (PDE.euclideanBall v0 (blockEta m Lb) ×ˢ univ) := by
       simpa only [hq2', hstart2, hend2] using hmass2
-    have h := hmass.trans (measure_mono (subset_univ _))
     have hf : IsFiniteMeasure (K2.master q2) :=
       ⟨(K2.mass_le_one q2).trans_lt ENNReal.one_lt_top⟩
-    have hh := ENNReal.toReal_mono (measure_ne_top _ _) h
+    have hh := ENNReal.toReal_mono (measure_ne_top _ _) (hmass.trans (measure_mono (subset_univ _)))
     simpa only [measureReal_def, blockMass, add_sub_cancel_left, one_div, div_pow,
-      one_pow, show (2 : ℝ) ^ 2 = 4 by norm_num,
+      one_pow, show 2 ^ 2 = 4 by norm_num,
       show (2 : ℝ)⁻¹ ^ 2 = 4⁻¹ by norm_num,
       ENNReal.toReal_ofReal (Real.exp_pos _).le] using hh
   have hsub (γ : ℝ → PDE.Vec d)
@@ -143,7 +139,7 @@ theorem corridors_retained_dominated (d : ℕ) (hd : 1 ≤ d)
     intro r v hv
     rw [mem_movingDomain_euclideanBall_iff] at hv
     apply (mem_movingDomain_iff).mpr
-    simpa only [stationary, sub_zero] using hfit r (by
+    simpa [stationary] using hfit r (by
       simpa only [add_zero, PDE.euclideanBall, PDE.euclideanSqDist,
         mem_ofPred_eq] using hv)
   have hadm : IsAdmissibleEvolutionDomain (PDE.euclideanBall (0 : PDE.Vec d)
@@ -177,7 +173,7 @@ theorem corridors_retained_dominated (d : ℕ) (hd : 1 ≤ d)
       congr 1
       ext v
       rw [mem_movingDomain_euclideanBall_iff, hend]
-      simp only [add_zero, PDE.euclideanBall, PDE.euclideanSqDist, mem_ofPred_eq]
+      simp [PDE.euclideanBall, PDE.euclideanSqDist, mem_ofPred_eq]
     have hr := K.terminal_support q
     rw [he] at hr
     rw [← hr, Measure.restrict_apply
@@ -185,19 +181,15 @@ theorem corridors_retained_dominated (d : ℕ) (hd : 1 ≤ d)
         MeasurableSet.univ).compl, compl_inter_self, measure_empty]
   refine ⟨hfloor1, ?_, hfloor2, ?_, hsupp γ1 K1 q1 hq1 hend1,
     hsupp γ2 K2 q2 hq2 hend2, hnorm1.1, hnorm2.1, ?_⟩
-  · simpa only [measureReal_def, ENNReal.toReal_one] using
-      ENNReal.toReal_mono ENNReal.one_ne_top (K1.mass_le_one q1)
-  · simpa only [measureReal_def, ENNReal.toReal_one] using
-      ENNReal.toReal_mono ENNReal.one_ne_top (K2.mass_le_one q2)
+  · exact ENNReal.toReal_mono ENNReal.one_ne_top (K1.mass_le_one q1)
+  · exact ENNReal.toReal_mono ENNReal.one_ne_top (K2.mass_le_one q2)
   · calc
       _ ≤ ENNReal.ofReal (1 / 2) • KD.master qD +
           ENNReal.ofReal (1 / 2) • KD.master qD :=
         add_le_add (hnorm1.2.trans (fun A => by
-          simpa only [Measure.smul_apply, smul_eq_mul] using
-            mul_le_mul_right (hdom1 A) (ENNReal.ofReal (1 / 2))))
+          exact mul_le_mul_right (hdom1 A) (ENNReal.ofReal (1 / 2))))
           (hnorm2.2.trans (fun A => by
-          simpa only [Measure.smul_apply, smul_eq_mul] using
-            mul_le_mul_right (hdom2 A) (ENNReal.ofReal (1 / 2))))
+          exact mul_le_mul_right (hdom2 A) (ENNReal.ofReal (1 / 2))))
       _ = KD.master qD := by
         rw [← add_smul, ← ENNReal.ofReal_add (by norm_num) (by norm_num)]
         norm_num

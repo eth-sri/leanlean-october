@@ -32,16 +32,16 @@ theorem spectralTraceMatrix_uniform_bounds {d : ℕ} (M : PDE.Mat d) (hM : M.IsH
     intro t _
     unfold weightedSpectralSelector
     split_ifs
-    · exact ((min_le_right _ _).trans (min_le_left _ _)).trans hlo
-    · exact (min_le_right _ _).trans (min_le_right _ _)
-    · exact min_le_left _ _
+    · bound
+    · bound
+    · apply min_le_left
   · rw [← Algebra.algebraMap_eq_smul_one]
     apply cfc_le_algebraMap _ _ M (ha := hM.isSelfAdjoint) (hf := hcont)
     intro t _
     unfold weightedSpectralSelector
     split_ifs
-    · exact hhi.trans ((le_max_left _ _).trans (le_max_right _ _))
-    · exact (le_max_right _ _).trans (le_max_right _ _)
-    · exact le_max_left _ _
+    · grind
+    · grind
+    · apply le_max_left
 
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample

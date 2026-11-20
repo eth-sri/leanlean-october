@@ -51,16 +51,12 @@ theorem boundedSourceActionMeasure_compl_past (K : MovingFiberKernel Ω γ)
   have : ProbabilityTheory.IsFiniteKernel κ := by
     dsimp only [κ, boundedSourcePairKernel]
     infer_instance
-  have hD := measurableSet_boundedSourcePairSet hΩ hγ
   have hU := measurableSet_boundedSourcePast hΩ hγ T
-  have hr : ∀ᵐ q ∂ρ, q.2 ∈ Ioo a T :=
-    (Measure.ae_prod_iff_ae_ae (measurableSet_Ioo.preimage measurable_snd)).2
-      (Filter.Eventually.of_forall fun _ => ae_restrict_mem measurableSet_Ioo)
   have hrη : ∀ᵐ q ∂η, q.1.2 ∈ Ioo a T := by
     have hmapped : ∀ᵐ q ∂Measure.map Subtype.val η, q.2 ∈ Ioo a T := by
       dsimp only [η]
-      rw [map_comap_subtype_coe hD]
-      exact ae_restrict_of_ae hr
+      rw [map_comap_subtype_coe (measurableSet_boundedSourcePairSet hΩ hγ)]
+      exact ae_restrict_of_ae ((Measure.ae_prod_iff_ae_ae (measurableSet_Ioo.preimage measurable_snd)).2 (Filter.Eventually.of_forall fun _ => ae_restrict_mem measurableSet_Ioo))
     exact ae_of_ae_map (p := fun q : KineticPoint d × ℝ => q.2 ∈ Ioo a T)
       measurable_subtype_coe.aemeasurable hmapped
   have houtput : ∀ᵐ q ∂η.compProd κ,
@@ -75,10 +71,7 @@ theorem boundedSourceActionMeasure_compl_past (K : MovingFiberKernel Ω γ)
       exact ae_restrict_mem (measurableSet_evolutionStateSet hΩ _)
     filter_upwards [hstate] with w hw
     exact ⟨hq.2, hw.1⟩
-  change (Measure.map boundedSourceOutput (η.compProd κ)) _ = 0
-  rw [measure_eq_zero_iff_ae_notMem]
-  simpa only [Set.mem_compl_iff, not_not] using
-    (ae_map_iff (p := fun q => q ∈ boundedSourcePast Ω γ T)
+  exact (ae_map_iff (p := fun q => q ∈ boundedSourcePast Ω γ T)
       measurable_boundedSourceOutput.aemeasurable hU).2 houtput
 
 end HypoellipticAleksandrov.KineticAleksandrov.SectionTwo

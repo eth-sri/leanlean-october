@@ -57,17 +57,12 @@ theorem gaussianBarrier_backwardOperator {d : ℕ} (A : FullKineticCoefficient d
         2 * (gramian lam h sigma)⁻¹ 1 1 * (1 : PDE.Mat d) i j)) := by
     rw [kineticVelocityHessian_eq_sliceHessian]
     ext i j
-    exact gaussianProfile_velocityHessian lam Lam H L ell sblock hh hs y V i j
+    apply gaussianProfile_velocityHessian <;> assumption
   rw [gaussianBarrier_eq_movingLift,
     movingLift_backwardOperator A hf hx hv hkin tminus P,
     gaussianProfile_transport hlam hh Lam H L ell sblock hs y V]
-  change ell * G * (-Xi d lam Lam H h + lam * PDE.vecNormSq pvec) -
-    PDE.vecDot (deriv v s) _ - matrixContraction B _ = _
   rw [hg, hHess, matrixContraction_gaussian]
   rw [PDE.vecDot_comm (deriv v s), vecDot_smul_left, PDE.vecDot_comm pvec]
-  change _ = ell * G * (-Xi d lam Lam H h + lam * PDE.vecNormSq pvec +
-    2 * PDE.vecDot (deriv v s) pvec + 2 * (gramian lam h sigma)⁻¹ 1 1 * B.trace -
-    4 * PDE.vecDot pvec (B.mulVec pvec))
   ring
 
 end HypoellipticAleksandrov.KineticAleksandrov.Holder

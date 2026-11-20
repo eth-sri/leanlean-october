@@ -19,7 +19,6 @@ theorem dimension_zero_solution (r₀ r₁ : ℝ) (Q : PDE.Mat 0) (A : Coefficie
   have heq : (fun z : TimeVelocity 0 => φ z.2) = fun _ => φ 0 :=
     funext (fun _ => congrArg φ (Subsingleton.elim _ _))
   have hΩ : openEllipsoid Q = univ := by
-    ext x
     simp [openEllipsoid, PDE.vecDot]
   rw [heq]
   refine ⟨continuous_const.continuousOn,
@@ -29,9 +28,6 @@ theorem dimension_zero_solution (r₀ r₁ : ℝ) (Q : PDE.Mat 0) (A : Coefficie
       matrixContraction, PDE.vecDot]
   · intro y _
     exact congrArg φ (Subsingleton.elim _ _)
-  · intro z hz
-    have hf : z.2 ∈ frontier (openEllipsoid Q) := hz.2
-    rw [hΩ, frontier_univ] at hf
-    exact hf.elim
+  simp
 
 end HypoellipticAleksandrov.KineticAleksandrov.Lieberman

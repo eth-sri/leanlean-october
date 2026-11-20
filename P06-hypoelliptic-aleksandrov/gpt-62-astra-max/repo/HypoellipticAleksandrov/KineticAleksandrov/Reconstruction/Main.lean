@@ -35,7 +35,6 @@ lemma lintegral_rpow_mul_le {m : Measure Y} {H g : Y → ℝ≥0∞} (hH : Measu
     ∫⁻ y, H y ^ (q - 1) * g y ∂m ≤
       (∫⁻ y, H y ^ γ ∂m) ^ ((q - 1) / γ) * (∫⁻ y, g y ^ q₁ ∂m) ^ (1 / q₁) := by
   have hq0 : 0 < q - 1 := by linarith
-  have hγ0 : 0 < γ := by linarith
   set P : ℝ := γ / (q - 1) with hP
   have hP1 : 1 < P := by rw [hP, lt_div_iff₀ hq0]; linarith
   have hPinv : P⁻¹ = (q - 1) / γ := by rw [hP, inv_div]
@@ -67,7 +66,7 @@ theorem reconstruction_of_measurable {m : Measure Y} [SigmaFinite m]
           ∫⁻ ξ, eLpNorm (k ξ) (ENNReal.ofReal γ) m) ^ (q - 1) *
         eLpNorm g (ENNReal.ofReal q₁) m ∧
       ∫⁻ p, G p ^ q ∂(m.prod volume) < ∞ := by
-  have hγ1 : 1 < γ := hq.trans hqγ
+  have hγ1 := hq.trans hqγ
   have hγ0 : 0 < γ := by linarith
   have hq0 : 0 < q - 1 := by linarith
   have hq₁0 : 0 < q₁ := by
@@ -77,7 +76,6 @@ theorem reconstruction_of_measurable {m : Measure Y} [SigmaFinite m]
     have h3 : 1 / q₁ ≤ 0 := by rw [one_div]; exact inv_nonpos.2 (not_lt.1 hneg)
     linarith
   obtain ⟨hGm, hΓG, hfib⟩ := fiber_inversion Γ hg hΓ k hk hγ1 hq hH
-  have hmink := (fiber_height_minkowski Γ hg hΓ k hk hγ1).1
   set κ := Γ.condKernel with hκ
   set H := fiberHeight g κ with hHdef
   have hHm : Measurable H := measurable_fiberHeight hg κ
@@ -99,19 +97,18 @@ theorem reconstruction_of_measurable {m : Measure Y} [SigmaFinite m]
         have hHnorm : eLpNorm H (ENNReal.ofReal γ) m = (∫⁻ y, H y ^ γ ∂m) ^ (1 / γ) := by
           rw [eLpNorm_eq_lintegral_rpow_enorm_toReal hp0 ENNReal.ofReal_ne_top
             hHm.aestronglyMeasurable, ENNReal.toReal_ofReal hγ0.le]
-          simp only [enorm_eq_self]
+          simp
         have hgnorm : eLpNorm g (ENNReal.ofReal q₁) m = (∫⁻ y, g y ^ q₁ ∂m) ^ (1 / q₁) := by
           rw [eLpNorm_eq_lintegral_rpow_enorm_toReal hp1 ENNReal.ofReal_ne_top
             hg.aestronglyMeasurable, ENNReal.toReal_ofReal hq₁0.le]
-          simp only [enorm_eq_self]
+          simp
         rw [← hgnorm]
         refine mul_le_mul' ?_ le_rfl
         have : (∫⁻ y, H y ^ γ ∂m) ^ ((q - 1) / γ) = eLpNorm H (ENNReal.ofReal γ) m ^ (q - 1) := by
           rw [hHnorm, ← ENNReal.rpow_mul]
-          congr 1
           field_simp
         rw [this]
-        exact ENNReal.rpow_le_rpow hmink hq0.le
+        exact ENNReal.rpow_le_rpow ((fiber_height_minkowski Γ hg hΓ k hk hγ1).1) hq0.le
   exact ⟨_, hGm, hΓG, hbound, lt_of_le_of_lt hbound
     (ENNReal.mul_lt_top (ENNReal.rpow_lt_top_of_nonneg hq0.le hH.ne) hgL)⟩
 
@@ -144,10 +141,8 @@ theorem reconstruction {m : Measure Y} [SigmaFinite m]
           ∫⁻ ξ, eLpNorm (k ξ) (ENNReal.ofReal γ) m) ^ (q - 1) *
         eLpNorm g (ENNReal.ofReal q₁) m ∧
       ∫⁻ p, G p ^ q ∂(m.prod volume) < ∞ := by
-  have hae : g =ᵐ[m] hgm.mk g := hgm.ae_eq_mk
-  have hnorm : eLpNorm g (ENNReal.ofReal q₁) m = eLpNorm (hgm.mk g) (ENNReal.ofReal q₁) m :=
-    eLpNorm_congr_ae hae
-  rw [hnorm] at hgL ⊢
+  have hae := hgm.ae_eq_mk
+  rw [(eLpNorm_congr_ae hae)] at hgL ⊢
   exact reconstruction_of_measurable Γ hgm.measurable_mk
     (hΓ.trans (withDensity_congr_ae hae)) hq hqγ hq₁ hgL k hk hH
 

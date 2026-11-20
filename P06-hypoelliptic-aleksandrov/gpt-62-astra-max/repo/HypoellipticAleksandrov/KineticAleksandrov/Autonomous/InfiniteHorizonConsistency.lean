@@ -12,69 +12,59 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov
 open SectionTwo TheoremA Evolution
 
+variable {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam) (A : SmoothAutonomous lam Lam)
+    (H : Interval) (e : StripPole H ⊤) (T1 T2 : ℝ) (T : ℝ) (hT1 : e.1.time < T1)
+    (hT : e.1.time < T) (hT2 : e.1.time < T2) (R : ℝ) (hR1 : R ≤ T1) (hRT : R ≤ T) (hR2 : R ≤ T2)
+    (f : exitProbeSubmodule) (hs : tsupport f.1 ⊆ {x | timeCoord 1 x < R})
+
 /-- A compact probe supported before R has zero operator at every time at least R. -/
-theorem infinite_probe_operator_zero_after {lam Lam : ℝ} (A : SmoothAutonomous lam Lam)
-    (f : exitProbeSubmodule) (R : ℝ)
+theorem infinite_probe_operator_zero_after (R : ℝ)
     (hs : tsupport f.1 ⊆ {x | timeCoord 1 x < R}) (p : Point) (hp : R ≤ p.time) :
     forwardScalarOperator A.a (exitProbePhysical f) p = 0 := by
   rw [exitProbePhysical_operator]
   apply reconstruction_operator_zero_off_tsupport
   intro hx
   have ht := hs hx
-  change p.time < R at ht
   exact (not_lt_of_ge hp) ht
 
+include hRT hs in
 /-- The source integral of an early supported probe is independent of any later horizon. -/
-theorem infinite_probe_source_integral
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (H : Interval) (e : StripPole H ⊤)
-    (T : ℝ) (hT : e.1.time < T) (R : ℝ) (hRT : R ≤ T)
-    (f : exitProbeSubmodule) (hs : tsupport f.1 ⊆ {x | timeCoord 1 x < R}) :
+theorem infinite_probe_source_integral :
     (∫ p, forwardScalarOperator A.a (exitProbePhysical f) p
-      ∂stripGreen hH hLE hlam hLam A H T (stripPoleFinite H e T hT)) =
+      ∂stripGreen hlam hLam A H T (stripPoleFinite H e T hT)) =
     ∫ p, forwardScalarOperator A.a (exitProbePhysical f) p
-      ∂stripGreen hH hLE hlam hLam A H ⊤ e := by
+      ∂stripGreen hlam hLam A H ⊤ e := by
   rw [stripGreen_finite_restrict_infinite]
   exact setIntegral_eq_integral_of_forall_compl_eq_zero (fun p hp =>
     infinite_probe_operator_zero_after A f R hs p (hRT.trans (not_lt.mp hp)))
 
+include hR1 hR2 hs in
 /-- Finite exit measures have the same compact probe integrals before both horizons. -/
-theorem infinite_exit_probe_consistency
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (H : Interval) (e : StripPole H ⊤)
-    (T1 T2 : ℝ) (hT1 : e.1.time < T1) (hT2 : e.1.time < T2)
-    (R : ℝ) (hR1 : R ≤ T1) (hR2 : R ≤ T2)
-    (f : exitProbeSubmodule) (hs : tsupport f.1 ⊆ {x | timeCoord 1 x < R}) :
+theorem infinite_exit_probe_consistency :
     (∫ p, exitProbePhysical f p
-      ∂stripExit hH hLE hlam hLam A H T1 (stripPoleFinite H e T1 hT1)) =
+      ∂stripExit hlam hLam A H T1 (stripPoleFinite H e T1 hT1)) =
     ∫ p, exitProbePhysical f p
-      ∂stripExit hH hLE hlam hLam A H T2 (stripPoleFinite H e T2 hT2) := by
+      ∂stripExit hlam hLam A H T2 (stripPoleFinite H e T2 hT2) := by
   have hi (T : ℝ) (ht : e.1.time < T) :
       (∫ p, exitProbePhysical f p
-        ∂stripExit hH hLE hlam hLam A H T (stripPoleFinite H e T ht)) =
+        ∂stripExit hlam hLam A H T (stripPoleFinite H e T ht)) =
       exitProbePhysical f e.1 + ∫ p, forwardScalarOperator A.a (exitProbePhysical f) p
-        ∂stripGreen hH hLE hlam hLam A H T (stripPoleFinite H e T ht) :=
-    stripExitOfRealization_probe_integral hH hlam hLam A H _
-      (stripEvolution_spec hH hLE hlam hLam A H) T (stripPoleFinite H e T ht) f
+        ∂stripGreen hlam hLam A H T (stripPoleFinite H e T ht) :=
+    stripExitOfRealization_probe_integral hlam hLam A H _
+      (stripEvolution_spec hlam hLam A H) T (stripPoleFinite H e T ht) f
   rw [hi T1 hT1, hi T2 hT2,
-    infinite_probe_source_integral hH hLE hlam hLam A H e T1 hT1 R hR1 f hs,
-    infinite_probe_source_integral hH hLE hlam hLam A H e T2 hT2 R hR2 f hs]
+    infinite_probe_source_integral hlam hLam A H e T1 hT1 R hR1 f hs,
+    infinite_probe_source_integral hlam hLam A H e T2 hT2 R hR2 f hs]
 
+include hR1 hR2 in
 /-- Equality of early probe integrals gives exact equality of the restricted physical exits. -/
-theorem stripExit_horizon_consistency
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (H : Interval) (e : StripPole H ⊤)
-    (T1 T2 : ℝ) (hT1 : e.1.time < T1) (hT2 : e.1.time < T2)
-    (R : ℝ) (hR1 : R ≤ T1) (hR2 : R ≤ T2) :
-    (stripExit hH hLE hlam hLam A H T1 (stripPoleFinite H e T1 hT1)).restrict
+theorem stripExit_horizon_consistency :
+    (stripExit hlam hLam A H T1 (stripPoleFinite H e T1 hT1)).restrict
       {p | p.time < R} =
-    (stripExit hH hLE hlam hLam A H T2 (stripPoleFinite H e T2 hT2)).restrict
+    (stripExit hlam hLam A H T2 (stripPoleFinite H e T2 hT2)).restrict
       {p | p.time < R} := by
   let Ω (T : ℝ) (ht : e.1.time < T) :=
-    stripExit hH hLE hlam hLam A H T (stripPoleFinite H e T ht)
+    stripExit hlam hLam A H T (stripPoleFinite H e T ht)
   let U : Set (EvolutionVec 1) := {x | timeCoord 1 x < R}
   have hU : IsOpen U := isOpen_lt (timeCoord 1).continuous continuous_const
   let ν (T : ℝ) (ht : e.1.time < T) :=
@@ -97,7 +87,7 @@ theorem stripExit_horizon_consistency
       (∫ x, f x ∂ν T1 hT1) = ∫ x, f x ∂ν T2 hT2 := by
     let F : exitProbeSubmodule := ⟨f, hf, hc⟩
     rw [hin T1 hT1 F hs, hin T2 hT2 F hs]
-    exact infinite_exit_probe_consistency hH hLE hlam hLam A H e
+    exact infinite_exit_probe_consistency hlam hLam A H e
       T1 T2 hT1 hT2 R hR1 hR2 F hs
   have heq : ν T1 hT1 = ν T2 hT2 := by
     apply le_antisymm

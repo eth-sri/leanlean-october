@@ -27,7 +27,7 @@ theorem duhamelPotential_eq_greenMeasure (K : MovingFiberKernel Ω γ)
 
 /-- The full kinetic Duhamel lemma (Lemma 2.3), relative to the named Hörmander hypothesis
 and the supplied terminal evolution, with source normalization and zero traces. -/
-theorem kinetic_duhamel (hH : HormanderHypoellipticityStatement) (_hd : 1 ≤ d)
+theorem kinetic_duhamel (_hd : 1 ≤ d)
     (hΩ : IsAdmissibleEvolutionDomain Ω) (hγ : IsContinuousPiecewiseC1 γ)
     {lam Lam m Lb : ℝ} (hlam : 0 < lam) (_hLam : lam ≤ Lam) (hm : 0 < m)
     (B : FullKineticCoefficient d) (hB : IsSmoothFullKineticCoefficient B)
@@ -64,20 +64,18 @@ theorem kinetic_duhamel (hH : HormanderHypoellipticityStatement) (_hd : 1 ≤ d)
   have hΩm := measurableSet_of_isAdmissibleEvolutionDomain hΩ
   have hg : Continuous g := by
     convert hgs.continuous.comp (KineticPoint.homeomorphProd d).continuous using 1
-    funext p
     rfl
   have hbdd : BddAbove (range g) := by
     obtain ⟨C, hC⟩ := hg.bddAbove_range_of_hasCompactSupport hgc
     exact ⟨C, hC⟩
-  have hgb : ∀ p, g p ≤ ⨆ q, g q := fun p => le_ciSup hbdd p
-  have hC0 : 0 ≤ ⨆ q, g q := (hgn ⟨0, 0, 0⟩).trans (hgb _)
+  have hgb := fun p => le_ciSup hbdd p
   refine ⟨duhamelPotential_boundedBorel K hΩm hγ.1 T g hg hgc hgn,
     duhamel_isKineticWeakTransportedSolution hΩ hΩm hγ.1 B b S K hreal hB hBs hb
       g hgn hg hgc hgs T hgU,
-    duhamelPotential_contDiffOn hH hΩ hΩm hγ.1 B b S K hreal hB hBs hb
+    duhamelPotential_contDiffOn hΩ hΩm hγ.1 B b S K hreal hB hBs hb
       g hgn hg hgc hgs T hgU hlam hm hell hbounds.2,
-    fun p hp => duhamelPotential_nonneg_le K T g hgn _ hC0 hgb p hp.1.le,
-    duhamelPotential_source_equation hH hΩ hΩm hγ.1 B b S K hreal hB hBs hb
+    fun p hp => duhamelPotential_nonneg_le K T g hgn _ ((hgn ⟨0, 0, 0⟩).trans (hgb _)) hgb p hp.1.le,
+    duhamelPotential_source_equation hΩ hΩm hγ.1 B b S K hreal hB hBs hb
       g hgn hg hgc hgs T hgU hlam hm hell hbounds.2,
     continuousOn_duhamelPotential hΩ hΩm hγ.1 B b S K hreal g hgn hg hgc hgs T hgU,
     fun p hp => duhamelPotential_eq_zero_of_terminal_le K T g p hp.ge,

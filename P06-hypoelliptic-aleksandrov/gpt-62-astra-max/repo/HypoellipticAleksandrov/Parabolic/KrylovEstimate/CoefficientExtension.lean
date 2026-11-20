@@ -23,9 +23,8 @@ theorem exists_continuous_matrix_extension
     exact ⟨g, fun z => congrFun hg z⟩
   choose g hg using he
   refine ⟨fun z i j => g i j z, ?_, ?_⟩
-  · exact continuous_pi fun i => continuous_pi fun j => (g i j).continuous
+  · fun_prop
   · intro z hz
-    funext i j
-    exact hg i j ⟨z, hz⟩
+    aesop
 
 end HypoellipticAleksandrov.Parabolic.KrylovEstimate

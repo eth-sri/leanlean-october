@@ -32,7 +32,7 @@ theorem integrable_boundedBorel {Y : Type*} [MeasurableSpace Y] (f : BoundedBore
     (μ : Measure Y) [IsFiniteMeasure μ] : Integrable (fun y => f y) μ := by
   obtain ⟨C, -, hC⟩ := f.exists_bound
   exact Integrable.of_bound f.measurable.aestronglyMeasurable C
-    (Filter.Eventually.of_forall fun y => by simpa using hC y)
+    (Filter.Eventually.of_forall fun y => by exact hC y)
 
 /-- The integral of a bounded Borel function against a subprobability measure is bounded by
 the bound of the function. -/
@@ -41,10 +41,9 @@ theorem abs_integral_boundedBorel_le {Y : Type*} [MeasurableSpace Y] (f : Bounde
     |∫ y, f y ∂μ| ≤ C := by
   have : IsFiniteMeasure μ := ⟨hμ.trans_lt ENNReal.one_lt_top⟩
   have hreal : μ.real univ ≤ 1 := by
-    rw [Measure.real]
     exact ENNReal.toReal_le_of_le_ofReal zero_le_one (by simpa using hμ)
   have := norm_integral_le_of_norm_le_const (μ := μ) (f := fun y => f y) (C := C)
-    (Filter.Eventually.of_forall fun y => by simpa using hC y)
+    (Filter.Eventually.of_forall fun y => by exact hC y)
   calc |∫ y, f y ∂μ| = ‖∫ y, f y ∂μ‖ := (Real.norm_eq_abs _).symm
     _ ≤ C * μ.real univ := this
     _ ≤ C * 1 := mul_le_mul_of_nonneg_left hreal hC0
@@ -76,9 +75,13 @@ local notation "μ" => terminalMeasure n hn lam Lam m L_b hlam hlamLam hm hmLb �
 local notation "κ" => terminalFiberKernel n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
   hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx
 
+section
+variable (σ τ : ℝ) (hστ : σ ≤ τ) (f : BoundedBorel (EvolutionState Ω γ τ))
+
+include hστ f in
 /-- The integral of a bounded Borel function against the fiber kernel, as a bounded Borel
 function of the source state. -/
-def terminalIntegralDatum (σ τ : ℝ) (hστ : σ ≤ τ) (f : BoundedBorel (EvolutionState Ω γ τ)) :
+def terminalIntegralDatum :
     BoundedBorel (EvolutionState Ω γ σ) :=
   haveI := isFiniteKernel_terminalFiberKernel n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
     hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx σ τ hστ
@@ -91,8 +94,7 @@ def terminalIntegralDatum (σ τ : ℝ) (hστ : σ ≤ τ) (f : BoundedBorel (E
         hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx σ τ hστ p) hC0 hC⟩⟩
 
 /-- Evaluation of `terminalIntegralDatum`. -/
-theorem terminalIntegralDatum_apply (σ τ : ℝ) (hστ : σ ≤ τ)
-    (f : BoundedBorel (EvolutionState Ω γ τ)) (p : EvolutionState Ω γ σ) :
+theorem terminalIntegralDatum_apply (p : EvolutionState Ω γ σ) :
     terminalIntegralDatum n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
       hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx σ τ hστ f p =
         ∫ x, f x ∂(κ σ τ hστ p) :=
@@ -100,8 +102,7 @@ theorem terminalIntegralDatum_apply (σ τ : ℝ) (hστ : σ ≤ τ)
 
 /-- The integral operator against the fiber kernel is the unique real-linear map of
 bounded Borel functions with the integral formula. -/
-theorem exists_unique_terminalIntegralOperator
-    (σ τ : ℝ) (hστ : σ ≤ τ) :
+theorem exists_unique_terminalIntegralOperator :
     ∃! T : BoundedBorel (EvolutionState Ω γ τ) →ₗ[ℝ] BoundedBorel (EvolutionState Ω γ σ),
       ∀ (f : BoundedBorel (EvolutionState Ω γ τ)) (p : EvolutionState Ω γ σ),
         T f p = ∫ x, f x ∂(κ σ τ hστ p) := by
@@ -114,12 +115,12 @@ theorem exists_unique_terminalIntegralOperator
         simp only [terminalIntegralDatum_apply, BoundedBorel.add_apply]
         exact integral_add (integrable_boundedBorel f _) (integrable_boundedBorel g _)
       map_smul' := fun c f => BoundedBorel.ext fun p => by
-        simp only [terminalIntegralDatum_apply, BoundedBorel.smul_apply, RingHom.id_apply,
-          smul_eq_mul]
-        exact integral_const_mul c _ }
+        apply integral_const_mul }
   refine ⟨T, fun f p => rfl, fun T' hT' => ?_⟩
   exact LinearMap.ext fun f => BoundedBorel.ext fun p => by
     rw [hT' f p]; rfl
+
+end
 
 /-- The full family of integral operators `P₀ σ τ hστ`, chosen from the `∃!`
 statements `exists_unique_terminalIntegralOperator`. -/
@@ -149,16 +150,14 @@ theorem terminalFiberKernel_self (σ : ℝ) :
   rw [terminalFiberKernel_apply, ProbabilityTheory.Kernel.id_apply,
     terminalMeasure_eq_dirac n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
       hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx σ p]
-  have hU := measurableSet_evolutionStateSet_of_isOpen (γ := γ) (τ := σ)
-    (isOpen_of_isAdmissibleEvolutionDomain hΩ)
-  have hemb := MeasurableEmbedding.subtype_coe hU
+  have hemb := MeasurableEmbedding.subtype_coe (measurableSet_evolutionStateSet_of_isOpen (γ := γ) (τ := σ) (isOpen_of_isAdmissibleEvolutionDomain hΩ))
   refine Measure.ext fun A hA => ?_
   rw [hemb.comap_apply, Measure.dirac_apply' _ (hemb.measurableSet_image.2 hA),
     Measure.dirac_apply' _ hA]
   have hiff : p.1 ∈ Subtype.val '' A ↔ p ∈ A := Subtype.val_injective.mem_set_image
   by_cases h : p ∈ A
-  · simp [Set.indicator, h, hiff.2 h]
-  · simp [Set.indicator, h, mt hiff.1 h]
+  · simp [h]
+  · simp [h]
 
 /-- Endpoint identity, positivity, subprobability contraction, and the identity kernel at
 equal times, all for the same `μ`-derived `κ` and `P₀`. -/
@@ -187,12 +186,9 @@ theorem terminalOperators_basic :
   · rw [terminalOperators_apply n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
       hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx]
     simp only [BoundedBorel.one_apply, integral_const, smul_eq_mul, mul_one]
-    have hmass := terminalFiberKernel_univ_le_one n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
-      hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx σ τ hστ p
     rw [Measure.real]
-    exact ENNReal.toReal_le_of_le_ofReal zero_le_one (by simpa using hmass)
-  · exact terminalFiberKernel_self n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
-      hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx σ
+    exact ENNReal.toReal_le_of_le_ofReal zero_le_one (by simpa using (terminalFiberKernel_univ_le_one n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx σ τ hστ p))
+  · apply terminalFiberKernel_self
 
 end EvolutionData
 

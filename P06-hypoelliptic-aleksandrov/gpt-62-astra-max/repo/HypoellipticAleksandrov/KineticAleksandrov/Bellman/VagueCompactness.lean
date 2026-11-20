@@ -47,9 +47,9 @@ theorem bellman_radon_pair_subsequence (mu eta : ℕ → Measure BellmanPuncture
   obtain ⟨etainf, hef, her, het⟩ := ht true
   refine ⟨k, hk, muinf, etainf, ⟨hmf, hmr⟩, ⟨hef, her⟩, ?_, ?_⟩
   · intro f hf hfc
-    exact hmt (⟨⟨f, hf⟩, hfc⟩ : C_c(BellmanPuncturedPlane, ℝ))
+    exact hmt (⟨⟨f, hf⟩, hfc⟩)
   · intro f hf hfc
-    exact het (⟨⟨f, hf⟩, hfc⟩ : C_c(BellmanPuncturedPlane, ℝ))
+    exact het (⟨⟨f, hf⟩, hfc⟩)
 
 /-- Bounded-degree homogeneous pairs have annular normalization and a simultaneous Radon limit. -/
 theorem homogeneous_pairs_subsequence (R : ℝ) (hR : 1 ≤ R)

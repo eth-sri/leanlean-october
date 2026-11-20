@@ -12,19 +12,18 @@ open SectionTwo TheoremA Evolution
 
 /-- A strict negative transport direction kills both actual measures on its positive side. -/
 theorem reconstruction_strict_transport_cone_ae
-    (hH : HormanderHypoellipticityStatement)
     {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : SmoothAutonomous lam Lam) (H : Interval) (E : StripEvolution H)
     (hE : IsStripEvolution A H E) (T : ℝ) (e : StripPole H (T : WithTop ℝ))
     (alpha beta gamma delta : ℝ) (hdelta : 0 < delta)
     (he : reconstructionConeCoordinate alpha beta gamma e.1 = 0)
     (hdir : ∀ v ∈ H.carrier, alpha + v * beta ≤ -delta) :
-    (∀ᵐ p ∂stripExitOfRealization hH hlam hLam A H E hE T e,
+    (∀ᵐ p ∂stripExitOfRealization hlam hLam A H E hE T e,
       reconstructionConeCoordinate alpha beta gamma p ≤ 0) ∧
     ∀ᵐ p ∂stripGreenOfKernel H E.2 T e, reconstructionConeCoordinate alpha beta gamma p ≤ 0 := by
   let rho := reconstructionConeCoordinate alpha beta gamma
   let phi := expNegInvGlue ∘ rho
-  let Ω := stripExitOfRealization hH hlam hLam A H E hE T e
+  let Ω := stripExitOfRealization hlam hLam A H E hE T e
   let Γ := stripGreenOfKernel H E.2 T e
   let V := max |H.lo| |H.hi|
   let C := |alpha| + V * |beta|
@@ -45,7 +44,7 @@ theorem reconstruction_strict_transport_cone_ae
     exact (abs_add_le _ _).trans (add_le_add le_rfl (by
       rw [abs_mul]
       exact mul_le_mul_of_nonneg_right (hv _ hp) (abs_nonneg _)))
-  have hi := strip_identity_bounded_smooth_of_realization hH hlam hLam A H E hE T e phi
+  have hi := strip_identity_bounded_smooth_of_realization hlam hLam A H E hE T e phi
     (reconstructionConeProbe_smooth alpha beta gamma) (by
       refine ⟨max 1 (C * 2), fun p hp => ?_⟩
       constructor

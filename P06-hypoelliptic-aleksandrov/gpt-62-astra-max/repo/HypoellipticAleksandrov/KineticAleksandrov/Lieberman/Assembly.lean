@@ -44,11 +44,9 @@ theorem ellipsoidDirichlet_aux
           (fun _ _ => 0) (fun _ _ => 0) φ (fun _ => 0) v →
           Set.EqOn v u
             (scalarParabolicClosedCylinder r₀ r₁ (openEllipsoid Q)) := by
-  have _hcompact := hφCompact
   have hΩ := isOpen_openEllipsoid Q
-  have hΩb := (openEllipsoid_geometry hQ).1
   have hlo : HasLowerEllipticity lam a := haLower
-  have hhi : HasUpperEllipticity Lam a := haUpper
+  have hhi := haUpper
   have hex : ∃ u : TimeVelocity N → ℝ,
       IsClassicalBackwardDirichletSolution r₀ r₁ (openEllipsoid Q) a b
         (fun _ _ => 0) (fun _ _ => 0) φ (fun _ => 0) u := by
@@ -56,7 +54,7 @@ theorem ellipsoidDirichlet_aux
     | zero =>
       exact ⟨(fun z => φ z.2), dimension_zero_solution r₀ r₁ Q a b φ⟩
     | succ n =>
-      let F : TimeVelocity (n + 1) → ℝ := fun z =>
+      let F := fun z =>
         -scalarParabolicZeroOrderOperator a b (fun _ _ => 0) (fun p => φ p.2) z
       have hF := contDiff_terminal_lift_source a b φ haSmooth hbSmooth hφSmooth
       obtain ⟨W, hW⟩ := exists_signed_source_ellipsoid_correction (Nat.succ_pos n)
@@ -67,7 +65,7 @@ theorem ellipsoidDirichlet_aux
   obtain ⟨u, hu⟩ := hex
   refine ⟨u, hu, ?_⟩
   intro v hv
-  exact eqOn_closedCylinder_of_isClassicalBackwardDirichletSolution hΩ hΩb hr
+  exact eqOn_closedCylinder_of_isClassicalBackwardDirichletSolution hΩ ((openEllipsoid_geometry hQ).1) hr
     a b (fun _ _ => 0) (fun _ _ => 0) φ (fun _ => 0) v u
     haSmooth.continuous hbSmooth.continuous
     (fun t y => (hlo.posDef hlam t y).posSemidef) (fun _ _ => le_rfl) hv hu

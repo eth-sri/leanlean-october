@@ -21,7 +21,7 @@ theorem reconstruction_slice_regular_of_contDiffOn {u : Point → ℝ} {D : Set 
       (evolutionHomeomorph 1 ⁻¹' D)) (p : Point) (hp : p ∈ D) :
     IsSliceRegularAt u p := by
   have hx : (evolutionHomeomorph 1).symm p ∈ evolutionHomeomorph 1 ⁻¹' D := by
-    simpa only [mem_preimage, Homeomorph.apply_symm_apply] using hp
+    simpa using hp
   have hj := hu.contDiffAt
     ((hD.preimage (evolutionHomeomorph 1).continuous).mem_nhds hx)
   have h := (hj.of_le (by simp : (2 : WithTop ℕ∞) ≤ (⊤ : ℕ∞))).comp
@@ -40,7 +40,6 @@ theorem reconstruction_slice_regular_of_contDiffOn {u : Point → ℝ} {D : Set 
 
 /-- A nonnegative supersolution bounds the actual compact interior source potential. -/
 theorem reconstruction_duhamel_le_barrier
-    (hH : HormanderHypoellipticityStatement)
     {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : SmoothAutonomous lam Lam) (H : Interval) (E : StripEvolution H)
     (hE : IsStripEvolution A H E) (T : ℝ) (g q : Point → ℝ)
@@ -54,7 +53,7 @@ theorem reconstruction_duhamel_le_barrier
     (p₀ : Point) (hp₀ : p₀ ∈ evolutionPastOpenCylinder (intervalDomain H) (fun _ => 0) T) :
     duhamelPotential E.2 T g p₀ ≤ q p₀ := by
   obtain ⟨⟨-, C, -, hCb⟩, -, hsm, -, heq, hc, ht, hl, -⟩ :=
-    kinetic_duhamel hH (by omega) (intervalDomain_admissible H) (zeroCurve_piecewiseC1 1)
+    kinetic_duhamel (by omega) (intervalDomain_admissible H) (zeroCurve_piecewiseC1 1)
       hlam hLam one_pos (evolutionCoefficient A.a) (evolutionCoefficient_smooth A)
       (evolutionCoefficient_symmetric A.a) (evolutionCoefficient_bounds A)
       (identityDrift 1) (identityDrift_smooth 1) (identityDrift_bounds 1)

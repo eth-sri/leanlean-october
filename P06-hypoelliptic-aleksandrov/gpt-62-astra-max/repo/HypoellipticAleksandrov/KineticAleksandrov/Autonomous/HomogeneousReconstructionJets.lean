@@ -45,7 +45,7 @@ theorem integral_transportedAdjoint_of_anisotropic_jets
   have hβ : ∀ i, ContDiff ℝ (⊤ : ℕ∞) (β i) := fun i =>
     (contDiff_pi.mp hb i).comp (diffusedCoord n).contDiff
   have hD : ∀ v φ, ContDiff ℝ (⊤ : ℕ∞) φ → ContDiff ℝ (⊤ : ℕ∞) (D v φ) :=
-    fun v φ hφ => (hφ.fderiv_right (by simp)).clm_apply contDiff_const
+    by fun_prop
   have hDc : ∀ v φ, HasCompactSupport φ → HasCompactSupport (D v φ) :=
     fun v φ hφ => hφ.fderiv_apply (𝕜 := ℝ) v
   have hDs : ∀ v φ, tsupport (D v φ) ⊆ tsupport φ :=
@@ -73,8 +73,6 @@ theorem integral_transportedAdjoint_of_anisotropic_jets
       rw [fderiv_fun_mul ((hβ i).differentiable (by simp) x)
         (hψ.differentiable (by simp) x)]
       simp only [add_apply, smul_apply, smul_eq_mul]
-      change β i x * fderiv ℝ ψ x (basisZ i) +
-        ψ x * fderiv ℝ (fun y => b (diffusedCoord n y) i) x (basisZ i) = _
       rw [fderiv_drift_transported_zero hb, mul_zero, add_zero]
 
     have h := setIntegral_mul_evolution_directional_test hu (hZ i) (basisZ i)
@@ -137,8 +135,7 @@ theorem integral_transportedAdjoint_of_anisotropic_jets
       (∑ i, β i x * Z i x)) * ψ x) =
       fun x => T x * ψ x + (∑ i, ∑ j, (A i j x * H i j x) * ψ x) +
         (∑ i, (β i x * Z i x) * ψ x) := by
-    funext x
-    simp only [add_mul, Finset.sum_mul]
+    simp [add_mul, Finset.sum_mul]
   rw [hright]
   erw [integral_add (jT.add (sumInt _ (fun i => sumInt _ (jH i)))) (sumInt _ jZ),
     integral_add jT (sumInt _ (fun i => sumInt _ (jH i)))]

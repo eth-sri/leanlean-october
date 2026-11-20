@@ -38,38 +38,31 @@ theorem propagation_explicit (d : ℕ) (hd : 1 ≤ d) (lam Lam H T0 T1 kx kv : �
   let C := L * Real.sqrt lam / 8
   have hhs : 0 < hs := stepSize_pos hH.le hT0 hkx hkv
   have hhsTP : hs ≤ TP := by
-    have he := (propagation_step_time hH.le hhs (le_refl hs)).2
-    linarith only [he, hTP0, hhs]
+    linarith [(propagation_step_time hH.le hhs (le_refl hs)).2]
   obtain ⟨hn, hh, hhstar, hhalf, hnstar, hnTP⟩ :=
     propagation_ceiling_steps hhs hhsTP hTP1
   let n := Nat.ceil (TP / hs)
-  let h := TP / (n : ℝ)
+  let h := TP / n
   have hL : 0 < L := barrierL_pos hd hlam hLam (hT0.le.trans hT1)
   have hC : 0 < C := div_pos (mul_pos hL (Real.sqrt_pos.mpr hlam)) (by norm_num)
   let eps := min (kx / 2) (min (kv / 2)
     (min (C * (hs / 2) ^ (3 / 2 : ℝ)) (C * Real.sqrt (hs / 2))))
-  have heps : 0 < eps := by dsimp only [eps]; positivity
+  have heps : 0 < eps := by positivity
   obtain ⟨y, w, hy, hw, hkin, hLip, hclose⟩ :=
     smooth_skeleton_approx x v H (-T0) TP (by linarith only [hT0, hTP0])
       hH.le hsk eps heps
-  have hepsx : eps ≤ kx / 2 := min_le_left _ _
-  have hepsv : eps ≤ kv / 2 := (min_le_right _ _).trans (min_le_left _ _)
-  have hepspx : eps ≤ C * (hs / 2) ^ (3 / 2 : ℝ) :=
-    (min_le_right _ _).trans ((min_le_right _ _).trans (min_le_left _ _))
-  have hepspv : eps ≤ C * Real.sqrt (hs / 2) :=
-    (min_le_right _ _).trans ((min_le_right _ _).trans (min_le_right _ _))
   have hcontain := corridor_half_subset_of_approximation tminus (-T0) TP kx kv eps
-    x v y w hepsx hepsv hclose
+    x v y w (min_le_left _ _) ((min_le_right _ _).trans (min_le_left _ _)) hclose
   have hfinal := hclose TP ⟨by linarith only [hTP0, hT0], le_rfl⟩
   have hposition : PDE.vecEuclideanNorm (P.position - y TP) ≤ C * h ^ (3 / 2 : ℝ) := by
     rw [PDE.vecEuclideanNorm_sub_comm, ← hxP]
-    apply hfinal.1.le.trans (hepspx.trans ?_)
+    apply hfinal.1.le.trans (((min_le_right _ _).trans ((min_le_right _ _).trans (min_le_left _ _))).trans ?_)
     exact mul_le_mul_of_nonneg_left
       (Real.rpow_le_rpow (by positivity) hhalf (by norm_num)) hC.le
   have hvelocity : PDE.vecEuclideanNorm (P.velocity - w TP) ≤ C * Real.sqrt h := by
     rw [PDE.vecEuclideanNorm_sub_comm, ← hvP]
     exact hfinal.2.le.trans
-      (hepspv.trans (mul_le_mul_of_nonneg_left (Real.sqrt_le_sqrt hhalf) hC.le))
+      (((min_le_right _ _).trans ((min_le_right _ _).trans (min_le_right _ _))).trans (mul_le_mul_of_nonneg_left (Real.sqrt_le_sqrt hhalf) hC.le))
   have hendpoint := propagation_smooth_endpoint hd hlam hLam hH.le hT0 hT1 hkx hkv
     hh hhstar hell n hn hnTP A hA O tminus hy hw hkin hLip (hcontain.trans htube)
     u hnonneg hu (fun Q hQ ht => hinitial Q (hcontain hQ) ht) P

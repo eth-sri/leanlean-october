@@ -30,11 +30,8 @@ theorem iteration_evolution_clauses (hEvol : IterationEvolutionStatement)
       (wholeSpace d) stationary (zIndependentCoefficient B) (identityDrift d)
       (wholeSpace_admissible d) (zeroCurve_piecewiseC1 d) hBs hBy hBell
       (identityDrift_smooth d) (identityDrift_bounds d).1 (identityDrift_bounds d).2
-  have hr₀ : RealizesTerminalEvolution (wholeSpace d) stationary MeasurableSet.univ
-      (zIndependentCoefficient B) (identityDrift d) P K₀ :=
-    ⟨hclass, hint, hend, hcomp⟩
   have hK := (terminalEvolution_unique (wholeSpace d) stationary (wholeSpace_admissible d)
-    (zIndependentCoefficient B) (identityDrift d) S P K K₀ hreal hr₀).2
+    (zIndependentCoefficient B) (identityDrift d) S P K K₀ hreal ⟨hclass, hint, hend, hcomp⟩).2
   subst K₀
   exact ⟨hmono, hmargin, hcov (fun _ _ _ _ => rfl)⟩
 

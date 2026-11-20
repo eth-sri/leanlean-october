@@ -21,11 +21,7 @@ theorem punctured_homogeneous_velocity_jet {d : ℕ} (beta : ℝ) (F : XV d → 
   have hqd := (hsmooth.contDiffAt (hopen.mem_nhds hq)).differentiableAt (by simp)
   have hrqd := (hsmooth.contDiffAt
     (hopen.mem_nhds (dilate_ne_zero r hr q hq))).differentiableAt (by simp)
-  have hd : HasFDerivAt (dilate (d := d) r)
-      ((r ^ 3 • ContinuousLinearMap.fst ℝ (PDE.Vec d) (PDE.Vec d)).prod
-        (r • ContinuousLinearMap.snd ℝ (PDE.Vec d) (PDE.Vec d))) q :=
-    (hasFDerivAt_fst.const_smul (r ^ 3)).prodMk (hasFDerivAt_snd.const_smul r)
-  have hh := hrqd.hasFDerivAt.comp q hd
+  have hh := hrqd.hasFDerivAt.comp q ((hasFDerivAt_fst.const_smul (r ^ 3)).prodMk (hasFDerivAt_snd.const_smul r))
   have hother : HasFDerivAt (fun z => F (dilate r z)) (Real.rpow r beta • fderiv ℝ F q) q := by
     apply (hqd.hasFDerivAt.const_mul (Real.rpow r beta)).congr_of_eventuallyEq
     filter_upwards [hopen.mem_nhds hq] with z hz
@@ -41,13 +37,15 @@ theorem punctured_homogeneous_velocity_jet {d : ℕ} (beta : ℝ) (F : XV d → 
     rw [Real.rpow_sub hr, Real.rpow_one]
   rw [hpower, div_mul_eq_mul_div]
   apply (eq_div_iff hr.ne').mpr
-  simpa only [mul_comm] using heq
+  simpa [mul_comm] using heq
+
+variable {d : ℕ} (alpha : ℝ) (H : XV d → ℝ) (hsmooth : ContDiffOn ℝ (⊤ : ℕ∞) H ({0}ᶜ))
+    (hhom : ∀ r : ℝ, 0 < r → ∀ q, H (dilate r q) = Real.rpow r alpha * H q) (r : ℝ) (hr : 0 < r)
+    (q : XV d) (hq : q ≠ 0)
+include hsmooth hhom hr hq
 
 /-- The velocity Hessian has the exact kinetic weight alpha minus two. -/
-theorem homogeneous_dvv {d : ℕ} (alpha : ℝ) (H : XV d → ℝ)
-    (hsmooth : ContDiffOn ℝ (⊤ : ℕ∞) H ({0}ᶜ))
-    (hhom : ∀ r : ℝ, 0 < r → ∀ q, H (dilate r q) = Real.rpow r alpha * H q)
-    (r : ℝ) (hr : 0 < r) (q : XV d) (hq : q ≠ 0) :
+theorem homogeneous_dvv :
     dvv H (dilate r q) = Real.rpow r (alpha - 2) • dvv H q := by
   have hopen : IsOpen ({0}ᶜ : Set (XV d)) := isClosed_singleton.isOpen_compl
   ext i k
@@ -64,10 +62,7 @@ theorem homogeneous_dvv {d : ℕ} (alpha : ℝ) (H : XV d → ℝ)
   simpa only [dvv, dv, Matrix.smul_apply, smul_eq_mul, hexp] using hh
 
 /-- The source full position jet has the exact kinetic weight alpha minus three. -/
-theorem homogeneous_position_jet {d : ℕ} (alpha : ℝ) (H : XV d → ℝ)
-    (hsmooth : ContDiffOn ℝ (⊤ : ℕ∞) H ({0}ᶜ))
-    (hhom : ∀ r : ℝ, 0 < r → ∀ q, H (dilate r q) = Real.rpow r alpha * H q)
-    (r : ℝ) (hr : 0 < r) (q : XV d) (hq : q ≠ 0) (w : PDE.Vec d) :
+theorem homogeneous_position_jet (w : PDE.Vec d) :
     fderiv ℝ H (dilate r q) (w, 0) = Real.rpow r (alpha - 3) * fderiv ℝ H q (w, 0) := by
   have hopen : IsOpen ({0}ᶜ : Set (XV d)) := isClosed_singleton.isOpen_compl
   have hqd := (hsmooth.contDiffAt (hopen.mem_nhds hq)).differentiableAt (by simp)
@@ -97,10 +92,7 @@ theorem homogeneous_position_jet {d : ℕ} (alpha : ℝ) (H : XV d → ℝ)
   simpa only [mul_comm] using heq
 
 /-- The actual stationary transport has the same kinetic weight as the velocity Hessian. -/
-theorem homogeneous_transport {d : ℕ} (alpha : ℝ) (H : XV d → ℝ)
-    (hsmooth : ContDiffOn ℝ (⊤ : ℕ∞) H ({0}ᶜ))
-    (hhom : ∀ r : ℝ, 0 < r → ∀ q, H (dilate r q) = Real.rpow r alpha * H q)
-    (r : ℝ) (hr : 0 < r) (q : XV d) (hq : q ≠ 0) :
+theorem homogeneous_transport :
     PDE.vecDot (dilate r q).2 (dx H (dilate r q)) =
       Real.rpow r (alpha - 2) * PDE.vecDot q.2 (dx H q) := by
   rw [transport_eq_direction, transport_eq_direction]

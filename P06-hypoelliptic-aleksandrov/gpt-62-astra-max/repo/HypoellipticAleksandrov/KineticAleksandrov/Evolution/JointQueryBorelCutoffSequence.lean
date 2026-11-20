@@ -32,10 +32,8 @@ theorem accumulatedCutoffs_bounds {E : Type*} (χ : ℕ → E → ℝ)
     intro x
     have ha := ih x
     have hb := hχ (j + 1) x
-    have hprod := mul_nonneg (sub_nonneg.mpr ha.2) (sub_nonneg.mpr hb.2)
-    have hnon := mul_nonneg (sub_nonneg.mpr ha.2) hb.1
     dsimp only [accumulatedCutoffs]
-    constructor <;> nlinarith only [ha.1, hprod, hnon]
+    constructor <;> nlinarith only [ha.1, (mul_nonneg (sub_nonneg.mpr ha.2) (sub_nonneg.mpr hb.2)), (mul_nonneg (sub_nonneg.mpr ha.2) hb.1)]
 
 /-- Accumulated cutoffs increase pointwise. -/
 theorem monotone_accumulatedCutoffs {E : Type*} (χ : ℕ → E → ℝ)
@@ -43,8 +41,6 @@ theorem monotone_accumulatedCutoffs {E : Type*} (χ : ℕ → E → ℝ)
     Monotone (fun j => accumulatedCutoffs χ j x) := by
   apply monotone_nat_of_le_succ
   intro j
-  change accumulatedCutoffs χ j x ≤
-    accumulatedCutoffs χ j x + (1 - accumulatedCutoffs χ j x) * χ (j + 1) x
   exact le_add_of_nonneg_right (mul_nonneg
     (sub_nonneg.mpr (accumulatedCutoffs_bounds χ hχ j x).2) (hχ (j + 1) x).1)
 
@@ -55,8 +51,7 @@ theorem le_accumulatedCutoffs {E : Type*} (χ : ℕ → E → ℝ)
   cases j with
   | zero => exact le_rfl
   | succ j =>
-    have ha := (accumulatedCutoffs_bounds χ hχ j x).1
-    have hp := mul_nonneg ha (sub_nonneg.mpr (hχ (j + 1) x).2)
+    have hp := mul_nonneg ((accumulatedCutoffs_bounds χ hχ j x).1) (sub_nonneg.mpr (hχ (j + 1) x).2)
     dsimp only [accumulatedCutoffs]
     nlinarith only [hp]
 

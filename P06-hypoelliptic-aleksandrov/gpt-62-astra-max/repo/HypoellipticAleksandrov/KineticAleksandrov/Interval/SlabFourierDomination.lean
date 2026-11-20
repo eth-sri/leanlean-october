@@ -24,18 +24,17 @@ theorem interval_evolved_variation_domination
   · unfold evolvedMeasure
     refine VectorMeasure.variation_map_le.trans ?_
     rw [Measure.variation_withDensityᵥ hi]
-    have he : (fun y => ‖ph y‖ₑ) = (fun _ : Y => (1 : ℝ≥0∞)) := by
+    have he : (fun y => ‖ph y‖ₑ) = (fun _ : Y => 1) := by
       funext y
       simp only [← ofReal_norm, hph1 y, ENNReal.ofReal_one]
     rw [he]
-    change Measure.map π (Λ.withDensity (1 : Y → ℝ≥0∞)) ≤ _
+    change Measure.map π (Λ.withDensity 1) ≤ _
     rw [withDensity_one]
   · have hz : Λ.withDensityᵥ ph = 0 := by
       rw [Measure.withDensityᵥ, dite_eq_right hi]
     unfold evolvedMeasure
-    change ((Λ.withDensityᵥ ph).map π).variation ≤ _
     rw [hz, VectorMeasure.map_zero, VectorMeasure.variation_zero]
-    exact Measure.zero_le _
+    apply Measure.zero_le
 
 /-- The dominated phase-weighted evolution has finite variation for finite source and kernel. -/
 theorem interval_evolved_variation_finite
@@ -64,8 +63,7 @@ theorem killed_halfMeasure_mass_le {d : ℕ}
   refine evolved_variation_le μ _ _ _ (measurable_halfPhase ξ _) (norm_halfPhase ξ _)
     (measurable_halfVelocity _) _ (fun x => ?_)
   refine (fibreMeasure_variation_le K hcov σ _ (le_halfTime σ T hT.le) ξ x).trans ?_
-  have h := hdec σ (σ + T / 2) (le_halfTime σ T hT.le) ξ x.1.1
   have he : σ + T / 2 - σ = T / 2 := by ring
-  simpa only [he, neg_mul] using h
+  simpa only [he, neg_mul] using (hdec σ (σ + T / 2) (le_halfTime σ T hT.le) ξ x.1.1)
 
 end HypoellipticAleksandrov.KineticAleksandrov.Interval

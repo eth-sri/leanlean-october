@@ -29,7 +29,7 @@ theorem scaledDrift_apply (Y : PDE.Vec d) :
 theorem scaledDrift_lipschitz {L_b : ℝ} (h : HasEuclideanLipschitzDrift L_b b) :
     HasEuclideanLipschitzDrift L_b (scaledDrift b v₀ r) := by
   intro Y Y'
-  have hr : r.1 ≠ 0 := r.2.ne'
+  have hr := r.2.ne'
   have hsub : scaledDrift b v₀ r Y - scaledDrift b v₀ r Y' =
       r.1⁻¹ • (b (v₀ + r.1 • Y) - b (v₀ + r.1 • Y')) := by
     rw [scaledDrift_apply, scaledDrift_apply]
@@ -47,16 +47,12 @@ theorem scaledDrift_lipschitz {L_b : ℝ} (h : HasEuclideanLipschitzDrift L_b b)
 /-- The affine rescaling of the drift has the shifted derivative. -/
 theorem fderiv_scaledDrift (Y : PDE.Vec d) :
     fderiv ℝ (scaledDrift b v₀ r) Y = fderiv ℝ b (v₀ + r.1 • Y) := by
-  have hr : r.1 ≠ 0 := r.2.ne'
+  have hr := r.2.ne'
   by_cases hb : DifferentiableAt ℝ b (v₀ + r.1 • Y)
-  · have hA : HasFDerivAt (fun y : PDE.Vec d => v₀ + r.1 • y)
-        (r.1 • ContinuousLinearMap.id ℝ (PDE.Vec d)) Y :=
-      ((hasFDerivAt_id (𝕜 := ℝ) Y).const_smul r.1).const_add v₀
-    have h1 := ((hb.hasFDerivAt.comp Y hA).sub_const (b v₀)).const_smul r.1⁻¹
+  · have h1 := ((hb.hasFDerivAt.comp Y (((hasFDerivAt_id (𝕜 := ℝ) Y).const_smul r.1).const_add v₀)).sub_const (b v₀)).const_smul r.1⁻¹
     have h2 : (r.1⁻¹ • ((fderiv ℝ b (v₀ + r.1 • Y)).comp
         (r.1 • ContinuousLinearMap.id ℝ (PDE.Vec d)))) = fderiv ℝ b (v₀ + r.1 • Y) := by
-      ext v : 1
-      simp [smul_smul, hr]
+      simp [hr]
     rw [h2] at h1
     exact h1.fderiv
   · have hnd : ¬ DifferentiableAt ℝ (scaledDrift b v₀ r) Y := by
@@ -69,13 +65,11 @@ theorem fderiv_scaledDrift (Y : PDE.Vec d) :
       have hd' : DifferentiableAt ℝ (scaledDrift b v₀ r) (r.1⁻¹ • ((v₀ + r.1 • Y) - v₀)) := by
         rw [hpt]
         exact hd
-      have hcomp := ((hd'.comp (v₀ + r.1 • Y) hA).const_smul r.1).add_const (b v₀)
       have hfun : b = fun y => r.1 • ((scaledDrift b v₀ r ∘ fun y => r.1⁻¹ • (y - v₀)) y) +
           b v₀ := by
-        funext y
-        simp only [Function.comp_apply, scaledDrift_apply, smul_smul, smul_sub,
+        simp [Function.comp_apply, scaledDrift_apply, smul_smul, smul_sub,
           mul_inv_cancel₀ hr, one_smul, add_sub_cancel, sub_add_cancel]
-      convert hcomp using 1
+      convert (((hd'.comp (v₀ + r.1 • Y) hA).const_smul r.1).add_const (b v₀)) using 1
     rw [fderiv_zero_of_not_differentiableAt hnd, fderiv_zero_of_not_differentiableAt hb]
 
 /-- The unit-direction derivative coercivity constant of the drift is unchanged. -/
@@ -94,6 +88,6 @@ theorem scaledDrift_transportBounds {m L_b : ℝ} (h : HasTransportBounds m L_b 
 theorem scaledDrift_smooth (h : IsSmoothDrift b) : IsSmoothDrift (scaledDrift b v₀ r) := by
   have hA : ContDiff ℝ (⊤ : ℕ∞) (fun y : PDE.Vec d => v₀ + r.1 • y) := by fun_prop
   have h1 := (h.comp hA).sub (contDiff_const (c := b v₀))
-  exact h1.const_smul r.1⁻¹
+  apply h1.const_smul
 
 end HypoellipticAleksandrov.KineticAleksandrov.Scaling

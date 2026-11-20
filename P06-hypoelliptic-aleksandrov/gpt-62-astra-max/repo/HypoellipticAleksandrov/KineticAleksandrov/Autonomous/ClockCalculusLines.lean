@@ -10,21 +10,27 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open HypoellipticAleksandrov.Parabolic
 
+section
+variable (c : Clock) (e p : Point)
+
+include c in
 /-- Clock direction when physical time alone varies. -/
-def Clock.timeDirection (c : Clock) : Fin 3 → ℝ :=
+def Clock.timeDirection : Fin 3 → ℝ :=
   (-c.vbar / c.r ^ 3) • coordinateDirection 1
 
+include c in
 /-- Clock direction when physical position alone varies. -/
-def Clock.positionDirection (c : Clock) : Fin 3 → ℝ :=
+def Clock.positionDirection : Fin 3 → ℝ :=
   (1 / (c.vbar * c.r ^ 2)) • coordinateDirection 0 +
     (1 / c.r ^ 3) • coordinateDirection 1
 
+include c in
 /-- Clock direction when physical velocity alone varies. -/
-def Clock.velocityDirection (c : Clock) : Fin 3 → ℝ :=
+def Clock.velocityDirection : Fin 3 → ℝ :=
   (1 / c.r) • coordinateDirection 2
 
 /-- The physical time slice is the explicit affine line in clock coordinates. -/
-theorem Clock.map_time_line (c : Clock) (e p : Point) (t : ℝ) :
+theorem Clock.map_time_line (t : ℝ) :
     scalarCoordinates (c.map e ⟨t, p.position, p.velocity⟩) =
       scalarCoordinates (c.map e p) + (t-p.time) • c.timeDirection := by
   ext i
@@ -33,7 +39,7 @@ theorem Clock.map_time_line (c : Clock) (e p : Point) (t : ℝ) :
   all_goals ring
 
 /-- The physical position slice is the explicit affine line in clock coordinates. -/
-theorem Clock.map_position_line (c : Clock) (e p : Point) (x : ℝ) :
+theorem Clock.map_position_line (x : ℝ) :
     scalarCoordinates (c.map e ⟨p.time, fun _ => x, p.velocity⟩) =
       scalarCoordinates (c.map e p) + (x-p.position 0) • c.positionDirection := by
   ext i
@@ -42,13 +48,15 @@ theorem Clock.map_position_line (c : Clock) (e p : Point) (x : ℝ) :
   all_goals ring
 
 /-- The physical velocity slice is the explicit affine line in clock coordinates. -/
-theorem Clock.map_velocity_line (c : Clock) (e p : Point) (v : ℝ) :
+theorem Clock.map_velocity_line (v : ℝ) :
     scalarCoordinates (c.map e ⟨p.time, p.position, fun _ => v⟩) =
       scalarCoordinates (c.map e p) + (v-p.velocity 0) • c.velocityDirection := by
   ext i
   fin_cases i
   all_goals simp [scalarCoordinates, Clock.map, Clock.velocityDirection, coordinateDirection]
   all_goals ring
+
+end
 
 /-- Every scalar coordinate slice reconstructs its literal kinetic slice. -/
 theorem scalarPoint_update (p : Point) (i : Fin 3) (t : ℝ) :
@@ -94,19 +102,19 @@ theorem Clock.pullback_derivatives (c : Clock) (e p : Point) (h : Point → ℝ)
         (scalarCoordinates (c.map e p) + (t-p.time) • c.timeDirection) := by
     funext t
     rw [← c.map_time_line e p t]
-    simp only [Function.comp_apply, scalarPoint_coordinates]
+    simp [scalarPoint_coordinates]
   have hx : (fun x => h (c.map e ⟨p.time, fun _ => x, p.velocity⟩)) =
       fun x => (h ∘ scalarPoint)
         (scalarCoordinates (c.map e p) + (x-p.position 0) • c.positionDirection) := by
     funext x
     rw [← c.map_position_line e p x]
-    simp only [Function.comp_apply, scalarPoint_coordinates]
+    simp [scalarPoint_coordinates]
   have hv : (fun v => h (c.map e ⟨p.time, p.position, fun _ => v⟩)) =
       fun v => (h ∘ scalarPoint)
         (scalarCoordinates (c.map e p) + (v-p.velocity 0) • c.velocityDirection) := by
     funext v
     rw [← c.map_velocity_line e p v]
-    simp only [Function.comp_apply, scalarPoint_coordinates]
+    simp [scalarPoint_coordinates]
   rw [kineticPositionGradient_scalar, kineticVelocityHessian_scalar]
   change deriv _ p.time = _ ∧ deriv _ (p.position 0) = _ ∧ deriv (deriv _) (p.velocity 0) = _
   simp only [Function.comp_apply]

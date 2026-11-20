@@ -39,36 +39,38 @@ def terminalProbeSubmodule : Submodule ℝ (EvolutionAmbientState n → ℝ) whe
 
 variable {Ω γ τ}
 
+section
+variable (F : terminalProbeSubmodule Ω γ τ)
+
 /-- A probe vanishes outside the terminal fiber. -/
-theorem terminalProbe_apply_eq_zero (F : terminalProbeSubmodule Ω γ τ)
+theorem terminalProbe_apply_eq_zero
     {q : EvolutionAmbientState n} (hq : q ∉ evolutionStateSet Ω γ τ) : F.1 q = 0 := by
   by_contra h
   exact hq (F.2.2.2 (subset_tsupport _ h))
 
+include F in
 /-- The bounded Borel datum underlying a probe. -/
-def terminalProbeDatum (F : terminalProbeSubmodule Ω γ τ) :
+def terminalProbeDatum :
     BoundedBorel (EvolutionAmbientState n) :=
   ⟨F.1, F.2.1.continuous.measurable, by
     obtain ⟨C, hC⟩ := F.2.2.1.exists_bound_of_continuous F.2.1.continuous
     exact ⟨max C 0, le_max_right _ _, fun x => (hC x).trans (le_max_left _ _)⟩⟩
 
 /-- The datum of a probe is a smooth compactly supported terminal datum. -/
-theorem terminalProbeDatum_isSmoothCompact (F : terminalProbeSubmodule Ω γ τ) :
+theorem terminalProbeDatum_isSmoothCompact :
     IsSmoothCompactTerminalDatum Ω γ τ (terminalProbeDatum F) := F.2
 
-@[simp]
-theorem terminalProbeDatum_apply (F : terminalProbeSubmodule Ω γ τ)
-    (q : EvolutionAmbientState n) : terminalProbeDatum F q = F.1 q := rfl
+end
 
+section
+variable (F : BoundedBorel (EvolutionAmbientState n)) (hF : IsSmoothCompactTerminalDatum Ω γ τ F)
+
+include hF in
 /-- Every smooth compactly supported terminal datum is the datum of a probe. -/
-def terminalProbeOfDatum (F : BoundedBorel (EvolutionAmbientState n))
-    (hF : IsSmoothCompactTerminalDatum Ω γ τ F) : terminalProbeSubmodule Ω γ τ :=
+def terminalProbeOfDatum : terminalProbeSubmodule Ω γ τ :=
   ⟨F.1, hF⟩
 
-theorem terminalProbeDatum_ofDatum (F : BoundedBorel (EvolutionAmbientState n))
-    (hF : IsSmoothCompactTerminalDatum Ω γ τ F) :
-    terminalProbeDatum (terminalProbeOfDatum F hF) = F :=
-  BoundedBorel.ext fun _ => rfl
+end
 
 /-- The restriction of a smooth compactly supported function with support in `U` to the
 subtype `U` has compact support. -/
@@ -91,10 +93,6 @@ def terminalProbeCc (F : terminalProbeSubmodule Ω γ τ) :
   continuous_toFun := F.2.1.continuous.comp continuous_subtype_val
   hasCompactSupport' := hasCompactSupport_comp_subtype_val F.2.2.1 F.2.2.2
 
-@[simp]
-theorem terminalProbeCc_apply (F : terminalProbeSubmodule Ω γ τ)
-    (x : EvolutionState Ω γ τ) : terminalProbeCc F x = F.1 x.1 := rfl
-
 /-- Restriction of probes to the terminal fiber, as a linear map. -/
 def terminalProbeCcLinear :
     terminalProbeSubmodule Ω γ τ →ₗ[ℝ] C_c(EvolutionState Ω γ τ, ℝ) where
@@ -102,12 +100,11 @@ def terminalProbeCcLinear :
   map_add' F G := by ext x; rfl
   map_smul' c F := by ext x; rfl
 
-@[simp]
-theorem terminalProbeCcLinear_apply (F : terminalProbeSubmodule Ω γ τ)
-    (x : EvolutionState Ω γ τ) : terminalProbeCcLinear F x = F.1 x.1 := rfl
+section
+variable {F : terminalProbeSubmodule Ω γ τ}
 
 /-- A probe is bounded by `c` everywhere iff its restriction to the fiber is. -/
-theorem terminalProbe_abs_le {F : terminalProbeSubmodule Ω γ τ} {c : ℝ} (hc : 0 ≤ c)
+theorem terminalProbe_abs_le {c : ℝ} (hc : 0 ≤ c)
     (h : ∀ x : EvolutionState Ω γ τ, |terminalProbeCc F x| ≤ c) (q : EvolutionAmbientState n) :
     |F.1 q| ≤ c := by
   by_cases hq : q ∈ evolutionStateSet Ω γ τ
@@ -115,12 +112,14 @@ theorem terminalProbe_abs_le {F : terminalProbeSubmodule Ω γ τ} {c : ℝ} (hc
   · rw [terminalProbe_apply_eq_zero F hq]; simpa using hc
 
 /-- A probe is nonnegative everywhere iff its restriction to the fiber is. -/
-theorem terminalProbe_nonneg {F : terminalProbeSubmodule Ω γ τ}
+theorem terminalProbe_nonneg
     (h : ∀ x : EvolutionState Ω γ τ, 0 ≤ terminalProbeCc F x) (q : EvolutionAmbientState n) :
     0 ≤ F.1 q := by
   by_cases hq : q ∈ evolutionStateSet Ω γ τ
   · exact h ⟨q, hq⟩
   · rw [terminalProbe_apply_eq_zero F hq]
+
+end
 
 /-- Squares of probes are probes, and restrict to the pointwise square. -/
 theorem exists_terminalProbe_sq (F : terminalProbeSubmodule Ω γ τ) :

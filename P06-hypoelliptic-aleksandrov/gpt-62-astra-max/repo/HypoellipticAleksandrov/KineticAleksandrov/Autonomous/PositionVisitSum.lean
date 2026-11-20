@@ -19,33 +19,33 @@ theorem position_mass_rpow_le {x M q : ℝ} (hx : 0 ≤ x) (hM : x ≤ M) (hq : 
       calc
         _ = x ^ ((q - 1) + 1) := by congr 1; ring
         _ = _ := by
-          rw [Real.rpow_add_of_nonneg hx (by linarith : 0 ≤ q - 1) zero_le_one,
+          rw [Real.rpow_add_of_nonneg hx (by linarith) zero_le_one,
             Real.rpow_one]
     _ ≤ M ^ (q - 1) * x := mul_le_mul_of_nonneg_right
       (Real.rpow_le_rpow hx hM (by linarith)) hx
 
+variable (nu : Measure Point)
+
 /-- Extended real masses of all position cells sum to the time-bin mass. -/
-theorem tsum_ofReal_enlargedPositionVisitMass (nu : Measure Point) [IsFiniteMeasure nu]
+theorem tsum_ofReal_enlargedPositionVisitMass [IsFiniteMeasure nu]
     (c : Clock) (s x : ℝ) (j : ℕ) :
     (∑' k : ℤ, ENNReal.ofReal (enlargedPositionVisitMass nu c s x j k)) =
       ENNReal.ofReal (enlargedTimeVisitMass nu c s j) := by
   unfold enlargedPositionVisitMass enlargedTimeVisitMass
   simp_rw [ENNReal.ofReal_toReal (measure_ne_top nu _)]
-  exact tsum_enlargedPositionVisitCell_measure nu c s x j
+  apply tsum_enlargedPositionVisitCell_measure
 
 /-- For each time bin, the q-power sum is largest-cell power times total mass. -/
-theorem enlargedPositionVisitMass_power_sum_le (nu : Measure Point) [IsFiniteMeasure nu]
+theorem enlargedPositionVisitMass_power_sum_le [IsFiniteMeasure nu]
     (c : Clock) (s x : ℝ) (j : ℕ) (M q : ℝ) (hM : 0 ≤ M) (hq : 1 < q)
     (hcell : ∀ k : ℤ, enlargedPositionVisitMass nu c s x j k ≤ M) :
     (∑' k : ℤ, ENNReal.ofReal (enlargedPositionVisitMass nu c s x j k ^ q)) ≤
       ENNReal.ofReal (M ^ (q - 1) * enlargedTimeVisitMass nu c s j) := by
-  have hn : ∀ k : ℤ, 0 ≤ enlargedPositionVisitMass nu c s x j k :=
-    fun _ => ENNReal.toReal_nonneg
   calc
     _ ≤ ∑' k : ℤ, ENNReal.ofReal
         (M ^ (q - 1) * enlargedPositionVisitMass nu c s x j k) :=
       ENNReal.tsum_le_tsum fun k => ENNReal.ofReal_le_ofReal
-        (position_mass_rpow_le (hn k) (hcell k) hq)
+        (position_mass_rpow_le ((fun _ => ENNReal.toReal_nonneg) k) (hcell k) hq)
     _ = ENNReal.ofReal (M ^ (q - 1)) *
         ∑' k : ℤ, ENNReal.ofReal (enlargedPositionVisitMass nu c s x j k) := by
       simp_rw [ENNReal.ofReal_mul (Real.rpow_nonneg hM _)]
@@ -55,8 +55,7 @@ theorem enlargedPositionVisitMass_power_sum_le (nu : Measure Point) [IsFiniteMea
         ← ENNReal.ofReal_mul (Real.rpow_nonneg hM _)]
 
 /-- Combining the two decay estimates gives the literal exponent used in the time sum. -/
-theorem enlargedPositionVisitMass_power_sum_decay_le
-    (nu : Measure Point) [IsFiniteMeasure nu] (c : Clock) (s x : ℝ) (j : ℕ)
+theorem enlargedPositionVisitMass_power_sum_decay_le [IsFiniteMeasure nu] (c : Clock) (s x : ℝ) (j : ℕ)
     (Ct Cp g q : ℝ) (_hCt : 0 ≤ Ct) (hCp : 0 ≤ Cp) (hq : 1 < q)
     (htime : enlargedTimeVisitMass nu c s j ≤ Ct * (1 + (j : ℝ)) ^ (-1 / 2 : ℝ))
     (hcell : ∀ k : ℤ,
@@ -69,17 +68,14 @@ theorem enlargedPositionVisitMass_power_sum_decay_le
     (Cp * (1 + (j : ℝ)) ^ (-g / 2)) q
       (mul_nonneg hCp (Real.rpow_nonneg hp.le _)) hq hcell).trans
   apply ENNReal.ofReal_le_ofReal
-  have h := mul_le_mul_of_nonneg_left htime
-    (Real.rpow_nonneg (mul_nonneg hCp (Real.rpow_nonneg hp.le (-g / 2))) (q - 1))
-  apply h.trans_eq
+  apply (mul_le_mul_of_nonneg_left htime (Real.rpow_nonneg (mul_nonneg hCp (Real.rpow_nonneg hp.le (-g / 2))) (q - 1))).trans_eq
   rw [Real.mul_rpow hCp (Real.rpow_nonneg hp.le _), ← Real.rpow_mul hp.le]
   calc
     _ = Cp ^ (q - 1) * Ct *
-        ((1 + (j : ℝ)) ^ ((-g / 2) * (q - 1)) *
-          (1 + (j : ℝ)) ^ (-1 / 2 : ℝ)) := by ring
+        ((1 + j) ^ ((-g / 2) * (q - 1)) *
+          (1 + j) ^ (-1 / 2 : ℝ)) := by ring
     _ = _ := by
       rw [← Real.rpow_add hp]
-      congr 2
       ring
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

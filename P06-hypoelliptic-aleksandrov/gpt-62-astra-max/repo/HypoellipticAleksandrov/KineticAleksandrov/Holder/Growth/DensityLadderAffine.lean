@@ -39,8 +39,6 @@ theorem exists_affine_ink_spots_constants (d : ℕ) (hd : 1 ≤ d) :
   let Ep := phi ⁻¹' E
   let Fp := phi ⁻¹' F
   let Q := backwardCylinder (⟨0, 0, 0⟩ : KineticPoint d) 1
-  have hEp : MeasurableSet Ep := measurableSet_kineticAffine_preimage P0 R hE
-  have hFp : MeasurableSet Fp := measurableSet_kineticAffine_preimage P0 R hF
   have hEpF : Ep ⊆ Fp ∩ Q := by
     intro P hP
     have hh := hEF hP
@@ -50,7 +48,7 @@ theorem exists_affine_ink_spots_constants (d : ℕ) (hd : 1 ≤ d) :
     (kineticAffineHomeomorph P0 R hR.ne').injective
   have hphiF : phi '' Fp = F :=
     (kineticAffineHomeomorph P0 R hR.ne').toEquiv.image_preimage F
-  have hphiQ : phi '' Q = backwardCylinder P0 R :=
+  have hphiQ :=
     kineticAffine_image_unitCylinder P0 hR
   have hphiE : phi '' Ep = E := (kineticAffineHomeomorph P0 R hR.ne').toEquiv.image_preimage E
   have hphiFQ : phi '' (Fp ∩ Q) = F ∩ backwardCylinder P0 R := by
@@ -83,7 +81,7 @@ theorem exists_affine_ink_spots_constants (d : ℕ) (hd : 1 ≤ d) :
   have hbound := hink m hm eta r0 heta heta1 hr0 hr01 Ep Fp
     (isBounded_kineticAffine_preimage P0 hR.ne' hEb)
     (isBounded_kineticAffine_preimage P0 hR.ne' hFb)
-    hEp.nullMeasurableSet hFp.nullMeasurableSet hEpF hlocal
+    (measurableSet_kineticAffine_preimage P0 R hE).nullMeasurableSet (measurableSet_kineticAffine_preimage P0 R hF).nullMeasurableSet hEpF hlocal
   have hvolE := volume_affine_image_toReal P0 hR Ep
   have hvolF := volume_affine_image_toReal P0 hR (Fp ∩ Q)
   rw [hphiE] at hvolE

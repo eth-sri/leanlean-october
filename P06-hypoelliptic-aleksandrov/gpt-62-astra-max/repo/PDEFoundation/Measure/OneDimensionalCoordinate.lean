@@ -38,28 +38,10 @@ def scalarToVecOne (t : ℝ) : Vec 1 := fun _ => t
 def oneDimensionalAxisBox (a b : ℝ) : Set (Vec 1) :=
   axisBox (fun _ => a) (fun _ => b)
 
-@[simp] theorem vecOneEquivReal_apply (x : Vec 1) :
-    vecOneEquivReal x = vecOneCoordinate x := by
-  rw [vecOneEquivReal, MeasurableEquiv.funUnique_apply]
-  change x default = x 0
-  congr 1
+section
+variable (x : Vec 1) (t : ℝ)
 
-@[simp] theorem vecOneEquivReal_symm_apply (t : ℝ) :
-    vecOneEquivReal.symm t = scalarToVecOne t := by
-  funext i
-  rw [vecOneEquivReal, MeasurableEquiv.funUnique_symm_apply]
-  rfl
-
-@[simp] theorem vecOneCoordinate_scalarToVecOne (t : ℝ) :
-    vecOneCoordinate (scalarToVecOne t) = t :=
-  rfl
-
-@[simp] theorem scalarToVecOne_vecOneCoordinate (x : Vec 1) :
-    scalarToVecOne (vecOneCoordinate x) = x := by
-  funext i
-  have hi : i = 0 := Subsingleton.elim _ _
-  subst i
-  rfl
+end
 
 /-- The native coordinate equivalence preserves the project's volume measure
 exactly. -/
@@ -73,10 +55,9 @@ theorem volumePreserving_vecOneEquivReal :
 of the scalar coordinate in the corresponding open interval. -/
 @[simp] theorem mem_oneDimensionalAxisBox_iff {a b : ℝ} {x : Vec 1} :
     x ∈ oneDimensionalAxisBox a b ↔ vecOneCoordinate x ∈ Ioo a b := by
-  change x ∈ axisBox (fun _ => a) (fun _ => b) ↔ _
   constructor
   · intro hx
-    exact hx 0 (Set.mem_univ 0)
+    apply_rules [hx]
   · intro hx i _
     have hi : i = 0 := Subsingleton.elim _ _
     subst i

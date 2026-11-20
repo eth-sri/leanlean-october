@@ -19,15 +19,13 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Holder
 open HypoellipticAleksandrov.Parabolic
 open scoped BigOperators
 
+variable {d : ℕ} (lam : ℝ) {h : ℝ} (hh : 0 < h) (sigma : ℝ) (y V : PDE.Vec d)
+
 /-- Explicit classical gradient of a scalar Euclidean quadratic with a linear term. -/
-theorem classicalGradient_velocity_quadratic {d : ℕ} (C b c : ℝ) (y W : PDE.Vec d) :
+theorem classicalGradient_velocity_quadratic (C b c : ℝ) (y W : PDE.Vec d) :
     PDE.classicalGradient (fun V => C + 2 * b * PDE.vecDot y V + c * PDE.vecDot V V) W =
       (2 * b) • y + (2 * c) • W := by
-  have hl := HasFDerivAt.fun_sum (u := Finset.univ) (fun (i : Fin d) _ =>
-    (hasFDerivAt_apply (𝕜 := ℝ) i W).const_mul (y i))
-  have hq := HasFDerivAt.fun_sum (u := Finset.univ) (fun (i : Fin d) _ =>
-    (hasFDerivAt_apply (𝕜 := ℝ) i W).pow 2)
-  have hp := ((hasFDerivAt_const C W).add (hl.const_mul (2 * b))).add (hq.const_mul c)
+  have hp := ((hasFDerivAt_const C W).add ((HasFDerivAt.fun_sum (u := Finset.univ) (fun (i : Fin d) _ => (hasFDerivAt_apply (𝕜 := ℝ) i W).const_mul (y i))).const_mul (2 * b))).add ((HasFDerivAt.fun_sum (u := Finset.univ) (fun (i : Fin d) _ => (hasFDerivAt_apply (𝕜 := ℝ) i W).pow 2)).const_mul c)
   have heq : (fun V => C + 2 * b * PDE.vecDot y V + c * PDE.vecDot V V) =
       (fun V => C + 2 * b * (∑ i, y i * V i) + c * (∑ i, (V i) ^ 2)) := by
     funext V
@@ -46,9 +44,9 @@ theorem classicalGradient_velocity_quadratic {d : ℕ} (C b c : ℝ) (y W : PDE.
   simp [PDE.basisVec_apply, Pi.smul_apply, smul_eq_mul]
   ring
 
+include hh in
 /-- The velocity gradient is twice the velocity component of inverse covariance. -/
-theorem kineticVelocityGradient_qform {d : ℕ} (lam : ℝ) {h : ℝ} (hh : 0 < h)
-    (sigma : ℝ) (y V : PDE.Vec d) :
+theorem kineticVelocityGradient_qform :
     kineticVelocityGradient
       (fun P : KineticPoint d => qform lam h sigma P.position P.velocity) ⟨0, y, V⟩ =
       2 • pform lam h sigma y V := by
@@ -65,8 +63,7 @@ theorem kineticVelocityGradient_qform {d : ℕ} (lam : ℝ) {h : ℝ} (hh : 0 < 
   ring
 
 /-- The velocity Hessian is twice the velocity block of inverse covariance. -/
-theorem kineticVelocityHessian_qform {d : ℕ} (lam : ℝ) {h : ℝ}
-    (sigma : ℝ) (y V : PDE.Vec d) :
+theorem kineticVelocityHessian_qform :
     kineticVelocityHessian
       (fun P : KineticPoint d => qform lam h sigma P.position P.velocity) ⟨0, y, V⟩ =
       (2 * (gramian lam h sigma)⁻¹ 1 1) • (1 : PDE.Mat d) := by
@@ -74,21 +71,14 @@ theorem kineticVelocityHessian_qform {d : ℕ} (lam : ℝ) {h : ℝ}
       (fun W => (2 * (gramian lam h sigma)⁻¹ 0 1) • y +
         (2 * (gramian lam h sigma)⁻¹ 1 1) • W) := by
     funext W
-    exact classicalGradient_velocity_quadratic
-      ((gramian lam h sigma)⁻¹ 0 0 * PDE.vecDot y y)
-      ((gramian lam h sigma)⁻¹ 0 1) ((gramian lam h sigma)⁻¹ 1 1) y W
+    apply classicalGradient_velocity_quadratic
   unfold kineticVelocityHessian
-  change (fun i j => (fderiv ℝ
-    (fun W => PDE.classicalGradient (fun U => qform lam h sigma y U) W) V)
-    (PDE.basisVec i) j) = _
   rw [hg]
-  have hp := (hasFDerivAt_id (𝕜 := ℝ) V).const_smul
-    (2 * (gramian lam h sigma)⁻¹ 1 1)
-  have hd := hp.const_add ((2 * (gramian lam h sigma)⁻¹ 0 1) • y)
+  have hd := ((hasFDerivAt_id (𝕜 := ℝ) V).const_smul (2 * (gramian lam h sigma)⁻¹ 1 1)).const_add ((2 * (gramian lam h sigma)⁻¹ 0 1) • y)
   have hder : fderiv ℝ (fun W => (2 * (gramian lam h sigma)⁻¹ 0 1) • y +
       (2 * (gramian lam h sigma)⁻¹ 1 1) • W) V =
       (2 * (gramian lam h sigma)⁻¹ 1 1) • ContinuousLinearMap.id ℝ (PDE.Vec d) := by
-    simpa only [Pi.smul_apply, id_eq] using hd.fderiv
+    exact hd.fderiv
   rw [hder]
   ext i j
   simp [PDE.basisVec_apply, Matrix.one_apply, Matrix.smul_apply, eq_comm]

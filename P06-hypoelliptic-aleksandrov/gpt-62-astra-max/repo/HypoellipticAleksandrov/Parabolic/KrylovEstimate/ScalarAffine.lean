@@ -12,13 +12,17 @@ namespace HypoellipticAleksandrov.Parabolic.KrylovEstimate
 open Set Filter
 open scoped Topology
 
+variable {N : ℕ} (a : TimeVelocity N → PDE.Mat N) (f : PDE.Vec N → ℝ) {D : Set (TimeVelocity N)}
+    (w : TimeVelocity N → ℝ) (hD : IsOpen D) (hw : ContDiff ℝ 2 w) (u : TimeVelocity N → ℝ)
+    (c : TimeVelocityCoord N) (hu : IsScalarC12On u D) (b : ℝ) (v : PDE.Vec N) (ρ : ℝ)
+    (z : TimeVelocity N) (x : PDE.Vec N)
+
+include a u z in
 /-- The forward scalar residual, using the slice derivatives. -/
-def residual {N : ℕ} (a : TimeVelocity N → PDE.Mat N)
-    (u : TimeVelocity N → ℝ) (z : TimeVelocity N) : ℝ :=
+def residual : ℝ :=
   scalarTimeDerivative u z - matrixContraction (a z) (scalarSpatialHessian u z)
 
-private theorem gradient_affine {N : ℕ} (f : PDE.Vec N → ℝ)
-    (v : PDE.Vec N) (ρ : ℝ) (x : PDE.Vec N)
+private theorem gradient_affine
     (hf : DifferentiableAt ℝ f (v + ρ • x)) :
     PDE.classicalGradient (fun y => f (v + ρ • y)) x =
       ρ • PDE.classicalGradient f (v + ρ • x) := by
@@ -30,11 +34,9 @@ private theorem gradient_affine {N : ℕ} (f : PDE.Vec N → ℝ)
   simp only [PDE.classicalGradient, Pi.smul_apply, smul_eq_mul]
   simp only [Function.comp_def] at hc
   rw [hc.fderiv]
-  simp only [ContinuousLinearMap.comp_apply, ContinuousLinearMap.smul_apply,
-    ContinuousLinearMap.id_apply, map_smul, smul_eq_mul]
+  simp
 
-private theorem hessian_affine {N : ℕ} (f : PDE.Vec N → ℝ)
-    (v : PDE.Vec N) (ρ : ℝ) (x : PDE.Vec N)
+private theorem hessian_affine
     (hf : ContDiffAt ℝ 2 f (v + ρ • x)) :
     (fun i j => (fderiv ℝ (PDE.classicalGradient (fun y => f (v + ρ • y))) x
       (PDE.basisVec i)) j) =
@@ -50,8 +52,7 @@ private theorem hessian_affine {N : ℕ} (f : PDE.Vec N → ℝ)
       (by norm_num)).clm_apply (differentiableAt_const (c := PDE.basisVec i))
   have he : PDE.classicalGradient (fun y => f (v + ρ • y)) =ᶠ[𝓝 x]
       (fun y => ρ • PDE.classicalGradient f (v + ρ • y)) := by
-    have ht := ha.continuousAt.tendsto.eventually (hf.eventually (by norm_num))
-    filter_upwards [ht] with y hy
+    filter_upwards [(ha.continuousAt.tendsto.eventually (hf.eventually (by norm_num)))] with y hy
     exact gradient_affine f v ρ y (hy.differentiableAt (by norm_num))
   have hc := (hg.hasFDerivAt.comp x ha).const_smul ρ
   change HasFDerivAt (fun y => ρ • PDE.classicalGradient f (v + ρ • y)) _ x at hc
@@ -61,8 +62,7 @@ private theorem hessian_affine {N : ℕ} (f : PDE.Vec N → ℝ)
     ContinuousLinearMap.comp_apply, ContinuousLinearMap.id_apply, map_smul]
   ring
 
-private theorem time_affine {N : ℕ} (u : TimeVelocity N → ℝ)
-    (b : ℝ) (v : PDE.Vec N) (ρ : ℝ) (z : TimeVelocity N)
+private theorem time_affine
     (hu : DifferentiableAt ℝ (fun t => u (t, v + ρ • z.2)) (b + ρ ^ 2 * z.1)) :
     scalarTimeDerivative (u ∘ parabolicAffine b v ρ) z =
       ρ ^ 2 * scalarTimeDerivative u (parabolicAffine b v ρ z) := by
@@ -72,14 +72,11 @@ private theorem time_affine {N : ℕ} (u : TimeVelocity N → ℝ)
   change deriv (fun t => u (b + ρ ^ 2 * t, v + ρ • z.2)) z.1 = _
   simp only [Function.comp_def] at hc
   rw [hc.deriv]
-  change _ * ρ ^ 2 = ρ ^ 2 * _
-  exact mul_comm _ _
+  apply mul_comm
 
+include hD hu in
 /-- Parabolic affine pullback preserves scalar C12 regularity and its selected derivatives. -/
-theorem scalarC12On_affine_pullback
-    {N : ℕ} {D : Set (TimeVelocity N)} (hD : IsOpen D)
-    (u : TimeVelocity N → ℝ) (hu : IsScalarC12On u D)
-    (b : ℝ) (v₀ : PDE.Vec N) {ρ : ℝ} (hρ : 0 < ρ) :
+theorem scalarC12On_affine_pullback (v₀ : PDE.Vec N) {ρ : ℝ} (hρ : 0 < ρ) :
     IsScalarC12On (u ∘ parabolicAffine b v₀ ρ)
       (parabolicAffine b v₀ ρ ⁻¹' D) ∧
     ∀ z ∈ parabolicAffine b v₀ ρ ⁻¹' D,
@@ -106,13 +103,11 @@ theorem scalarC12On_affine_pullback
     fun z hz => ⟨ht z hz, hh z hz⟩⟩
   · intro z hz
     have ha : DifferentiableAt ℝ (fun t : ℝ => b + ρ ^ 2 * t) z.1 := by fun_prop
-    have hs := (hu.timeSlice_differentiableAt hz).comp z.1 ha
-    simpa only [Function.comp_def, parabolicAffine] using! hs
+    simpa only [Function.comp_def, parabolicAffine] using! ((hu.timeSlice_differentiableAt hz).comp z.1 ha)
   · intro z hz
     have ha : ContDiffAt ℝ 2 (fun y : PDE.Vec N => v₀ + ρ • y) z.2 := by
       fun_prop
-    have hs := (hu.spatialSlice_contDiffAt hz).comp z.2 ha
-    simpa only [Function.comp_def, parabolicAffine] using! hs
+    simpa only [Function.comp_def, parabolicAffine] using! ((hu.spatialSlice_contDiffAt hz).comp z.2 ha)
   · apply ((hu.continuousOn_scalarTimeDerivative.comp hc.continuousOn hm).const_mul
       (ρ ^ 2)).congr
     exact fun z hz => ht z hz
@@ -123,25 +118,24 @@ theorem scalarC12On_affine_pullback
       (ρ ^ 2)).congr
     exact fun z hz => hh z hz
 
-private theorem coordinate_single_smooth {N : ℕ} (w : TimeVelocity N → ℝ)
-    (hw : ContDiff ℝ 2 w) (c : TimeVelocityCoord N) (z : TimeVelocity N) :
+include hw in
+private theorem coordinate_single_smooth :
     TimeVelocityMultiIndex.coordinateIteratedFDeriv (Pi.single c 1) w z =
       fderiv ℝ w z (timeVelocityBasis c) := by
   have hs := TimeVelocityMultiIndex.coordinateIteratedFDeriv_add_single_at
-    (0 : TimeVelocityMultiIndex N) c w z (by
+    0 c w z (by
       simpa [TimeVelocityMultiIndex.order, VelocityMultiIndex.order,
         TimeVelocityMultiIndex.timeOrder, TimeVelocityMultiIndex.velocity, zero_add] using
-        (hw.of_le (by norm_num : (1 : WithTop ℕ∞) ≤ 2)).contDiffAt)
+        (hw.of_le (by norm_num)).contDiffAt)
   have hzero : TimeVelocityMultiIndex.coordinateIteratedFDeriv
-      (0 : TimeVelocityMultiIndex N) w = w := by
+      0 w = w := by
     funext y
-    exact TimeVelocityMultiIndex.coordinateIteratedFDeriv_zero w y
-  simpa only [zero_add, hzero] using hs
+    apply TimeVelocityMultiIndex.coordinateIteratedFDeriv_zero
+  simpa [hzero] using hs
 
+include hw in
 /-- For a smooth function the scalar residual is the existing ABP operator. -/
-theorem scalar_residual_eq_parabolicOperator
-    {N : ℕ} (a : TimeVelocity N → PDE.Mat N)
-    (w : TimeVelocity N → ℝ) (hw : ContDiff ℝ 2 w) (z : TimeVelocity N) :
+theorem scalar_residual_eq_parabolicOperator :
     residual a w z = parabolicOperator (fun t v => a (t, v)) w z := by
   have ht : scalarTimeDerivative w z = timeDerivative w z := by
     rw [scalarTimeDerivative_eq_coordinateIteratedFDeriv_of_contDiff_two hw z,
@@ -150,13 +144,10 @@ theorem scalar_residual_eq_parabolicOperator
   have hh : scalarSpatialHessian w z = velocityHessian w z := by
     ext i j
     rw [scalarSpatialHessian_apply_eq_coordinateIteratedFDeriv_of_contDiff_two hw z i j]
-    have ho : TimeVelocityMultiIndex.order
-        (Pi.single (velocityCoord j) 1 : TimeVelocityMultiIndex N) + 1 = 2 := by
-      simp only [TimeVelocityMultiIndex.order_single]
     have hs := TimeVelocityMultiIndex.coordinateIteratedFDeriv_add_single_at
       (Pi.single (velocityCoord j) 1) (velocityCoord i) w z (by
         simpa only [TimeVelocityMultiIndex.order_single, Nat.cast_one,
-          show (1 : WithTop ℕ∞) + 1 = 2 from rfl] using! hw.contDiffAt)
+          show 1 + 1 = 2 from rfl] using! hw.contDiffAt)
     have hf : TimeVelocityMultiIndex.coordinateIteratedFDeriv
         (Pi.single (velocityCoord j) 1) w =
         (fun y => fderiv ℝ w y (timeVelocityBasis (velocityCoord j))) := by

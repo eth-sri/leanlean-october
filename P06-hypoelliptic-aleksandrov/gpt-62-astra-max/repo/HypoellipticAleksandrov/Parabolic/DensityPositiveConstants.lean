@@ -40,19 +40,23 @@ def positiveDensityQ (L : ℝ) : ℝ :=
 def positiveDensityBeta (q a : ℝ) (n : ℕ) : ℝ :=
   q ^ n * a ^ 2
 
-private theorem rpow_neg_half_eq_sqrt_inv {a : ℝ} (ha0 : 0 < a) :
+section
+variable (d : ℕ) {a : ℝ} (ha0 : 0 < a) (ha1 : a < 1)
+
+include ha0 in
+private theorem rpow_neg_half_eq_sqrt_inv :
     a ^ (-(1 / 2 : ℝ)) = (Real.sqrt a)⁻¹ := by
   rw [Real.sqrt_eq_rpow, ← Real.rpow_neg ha0.le]
 
-private theorem zeta_exponent_mul_dim_add_two (d : ℕ) :
+private theorem zeta_exponent_mul_dim_add_two :
     (1 / (2 * ((d : ℝ) + 2))) * ((d + 2 : ℕ) : ℝ) = 1 / 2 := by
   have hdim : 0 < (d : ℝ) + 2 := by positivity
   rw [Nat.cast_add, Nat.cast_ofNat]
   field_simp
 
+include ha0 ha1 in
 /-- The chosen slack is positive whenever the initial density lies in `(0, 1)`. -/
-theorem positiveDensityEta_pos {a : ℝ}
-    (ha0 : 0 < a) (ha1 : a < 1) : 0 < positiveDensityEta a := by
+theorem positiveDensityEta_pos : 0 < positiveDensityEta a := by
   rw [positiveDensityEta]
   apply lt_min
   · norm_num
@@ -60,29 +64,28 @@ theorem positiveDensityEta_pos {a : ℝ}
       Real.one_lt_rpow_of_pos_of_lt_one_of_neg ha0 ha1 (by norm_num)
     linarith
 
+include ha0 ha1 in
 /-- The chosen slack is strictly less than one. -/
-theorem positiveDensityEta_lt_one {a : ℝ}
-    (ha0 : 0 < a) (ha1 : a < 1) : positiveDensityEta a < 1 := by
-  have heta0 : 0 < positiveDensityEta a := positiveDensityEta_pos ha0 ha1
+theorem positiveDensityEta_lt_one : positiveDensityEta a < 1 := by
+  have heta0 := positiveDensityEta_pos ha0 ha1
   have hetaHalf : positiveDensityEta a ≤ 1 / 2 := by
-    rw [positiveDensityEta]
-    exact min_le_left _ _
+    apply min_le_left
   calc
     positiveDensityEta a < positiveDensityEta a + positiveDensityEta a := by
       linarith
     _ ≤ 1 := by linarith
 
+include ha0 ha1 in
 /-- The explicit slack makes the source descent ratio strictly subunit. -/
-theorem one_add_positiveDensityEta_mul_sqrt_lt_one {a : ℝ}
-    (ha0 : 0 < a) (ha1 : a < 1) :
+theorem one_add_positiveDensityEta_mul_sqrt_lt_one :
     (1 + positiveDensityEta a) * Real.sqrt a < 1 := by
-  have hs0 : 0 < Real.sqrt a := Real.sqrt_pos.2 ha0
+  have hs0 := Real.sqrt_pos.2 ha0
   have hs1 : Real.sqrt a < 1 := by
     nlinarith [Real.sq_sqrt ha0.le]
   have heta : positiveDensityEta a ≤ (Real.sqrt a)⁻¹ / 2 - 1 / 2 := by
     rw [positiveDensityEta, rpow_neg_half_eq_sqrt_inv ha0]
     calc
-      min (1 / 2 : ℝ) (((Real.sqrt a)⁻¹ - 1) / 2) ≤
+      min (1 / 2) (((Real.sqrt a)⁻¹ - 1) / 2) ≤
           ((Real.sqrt a)⁻¹ - 1) / 2 := min_le_right _ _
       _ = (Real.sqrt a)⁻¹ / 2 - 1 / 2 := by ring
   calc
@@ -94,22 +97,22 @@ theorem one_add_positiveDensityEta_mul_sqrt_lt_one {a : ℝ}
       ring
     _ < 1 := by linarith
 
+include ha0 in
 /-- The terminal contraction parameter is positive in every dimension. -/
-theorem positiveDensityZeta_pos (d : ℕ) {a : ℝ}
-    (ha0 : 0 < a) : 0 < positiveDensityZeta d a := by
+theorem positiveDensityZeta_pos : 0 < positiveDensityZeta d a := by
   rw [positiveDensityZeta]
   exact Real.rpow_pos_of_pos ha0 _
 
+include ha0 ha1 in
 /-- The terminal contraction parameter is strictly subunit when `a < 1`. -/
-theorem positiveDensityZeta_lt_one (d : ℕ) {a : ℝ}
-    (ha0 : 0 < a) (ha1 : a < 1) : positiveDensityZeta d a < 1 := by
+theorem positiveDensityZeta_lt_one : positiveDensityZeta d a < 1 := by
   rw [positiveDensityZeta]
   apply Real.rpow_lt_one ha0.le ha1
   positivity
 
+include ha0 in
 /-- The natural power of the terminal contraction is exactly `sqrt a`. -/
-theorem positiveDensityZeta_pow_dim_add_two (d : ℕ) {a : ℝ}
-    (ha0 : 0 < a) :
+theorem positiveDensityZeta_pow_dim_add_two :
     positiveDensityZeta d a ^ (d + 2) = Real.sqrt a := by
   rw [positiveDensityZeta]
   calc
@@ -119,17 +122,22 @@ theorem positiveDensityZeta_pow_dim_add_two (d : ℕ) {a : ℝ}
     _ = a ^ (1 / 2 : ℝ) := by rw [zeta_exponent_mul_dim_add_two]
     _ = Real.sqrt a := (Real.sqrt_eq_rpow a).symm
 
+include ha0 in
 /-- The inverse integer power of the contraction is exactly `(sqrt a)⁻¹`. -/
-theorem positiveDensityZeta_zpow_neg_dim_add_two (d : ℕ) {a : ℝ}
-    (ha0 : 0 < a) :
+theorem positiveDensityZeta_zpow_neg_dim_add_two :
     positiveDensityZeta d a ^ (-((d : ℤ) + 2)) = (Real.sqrt a)⁻¹ := by
   have hindex : -((d : ℤ) + 2) = -((d + 2 : ℕ) : ℤ) := by
     norm_num [Nat.cast_add]
   rw [hindex, zpow_neg, zpow_natCast, positiveDensityZeta_pow_dim_add_two d ha0]
 
+end
+
+section
+variable (d : ℕ) {a eta : ℝ} (ha0 : 0 < a)
+include ha0
+
 /-- The source aggregate factor reduces to the normalized descent ratio. -/
-theorem positiveDensityAggregateFactor_eq (d : ℕ) {a eta : ℝ}
-    (ha0 : 0 < a) :
+theorem positiveDensityAggregateFactor_eq :
     a * (1 + eta) * positiveDensityZeta d a ^ (-((d : ℤ) + 2)) =
       positiveDensityDescentRatio a eta := by
   rw [positiveDensityZeta_zpow_neg_dim_add_two d ha0, positiveDensityDescentRatio]
@@ -141,24 +149,29 @@ theorem positiveDensityAggregateFactor_eq (d : ℕ) {a eta : ℝ}
     _ = (1 + eta) * Real.sqrt a := by field_simp [hs0.ne']
 
 /-- A positive slack gives a positive normalized descent ratio. -/
-theorem positiveDensityDescentRatio_pos {a eta : ℝ}
-    (ha0 : 0 < a) (heta0 : 0 < eta) :
+theorem positiveDensityDescentRatio_pos (heta0 : 0 < eta) :
     0 < positiveDensityDescentRatio a eta := by
   rw [positiveDensityDescentRatio]
   positivity
 
+end
+
+section
+variable {a : ℝ} (ha0 : 0 < a) (ha1 : a < 1)
+include ha0 ha1
+
 /-- The canonical eta choice gives a positive normalized descent ratio. -/
-theorem positiveDensityCanonicalRatio_pos {a : ℝ}
-    (ha0 : 0 < a) (ha1 : a < 1) :
+theorem positiveDensityCanonicalRatio_pos :
     0 < positiveDensityDescentRatio a (positiveDensityEta a) :=
   positiveDensityDescentRatio_pos ha0 (positiveDensityEta_pos ha0 ha1)
 
 /-- The canonical eta choice gives a strictly subunit descent ratio. -/
-theorem positiveDensityCanonicalRatio_lt_one {a : ℝ}
-    (ha0 : 0 < a) (ha1 : a < 1) :
+theorem positiveDensityCanonicalRatio_lt_one :
     positiveDensityDescentRatio a (positiveDensityEta a) < 1 := by
   rw [positiveDensityDescentRatio]
   exact one_add_positiveDensityEta_mul_sqrt_lt_one ha0 ha1
+
+end
 
 /-- The midpoint ratio lies strictly between a positive subunit ratio and one. -/
 theorem positiveDensityQ_bounds {L : ℝ}
@@ -180,9 +193,12 @@ theorem positiveDensityBeta_succ_lt {q a : ℝ} (n : ℕ)
     _ < 1 * (q ^ n * a ^ 2) := mul_lt_mul_of_pos_right hq1 hterm
     _ = q ^ n * a ^ 2 := by ring
 
+section
+variable {L q a : ℝ} (n : ℕ) (hL0 : 0 < L) (hLq : L < q) (hq0 : 0 < q) (ha0 : 0 < a)
+include hLq hq0 ha0
+
 /-- Multiplication by an admissible ratio moves one density term below its successor. -/
-theorem positiveDensityBeta_step_mul {L q a : ℝ} (n : ℕ)
-    (hLq : L < q) (hq0 : 0 < q) (ha0 : 0 < a) :
+theorem positiveDensityBeta_step_mul :
     L * positiveDensityBeta q a n < positiveDensityBeta q a (n + 1) := by
   have hterm : 0 < q ^ n * a ^ 2 := by positivity
   rw [positiveDensityBeta, pow_succ]
@@ -191,13 +207,15 @@ theorem positiveDensityBeta_step_mul {L q a : ℝ} (n : ℕ)
       mul_lt_mul_of_pos_right hLq hterm
     _ = q ^ n * q * a ^ 2 := by ring
 
+include hL0 in
 /-- Division by a positive admissible ratio moves a density term below its successor. -/
-theorem positiveDensityBeta_step_div {L q a : ℝ} (n : ℕ)
-    (hL0 : 0 < L) (hLq : L < q) (hq0 : 0 < q) (ha0 : 0 < a) :
+theorem positiveDensityBeta_step_div :
     positiveDensityBeta q a n < positiveDensityBeta q a (n + 1) / L := by
   rw [lt_div_iff₀ hL0]
   rw [mul_comm]
   exact positiveDensityBeta_step_mul n hLq hq0 ha0
+
+end
 
 /-- The finite density sequence eventually falls below every positive target. -/
 theorem exists_positiveDensityBeta_lt {q a beta : ℝ}

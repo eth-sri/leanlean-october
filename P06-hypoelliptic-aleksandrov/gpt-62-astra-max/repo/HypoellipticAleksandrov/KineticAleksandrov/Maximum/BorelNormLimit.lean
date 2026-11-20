@@ -17,10 +17,7 @@ theorem borel_real_norm_add_le {E : Type*} [MeasurableSpace E] {μ : Measure E}
     (eLpNorm (f + g) (ENNReal.ofReal p) μ).toReal ≤
       (eLpNorm f (ENNReal.ofReal p) μ).toReal +
       (eLpNorm g (ENNReal.ofReal p) μ).toReal := by
-  have ht := ENNReal.toReal_mono
-    (ENNReal.add_ne_top.mpr ⟨hf.eLpNorm_ne_top,hg.eLpNorm_ne_top⟩)
-    (eLpNorm_add_le (ENNReal.one_le_ofReal.mpr hp) (f := f) (g := g))
-  simpa only [ENNReal.toReal_add hf.eLpNorm_ne_top hg.eLpNorm_ne_top] using ht
+  simpa only [ENNReal.toReal_add hf.eLpNorm_ne_top hg.eLpNorm_ne_top] using (ENNReal.toReal_mono (ENNReal.add_ne_top.mpr ⟨hf.eLpNorm_ne_top,hg.eLpNorm_ne_top⟩) (eLpNorm_add_le (ENNReal.one_le_ofReal.mpr hp) (f := f) (g := g)))
 
 /-- Vanishing nonnegative error implies convergence of the actual perturbed source norms. -/
 theorem borel_source_norm_tendsto {E : Type*} [MeasurableSpace E] {μ : Measure E}
@@ -38,8 +35,7 @@ theorem borel_source_norm_tendsto {E : Type*} [MeasurableSpace E] {μ : Measure 
     filter_upwards [hFn,hGn j,hen j,hclose j] with z hFz hGz hez hcl
     simp only [Pi.add_apply]
     rw [Real.norm_of_nonneg hGz,Real.norm_of_nonneg (add_nonneg hFz hez)]
-    have hab := (abs_le.mp hcl).2
-    exact by linarith only [hab]
+    exact by linarith only [((abs_le.mp hcl).2)]
   have hGp j : MemLp (G j) (ENNReal.ofReal p) μ :=
     (hF.add (he j)).of_le (hGm j) (hdom j)
   have hu j : (eLpNorm (G j) (ENNReal.ofReal p) μ).toReal ≤
@@ -47,7 +43,7 @@ theorem borel_source_norm_tendsto {E : Type*} [MeasurableSpace E] {μ : Measure 
       (eLpNorm (e j) (ENNReal.ofReal p) μ).toReal := by
     apply (ENNReal.toReal_mono (hF.add (he j)).eLpNorm_ne_top
       (eLpNorm_mono_ae (hGm j) (hdom j))).trans
-    exact borel_real_norm_add_le hp hF (he j)
+    apply_rules [borel_real_norm_add_le]
   have hl j : (eLpNorm F (ENNReal.ofReal p) μ).toReal ≤
       (eLpNorm (G j) (ENNReal.ofReal p) μ).toReal +
       (eLpNorm (e j) (ENNReal.ofReal p) μ).toReal := by
@@ -57,8 +53,7 @@ theorem borel_source_norm_tendsto {E : Type*} [MeasurableSpace E] {μ : Measure 
     · filter_upwards [hFn,hGn j,hen j,hclose j] with z hFz hGz hez hcl
       simp only [Pi.add_apply]
       rw [Real.norm_of_nonneg hFz,Real.norm_of_nonneg (add_nonneg hGz hez)]
-      have hab := (abs_le.mp hcl).1
-      linarith only [hab]
+      linarith [(abs_le.mp hcl).1]
   rw [Metric.tendsto_atTop] at ht ⊢
   intro ε hε
   obtain ⟨N,hN⟩ := ht ε hε
@@ -66,11 +61,6 @@ theorem borel_source_norm_tendsto {E : Type*} [MeasurableSpace E] {μ : Measure 
   have hb := hN j hj
   rw [Real.dist_eq,sub_zero,abs_of_nonneg ENNReal.toReal_nonneg] at hb
   rw [Real.dist_eq]
-  have ha : |(eLpNorm (G j) (ENNReal.ofReal p) μ).toReal -
-      (eLpNorm F (ENNReal.ofReal p) μ).toReal| ≤
-      (eLpNorm (e j) (ENNReal.ofReal p) μ).toReal := by
-    rw [abs_le]
-    constructor <;> linarith only [hu j,hl j]
-  exact ha.trans_lt hb
+  grind
 
 end HypoellipticAleksandrov.KineticAleksandrov

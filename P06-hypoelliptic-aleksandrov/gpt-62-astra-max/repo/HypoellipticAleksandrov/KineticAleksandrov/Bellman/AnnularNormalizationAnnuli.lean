@@ -59,7 +59,6 @@ theorem mem_bellmanDyadicAnnulus_iff (j : ℤ) (q : BellmanPuncturedPlane) :
       change bellmanGauge (T (T.symm q)).val = _ at h
       rw [T.apply_symm_apply] at h
       exact h
-    change 1 ≤ bellmanGauge (T.symm q).val ∧ bellmanGauge (T.symm q).val ≤ 2
     constructor <;> nlinarith only [hq.1, hq.2, he, hr]
 
 /-- Every punctured point belongs to some dyadic annulus. -/

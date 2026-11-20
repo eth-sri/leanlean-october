@@ -28,11 +28,10 @@ theorem homogeneousAnsatz_velocity_hessian {d : ℕ} (alpha C₀ sigma R : ℝ)
   have heq : (fun a => homogeneousAnsatz alpha (cutoffProfile alpha C₀ sigma R) x a) =
       (fun a => Real.rpow (PDE.vecEuclideanNorm x) (alpha / 3) *
         cutoffProfile alpha C₀ sigma R
-          (Real.rpow (PDE.vecEuclideanNorm x) (-(1 / 3 : ℝ)) • a) (positionDirection x)) := by
-    funext a
+          (Real.rpow (PDE.vecEuclideanNorm x) (-(1 / 3)) • a) (positionDirection x)) := by
     rfl
   have hp : Real.rpow (PDE.vecEuclideanNorm x) (alpha / 3) *
-      Real.rpow (PDE.vecEuclideanNorm x) (-(1 / 3 : ℝ)) ^ 2 =
+      Real.rpow (PDE.vecEuclideanNorm x) (-(1 / 3)) ^ 2 =
       Real.rpow (PDE.vecEuclideanNorm x) ((alpha - 2) / 3) := by
     simp only [Real.rpow_eq_pow]
     rw [← Real.rpow_mul_natCast hr.le, ← Real.rpow_add hr]
@@ -42,7 +41,7 @@ theorem homogeneousAnsatz_velocity_hessian {d : ℕ} (alpha C₀ sigma R : ℝ)
   rw [heq]
   have hh := hessian_scaledFunction _ hF
     (Real.rpow (PDE.vecEuclideanNorm x) (alpha / 3))
-    (Real.rpow (PDE.vecEuclideanNorm x) (-(1 / 3 : ℝ))) v w u
+    (Real.rpow (PDE.vecEuclideanNorm x) (-(1 / 3))) v w u
   rw [hp] at hh
   exact hh
 

@@ -25,20 +25,19 @@ def densityClockStrip (c : Clock) (e : Point) : Set Point :=
 
 /-- The complete source clock-pushforward proposition, currently a conditional premise. -/
 def PushforwardStatement : Prop :=
-  ∀ (hH : HormanderHypoellipticityStatement)
-    (hLE : LiebermanEllipsoidDirichletStatement)
+  ∀
     (lam Lam : ℝ) (hlam : 0 < lam) (hLam : lam ≤ Lam),
     (∀ (A : SmoothAutonomous lam Lam) (c : Clock) (e : Point)
       (he : e.velocity 0 ∈ c.active),
-      let Γ := stripGreen hH hLE hlam hLam A c.activeInterval ⊤ (densityClockPole c e he)
+      let Γ := stripGreen hlam hLam A c.activeInterval ⊤ (densityClockPole c e he)
       Γ {z | ¬0 < Real.sign c.vbar * (z.position 0 - e.position 0)} = 0 ∧
         (Γ.withDensity (fun z => ENNReal.ofReal |z.velocity 0|)).map (c.map e) =
-          ENNReal.ofReal (|c.vbar| * c.r ^ 2) • clockGreen hH hLE hlam hLam A c e he) ∧
+          ENNReal.ofReal (|c.vbar| * c.r ^ 2) • clockGreen hlam hLam A c e he) ∧
     (∀ (q : ℝ), (1 < q ∧ q < 3 / 2) →
       ∃ C : ℝ, 0 < C ∧ ∀ (A : SmoothAutonomous lam Lam) (c : Clock) (e : Point)
         (he : e.velocity 0 ∈ c.active),
         ∃ G : Point → ℝ, Measurable G ∧ (∀ z, 0 ≤ G z) ∧
-          stripGreen hH hLE hlam hLam A c.activeInterval ⊤ (densityClockPole c e he) =
+          stripGreen hlam hLam A c.activeInterval ⊤ (densityClockPole c e he) =
             (volume.restrict (densityClockStrip c e)).withDensity
               (fun z => ENNReal.ofReal (G z)) ∧
           MemLp G (ENNReal.ofReal q) (volume.restrict (densityClockStrip c e)) ∧

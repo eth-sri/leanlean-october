@@ -28,46 +28,48 @@ open scoped ENNReal ProbabilityTheory
 
 variable {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
 
+section
+variable (K : MovingFiberKernel Ω γ) (hΩ : MeasurableSet Ω) (T : ℝ) (g : TimeVelocity d → ℝ)
+    (s r : ℝ) (hgn : ∀ p, 0 ≤ g p) (p : TimeVelocity d) (h : s ≤ r) (C : ℝ)
+    (y : EvolutionPosition Ω γ s) (hgb : ∀ p, g p ≤ C) (z : PDE.Vec d) (q : EvolutionQuery Ω γ)
+    (hz : parabolicMarginalKernel K hΩ s r h y =
+      K.fiberFirstMarginal hΩ s r h (evolutionStateOfPosition Ω γ s y z))
+    (hg : Measurable (fun v : PDE.Vec d => g (r, v)))
+
+include K hΩ g h y in
 /-- The source integral `∫ g(r,w) P_{s,r}(y,dw)` against the parabolic marginal kernel. -/
-def parabolicSourceIntegral (K : MovingFiberKernel Ω γ) (hΩ : MeasurableSet Ω)
-    (g : TimeVelocity d → ℝ) (s r : ℝ) (h : s ≤ r) (y : EvolutionPosition Ω γ s) : ℝ :=
+def parabolicSourceIntegral : ℝ :=
   ∫ y', g (r, y'.1) ∂(parabolicMarginalKernel K hΩ s r h y)
 
+include K hΩ g p in
 /-- The source-time integrand, extended by zero outside the valid starting fiber. -/
-def parabolicDuhamelIntegrand (K : MovingFiberKernel Ω γ) (hΩ : MeasurableSet Ω)
-    (g : TimeVelocity d → ℝ) (p : TimeVelocity d) (r : ℝ) : ℝ := by
+def parabolicDuhamelIntegrand (r : ℝ) : ℝ := by
   classical
   exact if h : p.1 ≤ r ∧ p.2 ∈ movingDomain Ω γ p.1 then
     parabolicSourceIntegral K hΩ g p.1 r h.1 ⟨p.2, h.2⟩ else 0
 
+include K hΩ T g p in
 /-- The parabolic Duhamel potential `W(s,v) = ∫_s^T ∫ g(r,w) P_{s,r}(v,dw) dr`,
 extended by zero outside the starting fiber. -/
-def parabolicDuhamelPotential (K : MovingFiberKernel Ω γ) (hΩ : MeasurableSet Ω) (T : ℝ)
-    (g : TimeVelocity d → ℝ) (p : TimeVelocity d) : ℝ :=
+def parabolicDuhamelPotential : ℝ :=
   ∫ r in Ioc p.1 T, parabolicDuhamelIntegrand K hΩ g p r
 
+include K g q in
 /-- The source integral against the master kernel, at a valid query. -/
-def parabolicMasterIntegral (K : MovingFiberKernel Ω γ) (g : TimeVelocity d → ℝ)
-    (q : EvolutionQuery Ω γ) : ℝ :=
+def parabolicMasterIntegral : ℝ :=
   ∫ w, g (q.1.2.1, w.1) ∂K.master q
 
+include hz hg in
 /-- If the marginal kernel at `y` is the first marginal of the fiber kernel at the state `(y, z)`,
 the marginal-kernel source integral is the master-kernel integral of the first coordinate. -/
-theorem parabolicSourceIntegral_eq_master_of_state (K : MovingFiberKernel Ω γ)
-    (hΩ : MeasurableSet Ω) (g : TimeVelocity d → ℝ) (s r : ℝ) (h : s ≤ r)
-    (y : EvolutionPosition Ω γ s) (z : PDE.Vec d)
-    (hz : parabolicMarginalKernel K hΩ s r h y =
-      K.fiberFirstMarginal hΩ s r h (evolutionStateOfPosition Ω γ s y z))
-    (hg : Measurable (fun v : PDE.Vec d => g (r, v))) :
+theorem parabolicSourceIntegral_eq_master_of_state :
     parabolicSourceIntegral K hΩ g s r h y =
       parabolicMasterIntegral K g ⟨(s, (r, (y.1, z))), h, y.2, mem_univ _⟩ := by
   unfold parabolicSourceIntegral parabolicMasterIntegral
   rw [hz, MovingFiberKernel.fiberFirstMarginal,
     ProbabilityTheory.Kernel.map_apply _ (MovingFiberKernel.measurable_firstPosition Ω γ r)]
-  have hf : Measurable (fun y' : EvolutionPosition Ω γ r => g (r, y'.1)) :=
-    hg.comp measurable_subtype_coe
   rw [integral_map (f := fun y' : EvolutionPosition Ω γ r => g (r, y'.1))
-    (MovingFiberKernel.measurable_firstPosition Ω γ r).aemeasurable hf.aestronglyMeasurable]
+    (MovingFiberKernel.measurable_firstPosition Ω γ r).aemeasurable (hg.comp measurable_subtype_coe).aestronglyMeasurable]
   have hq := K.map_fiberKernel_eq_master hΩ s r h (evolutionStateOfPosition Ω γ s y z)
   have hf2 : Measurable (fun w : EvolutionAmbientState d => g (r, w.1)) :=
     hg.comp measurable_fst
@@ -77,62 +79,60 @@ theorem parabolicSourceIntegral_eq_master_of_state (K : MovingFiberKernel Ω γ)
     measurable_subtype_coe.aemeasurable hf2.aestronglyMeasurable]
   rfl
 
+include hg in
 /-- The marginal-kernel source integral is the master-kernel integral at `z = 0`. -/
-theorem parabolicSourceIntegral_eq_master (K : MovingFiberKernel Ω γ) (hΩ : MeasurableSet Ω)
-    (g : TimeVelocity d → ℝ) (s r : ℝ) (h : s ≤ r) (y : EvolutionPosition Ω γ s)
-    (hg : Measurable (fun v : PDE.Vec d => g (r, v))) :
+theorem parabolicSourceIntegral_eq_master :
     parabolicSourceIntegral K hΩ g s r h y =
       parabolicMasterIntegral K g ⟨(s, (r, (y.1, 0))), h, y.2, mem_univ _⟩ :=
   parabolicSourceIntegral_eq_master_of_state K hΩ g s r h y 0 rfl hg
 
 /-- The master-kernel source integral is Borel in the query. -/
-theorem measurable_parabolicMasterIntegral (K : MovingFiberKernel Ω γ)
-    (g : TimeVelocity d → ℝ) (hg : Measurable g) :
+theorem measurable_parabolicMasterIntegral (hg : Measurable g) :
     Measurable (parabolicMasterIntegral K g) := by
   have hm : Measurable (fun q : EvolutionQuery Ω γ × EvolutionAmbientState d =>
       g (q.1.1.2.1, q.2.1)) := by
-    have ht : Measurable (fun q : EvolutionQuery Ω γ × EvolutionAmbientState d =>
-        q.1.1.2.1) := measurable_subtype_coe.snd.fst.comp measurable_fst
-    exact hg.comp (ht.prodMk (measurable_snd.fst))
+    fun_prop
   exact (hm.stronglyMeasurable.integral_kernel_prod_right' (κ := K.master)).measurable
 
+include hgn in
 /-- Nonnegative sources have nonnegative master integrals. -/
-theorem parabolicMasterIntegral_nonneg (K : MovingFiberKernel Ω γ) (g : TimeVelocity d → ℝ)
-    (hgn : ∀ p, 0 ≤ g p) (q : EvolutionQuery Ω γ) : 0 ≤ parabolicMasterIntegral K g q :=
+theorem parabolicMasterIntegral_nonneg : 0 ≤ parabolicMasterIntegral K g q :=
   integral_nonneg (fun _ => hgn _)
 
+include hgn hgb in
 /-- Contraction bounds the master integral of a bounded nonnegative source. -/
-theorem parabolicMasterIntegral_le (K : MovingFiberKernel Ω γ) (g : TimeVelocity d → ℝ)
-    (hgn : ∀ p, 0 ≤ g p) (C : ℝ) (hgb : ∀ p, g p ≤ C) (q : EvolutionQuery Ω γ) :
+theorem parabolicMasterIntegral_le :
     parabolicMasterIntegral K g q ≤ C := by
-  have hC : 0 ≤ C := (hgn (0, 0)).trans (hgb _)
+  have hC := (hgn (0, 0)).trans (hgb _)
   have hn : ‖parabolicMasterIntegral K g q‖ ≤ C * (K.master q).real univ := by
     apply norm_integral_le_of_norm_le_const
     exact Filter.Eventually.of_forall fun _ => by
       rw [Real.norm_eq_abs, abs_of_nonneg (hgn _)]
-      exact hgb _
+      apply hgb
   have hm : (K.master q).real univ ≤ 1 := by
-    simpa only [Measure.real, ENNReal.toReal_one] using
-      ENNReal.toReal_mono ENNReal.one_ne_top (K.mass_le_one q)
+    exact ENNReal.toReal_mono ENNReal.one_ne_top (K.mass_le_one q)
   rw [Real.norm_eq_abs] at hn
   exact (le_abs_self _).trans (hn.trans (by nlinarith))
 
+end
+
 variable (K : MovingFiberKernel Ω γ) (hΩ : MeasurableSet Ω)
 
+section
+variable (g : TimeVelocity d → ℝ) (p : TimeVelocity d) (r : ℝ)
+
 /-- Away from the valid fiber the integrand is zero. -/
-theorem parabolicDuhamelIntegrand_of_not_valid (g : TimeVelocity d → ℝ) (p : TimeVelocity d)
-    (r : ℝ) (h : ¬ (p.1 ≤ r ∧ p.2 ∈ movingDomain Ω γ p.1)) :
+theorem parabolicDuhamelIntegrand_of_not_valid (h : ¬ (p.1 ≤ r ∧ p.2 ∈ movingDomain Ω γ p.1)) :
     parabolicDuhamelIntegrand K hΩ g p r = 0 := by
-  unfold parabolicDuhamelIntegrand
   exact dite_eq_right h
 
 /-- On the valid fiber the integrand is the marginal-kernel source integral. -/
-theorem parabolicDuhamelIntegrand_of_valid (g : TimeVelocity d → ℝ) (p : TimeVelocity d)
-    (r : ℝ) (h : p.1 ≤ r ∧ p.2 ∈ movingDomain Ω γ p.1) :
+theorem parabolicDuhamelIntegrand_of_valid (h : p.1 ≤ r ∧ p.2 ∈ movingDomain Ω γ p.1) :
     parabolicDuhamelIntegrand K hΩ g p r =
       parabolicSourceIntegral K hΩ g p.1 r h.1 ⟨p.2, h.2⟩ := by
-  unfold parabolicDuhamelIntegrand
   exact dite_eq_left h
+
+end
 
 open Classical in
 /-- The integrand equals the zero-extended master-kernel integral. -/
@@ -144,31 +144,34 @@ theorem parabolicDuhamelIntegrand_eq_master (g : TimeVelocity d → ℝ)
   by_cases h : p.1 ≤ r ∧ p.2 ∈ movingDomain Ω γ p.1
   · rw [parabolicDuhamelIntegrand_of_valid K hΩ g p r h]
     simp only [h, and_self, ↓reduceDIte]
-    exact parabolicSourceIntegral_eq_master K hΩ g p.1 r h.1 ⟨p.2, h.2⟩ (hg r)
+    solve_by_elim [parabolicSourceIntegral_eq_master]
   · rw [parabolicDuhamelIntegrand_of_not_valid K hΩ g p r h]
-    simp only [h, ↓reduceDIte]
+    grind
 
+variable (T : ℝ) (hγ : Continuous γ) (g : TimeVelocity d → ℝ)
+    (hg : ∀ r, Measurable (fun v : PDE.Vec d => g (r, v))) (hgn : ∀ p, 0 ≤ g p) (C : ℝ)
+    (hgb : ∀ p, g p ≤ C) (p : TimeVelocity d) (r : ℝ)
+
+include hg hgn in
 /-- Nonnegativity of the integrand for a nonnegative Borel source. -/
-theorem parabolicDuhamelIntegrand_nonneg (g : TimeVelocity d → ℝ)
-    (hg : ∀ r, Measurable (fun v : PDE.Vec d => g (r, v))) (hgn : ∀ p, 0 ≤ g p)
-    (p : TimeVelocity d) (r : ℝ) : 0 ≤ parabolicDuhamelIntegrand K hΩ g p r := by
+theorem parabolicDuhamelIntegrand_nonneg : 0 ≤ parabolicDuhamelIntegrand K hΩ g p r := by
   rw [parabolicDuhamelIntegrand_eq_master K hΩ g hg]
   split_ifs
   · exact parabolicMasterIntegral_nonneg K g hgn _
-  · exact le_rfl
+  positivity
 
+include hg hgn hgb in
 /-- Upper bound of the integrand by any upper bound of a nonnegative source. -/
-theorem parabolicDuhamelIntegrand_le (g : TimeVelocity d → ℝ)
-    (hg : ∀ r, Measurable (fun v : PDE.Vec d => g (r, v))) (hgn : ∀ p, 0 ≤ g p)
-    (C : ℝ) (hgb : ∀ p, g p ≤ C) (p : TimeVelocity d) (r : ℝ) :
+theorem parabolicDuhamelIntegrand_le :
     parabolicDuhamelIntegrand K hΩ g p r ≤ C := by
   rw [parabolicDuhamelIntegrand_eq_master K hΩ g hg]
   split_ifs
-  · exact parabolicMasterIntegral_le K g hgn C hgb _
+  · apply parabolicMasterIntegral_le <;> assumption
   · exact (hgn (0, 0)).trans (hgb _)
 
+include hγ in
 /-- Joint Borel dependence of the integrand on the point and the source time. -/
-theorem measurable_parabolicDuhamelIntegrand (hγ : Continuous γ) (g : TimeVelocity d → ℝ)
+theorem measurable_parabolicDuhamelIntegrand
     (hgm : Measurable g) :
     Measurable (fun q : TimeVelocity d × ℝ => parabolicDuhamelIntegrand K hΩ g q.1 q.2) := by
   classical
@@ -189,64 +192,47 @@ theorem measurable_parabolicDuhamelIntegrand (hγ : Continuous γ) (g : TimeVelo
   let Q : D → EvolutionQuery Ω γ := fun q =>
     ⟨(q.1.1.1, (q.1.2, (q.1.1.2, 0))), q.2.1, q.2.2, mem_univ _⟩
   have hQ : Measurable Q := by
-    apply Measurable.subtype_mk
-    change Measurable (fun q : D => (q.1.1.1, (q.1.2, (q.1.1.2, (0 : PDE.Vec d)))))
-    exact (measurable_subtype_coe.fst.fst).prodMk
-      (measurable_subtype_coe.snd.prodMk
-        ((measurable_subtype_coe.fst.snd).prodMk measurable_const))
-  have hmi : Measurable (fun q : TimeVelocity d × ℝ =>
-      if h : q.1.1 ≤ q.2 ∧ q.1.2 ∈ movingDomain Ω γ q.1.1 then
-        parabolicMasterIntegral K g ⟨(q.1.1, (q.2, (q.1.2, 0))), h.1, h.2, mem_univ _⟩
-      else 0) :=
-    ((measurable_parabolicMasterIntegral K g hgm).comp hQ).dite measurable_const hD
-  convert hmi using 1
+    fun_prop
+  convert (((measurable_parabolicMasterIntegral K g hgm).comp hQ).dite measurable_const hD) using 1
   funext q
-  exact parabolicDuhamelIntegrand_eq_master K hΩ g hg q.1 q.2
+  apply parabolicDuhamelIntegrand_eq_master <;> assumption
 
+include hg in
 /-- The integrand vanishes at source times whose slice of the source is zero. -/
-theorem parabolicDuhamelIntegrand_eq_zero_of_slice (g : TimeVelocity d → ℝ)
-    (hg : ∀ r, Measurable (fun v : PDE.Vec d => g (r, v))) (p : TimeVelocity d) (r : ℝ)
+theorem parabolicDuhamelIntegrand_eq_zero_of_slice
     (h0 : ∀ v, g (r, v) = 0) : parabolicDuhamelIntegrand K hΩ g p r = 0 := by
   rw [parabolicDuhamelIntegrand_eq_master K hΩ g hg]
-  split_ifs
-  · simp only [parabolicMasterIntegral, h0, integral_zero]
-  · exact rfl
+  simp_all [parabolicMasterIntegral, h0]
 
+include hg hgn in
 /-- The potential of a nonnegative source is nonnegative. -/
-theorem parabolicDuhamelPotential_nonneg (T : ℝ) (g : TimeVelocity d → ℝ)
-    (hg : ∀ r, Measurable (fun v : PDE.Vec d => g (r, v))) (hgn : ∀ p, 0 ≤ g p)
-    (p : TimeVelocity d) : 0 ≤ parabolicDuhamelPotential K hΩ T g p :=
+theorem parabolicDuhamelPotential_nonneg : 0 ≤ parabolicDuhamelPotential K hΩ T g p :=
   integral_nonneg (fun r => parabolicDuhamelIntegrand_nonneg K hΩ g hg hgn p r)
 
+include hg hgn hgb in
 /-- Contraction gives the Duhamel estimate `W ≤ (T - s) C` for `g ≤ C`. -/
-theorem parabolicDuhamelPotential_le (T : ℝ) (g : TimeVelocity d → ℝ)
-    (hg : ∀ r, Measurable (fun v : PDE.Vec d => g (r, v))) (hgn : ∀ p, 0 ≤ g p)
-    (C : ℝ) (hgb : ∀ p, g p ≤ C) (p : TimeVelocity d) (hp : p.1 ≤ T) :
+theorem parabolicDuhamelPotential_le (hp : p.1 ≤ T) :
     parabolicDuhamelPotential K hΩ T g p ≤ (T - p.1) * C := by
   have hnon := parabolicDuhamelPotential_nonneg K hΩ T g hg hgn p
   have hn := norm_integral_le_of_norm_le_const
     (μ := volume.restrict (Ioc p.1 T)) (f := parabolicDuhamelIntegrand K hΩ g p)
     (C := C) (Filter.Eventually.of_forall fun r => by
       rw [Real.norm_eq_abs, abs_of_nonneg (parabolicDuhamelIntegrand_nonneg K hΩ g hg hgn p r)]
-      exact parabolicDuhamelIntegrand_le K hΩ g hg hgn C hgb p r)
+      apply parabolicDuhamelIntegrand_le <;> assumption)
   unfold parabolicDuhamelPotential at hnon ⊢
-  rw [Real.norm_eq_abs, abs_of_nonneg hnon] at hn
-  simpa only [Measure.real, Measure.restrict_apply_univ, Real.volume_Ioc,
-    ENNReal.toReal_ofReal (sub_nonneg.mpr hp), mul_comm] using hn
+  simp_all <;> grind
 
 /-- At and after the terminal time the potential vanishes. -/
-theorem parabolicDuhamelPotential_eq_zero_of_terminal_le (T : ℝ) (g : TimeVelocity d → ℝ)
-    (p : TimeVelocity d) (hp : T ≤ p.1) : parabolicDuhamelPotential K hΩ T g p = 0 := by
+theorem parabolicDuhamelPotential_eq_zero_of_terminal_le (hp : T ≤ p.1) : parabolicDuhamelPotential K hΩ T g p = 0 := by
   rw [parabolicDuhamelPotential, Ioc_eq_empty_of_le hp, Measure.restrict_empty,
     integral_zero_measure]
 
 /-- Outside the open starting fiber the zero extension vanishes. -/
-theorem parabolicDuhamelPotential_eq_zero_of_not_mem (T : ℝ) (g : TimeVelocity d → ℝ)
-    (p : TimeVelocity d) (hp : p.2 ∉ movingDomain Ω γ p.1) :
+theorem parabolicDuhamelPotential_eq_zero_of_not_mem (hp : p.2 ∉ movingDomain Ω γ p.1) :
     parabolicDuhamelPotential K hΩ T g p = 0 := by
   have hz : parabolicDuhamelIntegrand K hΩ g p = 0 := by
     funext r
     exact parabolicDuhamelIntegrand_of_not_valid K hΩ g p r (fun h => hp h.2)
-  simp only [parabolicDuhamelPotential, hz, Pi.zero_apply, integral_zero]
+  simp [parabolicDuhamelPotential, hz]
 
 end HypoellipticAleksandrov.KineticAleksandrov.Occupation

@@ -40,15 +40,11 @@ theorem density_ladder_numeric {a beta L0 : ℝ} (ha : 0 < a) (e : ℕ → ℝ) 
       a⁻¹ ^ n * beta - L0 * (∑ k ∈ Finset.range n, a⁻¹ ^ k) ≤ e n := by
     intro n
     induction n with
-    | zero => intro _; simpa only [pow_zero, one_mul, Finset.range_zero,
-        Finset.sum_empty, mul_zero, sub_zero] using hzero
+    | zero => simpa using hzero
     | succ n ih =>
       intro hn
-      have he := mul_le_mul_of_nonneg_left (ih (Nat.le_of_succ_le hn))
-        (inv_nonneg.mpr ha.le)
-      have hr := hrec n (Nat.lt_of_succ_le hn)
       rw [ladder_power_sum_succ, pow_succ]
-      nlinarith only [he, hr]
+      nlinarith only [(mul_le_mul_of_nonneg_left (ih (Nat.le_of_succ_le hn)) (inv_nonneg.mpr ha.le)), (hrec n (Nat.lt_of_succ_le hn))]
   exact hbound N le_rfl
 
 /-- Fixing N first allows the source leakage radius to be chosen strictly positive and small. -/
@@ -59,23 +55,21 @@ theorem exists_density_leakage_choice {a eta beta C V : ℝ} (ha : 0 < a) (ha1 :
       ∃ r0 : ℝ, 0 < r0 ∧ r0 < 1 ∧
         (C * (m : ℝ) * r0 ^ 2 / V) * (∑ k ∈ Finset.range N, a⁻¹ ^ k) <
           a⁻¹ ^ N * beta - (1 - eta) := by
-  have hq : 1 < a⁻¹ := (one_lt_inv₀ ha).mpr ha1
+  have hq := (one_lt_inv₀ ha).mpr ha1
   obtain ⟨n, hn⟩ := pow_unbounded_of_one_lt ((1 - eta) / beta) hq
   let N := n + 1
-  have hN : 1 ≤ N := by dsimp only [N]; omega
-  have hn' : a⁻¹ ^ n ≤ a⁻¹ ^ N := pow_le_pow_right₀ hq.le (Nat.le_succ n)
-  have hbig : 1 - eta < a⁻¹ ^ N * beta := by
-    exact (div_lt_iff₀ hbeta).mp (hn.trans_le hn')
+  have hN : 1 ≤ N := by omega
+  have hbig := by
+    exact (div_lt_iff₀ hbeta).mp (hn.trans_le (pow_le_pow_right₀ hq.le (Nat.le_succ n)))
   let S := ∑ k ∈ Finset.range N, a⁻¹ ^ k
   have hS : 0 < S := Finset.sum_pos (fun k _ => pow_pos (inv_pos.mpr ha) k)
     (Finset.nonempty_range_iff.mpr (by omega))
-  let D := (C * (m : ℝ) / V) * S
+  let D := (C * m / V) * S
   have hD : 0 < D := mul_pos (div_pos (mul_pos hC (Nat.cast_pos.mpr hm)) hV) hS
   let gap := a⁻¹ ^ N * beta - (1 - eta)
   have hgap : 0 < gap := sub_pos.mpr hbig
-  let r0 := min (1 / 2 : ℝ) (Real.sqrt (gap / (2 * D)))
+  let r0 := min (1 / 2) (Real.sqrt (gap / (2 * D)))
   have hr0 : 0 < r0 := lt_min (by norm_num) (Real.sqrt_pos.mpr (by positivity))
-  have hr01 : r0 < 1 := (min_le_left _ _).trans_lt (by norm_num)
   have hrsq : r0 ^ 2 ≤ gap / (2 * D) := by
     have he := (sq_le_sq₀ hr0.le (Real.sqrt_nonneg _)).mpr (min_le_right _ _)
     rwa [Real.sq_sqrt (by positivity : 0 ≤ gap / (2 * D))] at he
@@ -83,9 +77,8 @@ theorem exists_density_leakage_choice {a eta beta C V : ℝ} (ha : 0 < a) (ha1 :
     have he := mul_le_mul_of_nonneg_left hrsq hD.le
     apply he.trans_eq
     field_simp
-  refine ⟨N, hN, hbig, r0, hr0, hr01, ?_⟩
-  have heq : (C * (m : ℝ) * r0 ^ 2 / V) * S = D * r0 ^ 2 := by
-    dsimp only [D]
+  refine ⟨N, hN, hbig, r0, hr0, ((min_le_left _ _).trans_lt (by norm_num)), ?_⟩
+  have heq : (C * m * r0 ^ 2 / V) * S = D * r0 ^ 2 := by
     ring
   rw [heq]
   exact hhalf.trans_lt (by dsimp only [gap] at hgap ⊢; linarith only [hgap])

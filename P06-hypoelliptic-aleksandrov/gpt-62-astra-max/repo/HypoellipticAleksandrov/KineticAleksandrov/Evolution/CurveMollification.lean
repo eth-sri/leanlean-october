@@ -148,21 +148,20 @@ theorem exists_smooth_lipschitz_approx {n : ℕ} {γ : ℝ → PDE.Vec n} (hγ :
     intro t ht
     have : t ∈ Function.support (φ.normed volume) := ht
     rw [φ.support_normed_eq] at this
-    simpa [Metric.mem_ball, Real.dist_eq] using this
+    simpa using this
   refine ⟨curveMollify (φ.normed volume) γ, ?_, ?_, ?_⟩
   · rw [curveMollify_eq_convolution]
     exact hρs.contDiff_convolution_left _ φ.contDiff_normed (hγ.locallyIntegrable (μ := volume))
   · intro s s'
     rw [curveMollify_sub hρc hρs hγ]
     refine vecEuclideanNorm_weighted_integral_le hρ0 hρc hρs hρ1 ?_ (by positivity) fun t _ => ?_
-    · exact (hγ.comp (continuous_const.sub continuous_id)).sub
-        (hγ.comp (continuous_const.sub continuous_id))
+    · fun_prop
     · refine (hLip _ _).trans (le_of_eq ?_)
-      congr 2; ring
+      ring
   · intro s
     rw [curveMollify_sub_self hρc hρs hρ1 hγ]
     refine vecEuclideanNorm_weighted_integral_le hρ0 hρc hρs hρ1 ?_ hε.le fun t ht => ?_
-    · exact (hγ.comp (continuous_const.sub continuous_id)).sub continuous_const
+    · fun_prop
     · refine (hLip _ _).trans ?_
       have h1 : |s - t - s| < δ := by rw [show s - t - s = -t by ring, abs_neg]; exact hsupp t ht
       calc L * |s - t - s| ≤ L * δ := mul_le_mul_of_nonneg_left h1.le hL

@@ -28,25 +28,34 @@ def barrierW (κ t : ℝ) : ℝ := (1 - Real.exp (-κ * t)) / κ
 /-- The constant `κ = (1 + L_γ)/λ`. -/
 def collarKappa (Lγ lam : ℝ) : ℝ := (1 + Lγ) / lam
 
+section
+variable {n : ℕ} (c : PDE.Vec n) (r₀ dstar : ℝ) (γ : ℝ → PDE.Vec n) (a b : ℝ)
+include c
+
+include γ in
 /-- The squared distance of the position from the moving centre `γ(σ) + c`. -/
-def centreSq {n : ℕ} (c : PDE.Vec n) (γ : ℝ → PDE.Vec n) (p : KineticPoint n) : ℝ :=
+def centreSq (p : KineticPoint n) : ℝ :=
   PDE.vecNormSq (p.position - (γ p.time + c))
 
+include r₀ dstar γ a b in
 /-- The closed collar region of the moving ball on the time slab `[a, b]`. -/
-def collarClosed {n : ℕ} (c : PDE.Vec n) (r₀ dstar : ℝ) (γ : ℝ → PDE.Vec n) (a b : ℝ) :
+def collarClosed :
     Set (KineticPoint n) :=
   movingClosedSlab (PDE.euclideanBall c r₀) γ a b ∩ {p | (r₀ - dstar) ^ 2 ≤ centreSq c γ p}
 
+include r₀ dstar γ a b in
 /-- The active part of the collar region on `[a, b)`. -/
-def collarActive {n : ℕ} (c : PDE.Vec n) (r₀ dstar : ℝ) (γ : ℝ → PDE.Vec n) (a b : ℝ) :
+def collarActive :
     Set (KineticPoint n) :=
   movingActiveSlab (PDE.euclideanBall c r₀) γ a b ∩ {p | (r₀ - dstar) ^ 2 < centreSq c γ p}
 
 /-- The scaled supersolution `FB * w(d)/w(d_*)`, with `d = r₀ - |y - γ(σ) - c|`. -/
-def collarSupersolution {n : ℕ} (c : PDE.Vec n) (r₀ dstar Lγ lam FB : ℝ)
+def collarSupersolution (r₀ dstar Lγ lam FB : ℝ)
     (γ : ℝ → PDE.Vec n) (p : KineticPoint n) : ℝ :=
   FB / barrierW (collarKappa Lγ lam) dstar *
     collarBarrier (collarKappa Lγ lam) r₀ (fun t => γ t + c) p
+
+end
 
 /-- The profile `w` is positive on positive arguments. -/
 theorem barrierW_pos {κ t : ℝ} (hκ : 0 < κ) (ht : 0 < t) : 0 < barrierW κ t := by
@@ -56,11 +65,13 @@ theorem barrierW_pos {κ t : ℝ} (hκ : 0 < κ) (ht : 0 < t) : 0 < barrierW κ 
     nlinarith
   exact div_pos (by linarith) hκ
 
+section
+variable {n : ℕ} (c : PDE.Vec n) (κ r₀ : ℝ) {γ : ℝ → PDE.Vec n} (hγ : Continuous γ)
+
+include hγ in
 /-- Continuity of the squared distance to the moving centre. -/
-theorem continuous_centreSq {n : ℕ} (c : PDE.Vec n) {γ : ℝ → PDE.Vec n} (hγ : Continuous γ) :
+theorem continuous_centreSq :
     Continuous (centreSq c γ) := by
-  have h1 : Continuous (fun p : KineticPoint n => p.position - (γ p.time + c)) :=
-    continuous_position.sub ((hγ.comp continuous_time).add continuous_const)
   have : centreSq c γ = fun p => ∑ i, (p.position i - (γ p.time + c) i) ^ 2 := by
     funext p
     unfold centreSq
@@ -68,11 +79,11 @@ theorem continuous_centreSq {n : ℕ} (c : PDE.Vec n) {γ : ℝ → PDE.Vec n} (
     rfl
   rw [this]
   refine continuous_finsetSum _ (fun i _ => ?_)
-  exact ((continuous_apply i).comp h1).pow 2
+  exact ((continuous_apply i).comp (continuous_position.sub ((hγ.comp continuous_time).add continuous_const))).pow 2
 
+include hγ in
 /-- Continuity of the collar barrier. -/
-theorem continuous_collarBarrier {n : ℕ} (c : PDE.Vec n) (κ r₀ : ℝ) {γ : ℝ → PDE.Vec n}
-    (hγ : Continuous γ) :
+theorem continuous_collarBarrier :
     Continuous (collarBarrier κ r₀ (fun t => γ t + c)) := by
   have h := continuous_centreSq c hγ
   unfold collarBarrier collarProfile
@@ -80,13 +91,17 @@ theorem continuous_collarBarrier {n : ℕ} (c : PDE.Vec n) (κ r₀ : ℝ) {γ :
   fun_prop
 
 /-- Continuity of the scaled collar supersolution. -/
-theorem continuous_collarSupersolution {n : ℕ} (c : PDE.Vec n) (r₀ dstar Lγ lam FB : ℝ)
+theorem continuous_collarSupersolution (r₀ dstar Lγ lam FB : ℝ)
     {γ : ℝ → PDE.Vec n} (hγ : Continuous γ) :
     Continuous (collarSupersolution c r₀ dstar Lγ lam FB γ) :=
   continuous_const.mul (continuous_collarBarrier c _ r₀ hγ)
 
+end
+
+variable {n : ℕ} {c : PDE.Vec n}
+
 /-- The collar barrier is nonnegative inside the closed ball. -/
-theorem collarBarrier_nonneg {n : ℕ} {c : PDE.Vec n} {κ r₀ : ℝ} (hκ : 0 < κ) (hr₀ : 0 ≤ r₀)
+theorem collarBarrier_nonneg {κ r₀ : ℝ} (hκ : 0 < κ) (hr₀ : 0 ≤ r₀)
     {γ : ℝ → PDE.Vec n} {p : KineticPoint n} (hS : centreSq c γ p ≤ r₀ ^ 2) :
     0 ≤ collarBarrier κ r₀ (fun t => γ t + c) p := by
   unfold collarBarrier collarProfile
@@ -95,20 +110,19 @@ theorem collarBarrier_nonneg {n : ℕ} {c : PDE.Vec n} {κ r₀ : ℝ} (hκ : 0 
   have h2 : Real.exp (-κ * (r₀ - Real.sqrt (PDE.vecNormSq (p.position - (γ p.time + c))))) ≤ 1 := by
     rw [Real.exp_le_one_iff]
     nlinarith
-  exact div_nonneg (by linarith) hκ.le
+  positivity
 
 /-- On the inner edge of the collar the barrier equals `w(d_*)`. -/
-theorem collarBarrier_inner {n : ℕ} {c : PDE.Vec n} {κ r₀ dstar : ℝ} (hd : dstar < r₀)
+theorem collarBarrier_inner {κ r₀ dstar : ℝ} (hd : dstar < r₀)
     {γ : ℝ → PDE.Vec n} {p : KineticPoint n} (hS : centreSq c γ p = (r₀ - dstar) ^ 2) :
     collarBarrier κ r₀ (fun t => γ t + c) p = barrierW κ dstar := by
   unfold collarBarrier collarProfile barrierW
   have h : PDE.vecNormSq (p.position - (γ p.time + c)) = (r₀ - dstar) ^ 2 := hS
   rw [h, Real.sqrt_sq (by linarith)]
-  congr 3
   ring
 
 /-- On the inner edge of the collar the supersolution equals `‖F‖`. -/
-theorem collarSupersolution_inner {n : ℕ} {c : PDE.Vec n} {r₀ dstar Lγ lam FB : ℝ}
+theorem collarSupersolution_inner {r₀ dstar Lγ lam FB : ℝ}
     (hd : dstar < r₀) (hκ : 0 < collarKappa Lγ lam) (hdpos : 0 < dstar)
     {γ : ℝ → PDE.Vec n} {p : KineticPoint n} (hS : centreSq c γ p = (r₀ - dstar) ^ 2) :
     collarSupersolution c r₀ dstar Lγ lam FB γ p = FB := by

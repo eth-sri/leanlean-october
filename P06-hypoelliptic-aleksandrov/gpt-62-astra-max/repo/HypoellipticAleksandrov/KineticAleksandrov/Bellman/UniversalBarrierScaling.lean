@@ -49,7 +49,6 @@ theorem bellman_homogeneous_operator_scaling {alpha : ℝ} {phi : (ℝ × ℝ) �
         r ^ alpha * bellmanOperator b phi q := hj
     _ = r ^ 2 * (r ^ (alpha - 2) * bellmanOperator b phi q) := by
       rw [← mul_assoc, ← Real.rpow_natCast, ← Real.rpow_add hr]
-      congr 2
       ring
 
 end HypoellipticAleksandrov.KineticAleksandrov

@@ -109,7 +109,6 @@ theorem terminalMeasure_domination
   obtain ⟨⟨σ, τ, w⟩, hστ, hw⟩ := q'
   have hΩo := isOpen_of_isAdmissibleEvolutionDomain hΩ
   have hΩo' := isOpen_of_isAdmissibleEvolutionDomain hΩ'
-  have hU : IsOpen (evolutionStateSet Ω' γ' τ) := (isOpen_movingDomain hΩo' τ).prod isOpen_univ
   have hspec := terminalMeasure_spec n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
     hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx
     (largeQueryOfSmall hsub ⟨(σ, τ, w), hστ, hw⟩)
@@ -117,29 +116,23 @@ theorem terminalMeasure_domination
     ⟨(K'.mass_le_one ⟨(σ, τ, w), hστ, hw⟩).trans_lt ENNReal.one_lt_top⟩
   have hfinμ : IsFiniteMeasure (μ (largeQueryOfSmall hsub ⟨(σ, τ, w), hστ, hw⟩)) :=
     ⟨hspec.1.trans_lt ENNReal.one_lt_top⟩
-  refine measure_le_of_smooth_integral_le hU (K'.terminal_support ⟨(σ, τ, w), hστ, hw⟩) ?_
+  refine measure_le_of_smooth_integral_le ((isOpen_movingDomain hΩo' τ).prod isOpen_univ) (K'.terminal_support ⟨(σ, τ, w), hστ, hw⟩) ?_
   intro f hfs hfc hfU hfnn
   obtain ⟨C, hC⟩ := hfc.exists_bound_of_continuous hfs.continuous
   let F : BoundedBorel (EvolutionAmbientState n) :=
     ⟨f, hfs.continuous.measurable, ⟨max C 0, le_max_right _ _,
       fun x => (hC x).trans (le_max_left _ _)⟩⟩
-  have hF' : IsSmoothCompactTerminalDatum Ω' γ' τ F := ⟨hfs, hfc, hfU⟩
   have hF : IsSmoothCompactTerminalDatum Ω γ τ F :=
     ⟨hfs, hfc, hfU.trans fun x hx => ⟨hsub τ hx.1, mem_univ _⟩⟩
-  obtain ⟨u', hu', hrep, -⟩ := h1 τ F hF'
+  obtain ⟨u', hu', hrep, -⟩ := h1 τ F ⟨hfs, hfc, hfU⟩
   obtain ⟨u, hu, -, -⟩ := hEx τ F hF
-  have hcmp := classical_le_of_subdomain hΩo hΩo' hγ.1 hγ'.1 hsub hlam hB_ell hb_lipschitz
-    hu hu' hfnn ⟨σ, w.1, w.2⟩ ⟨hστ, subset_closure hw.1⟩
-  have hA := integral_master_eq_operator hΩ' K' P' h6 σ hστ ⟨w, hw⟩ F
   have hlhs : ∫ x, f x ∂(K'.master ⟨(σ, τ, w), hστ, hw⟩) = u' ⟨σ, w.1, w.2⟩ :=
-    ((hrep σ hστ ⟨w, hw⟩).trans hA).symm
+    ((hrep σ hστ ⟨w, hw⟩).trans (integral_master_eq_operator hΩ' K' P' h6 σ hστ ⟨w, hw⟩ F)).symm
   have hS := terminalValue_eq_of_solution n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
     hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx σ τ hστ
     ⟨w, ⟨hsub σ hw.1, hw.2⟩⟩ F hF u hu
-  have hrhs : ∫ x, f x ∂(μ (largeQueryOfSmall hsub ⟨(σ, τ, w), hστ, hw⟩)) =
-      u ⟨σ, w.1, w.2⟩ := (hspec.2.2 F hF).trans hS
-  rw [hlhs, hrhs]
-  exact hcmp
+  rw [hlhs, ((hspec.2.2 F hF).trans hS)]
+  exact (classical_le_of_subdomain hΩo hΩo' hγ.1 hγ'.1 hsub hlam hB_ell hb_lipschitz hu hu' hfnn ⟨σ, w.1, w.2⟩ ⟨hστ, subset_closure hw.1⟩)
 
 /-- Domain domination for every moving fiber kernel `K` whose master measures are the
 terminal measures `μ q` (the master kernel `K₀` is such a kernel by definition): ANY
@@ -193,9 +186,7 @@ theorem terminalKernel_domain_domination_of_master_eq
           MovingFiberKernel.IsZeroExtensionDominatedBy K' K hsub := by
   rintro Ω' γ' hΩ' hγ' hsub P' K' ⟨h1, -, -, -, -, h6, -, -⟩ q'
   rw [hK]
-  exact terminalMeasure_domination n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
-    hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx
-    Ω' γ' hΩ' hγ' hsub P' K' h1 h6 q'
+  apply terminalMeasure_domination <;> assumption
 
 end EvolutionData
 

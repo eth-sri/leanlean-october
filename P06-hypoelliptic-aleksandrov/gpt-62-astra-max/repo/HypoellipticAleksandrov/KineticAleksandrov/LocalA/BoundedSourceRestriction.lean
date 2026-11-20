@@ -12,8 +12,10 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 open MeasureTheory Set Evolution Occupation
 
+variable {d : ℕ}
+
 /-- Restrict a kinetic weak solution to a subdomain without changing its source. -/
-theorem boundedSource_weak_restrict {d : ℕ} {U V : Set (KineticPoint d)}
+theorem boundedSource_weak_restrict {U V : Set (KineticPoint d)}
     (hUV : U ⊆ V)
     (B : FullKineticCoefficient d) (b : PDE.Vec d → PDE.Vec d)
     (u f : KineticPoint d → ℝ) (h : IsKineticWeakTransportedSolution B b V u f) :
@@ -28,9 +30,7 @@ theorem boundedSource_weak_restrict {d : ℕ} {U V : Set (KineticPoint d)}
     intro W hW
     apply setIntegral_eq_integral_of_forall_compl_eq_zero
     intro z hz
-    have hn : (evolutionHomeomorph d).symm z ∉ tsupport ψ := by
-      intro hx
-      exact hz (by simpa using hW hx)
+    have hn : (evolutionHomeomorph d).symm z ∉ tsupport ψ := fun hx => hz (by simpa using hW hx)
     rw [image_eq_zero_of_notMem_tsupport hn, mul_zero]
   have hadj : ∀ W : Set (KineticPoint d),
       tsupport ψ ⊆ evolutionHomeomorph d ⁻¹' W →
@@ -39,16 +39,14 @@ theorem boundedSource_weak_restrict {d : ℕ} {U V : Set (KineticPoint d)}
     intro W hW
     apply setIntegral_eq_integral_of_forall_compl_eq_zero
     intro z hz
-    have hn : (evolutionHomeomorph d).symm z ∉ tsupport ψ := by
-      intro hx
-      exact hz (by simpa using hW hx)
+    have hn : (evolutionHomeomorph d).symm z ∉ tsupport ψ := fun hx => hz (by simpa using hW hx)
     rw [transportedAdjoint_eq_zero_of_notMem_tsupport ψ hn, mul_zero]
   rw [hadj V hsV, htest V hsV] at heq
   rw [hadj U hs, htest U hs]
   exact heq
 
 /-- Restrict an ambient homogeneous weak solution while retaining the literal adjoint. -/
-theorem boundedSource_ambientWeak_restrict {d : ℕ} {U V : Set (EvolutionVec d)}
+theorem boundedSource_ambientWeak_restrict {U V : Set (EvolutionVec d)}
     (hUV : U ⊆ V) (B : FullKineticCoefficient d) (b : PDE.Vec d → PDE.Vec d)
     (u : EvolutionVec d → ℝ) (h : IsWeakTransportedSolution B b V u (fun _ => 0)) :
     IsWeakTransportedSolution B b U u (fun _ => 0) := by
@@ -67,7 +65,7 @@ theorem boundedSource_ambientWeak_restrict {d : ℕ} {U V : Set (EvolutionVec d)
   exact heq
 
 /-- Changing the source only outside the tested domain preserves the kinetic weak equation. -/
-theorem boundedSource_weak_source_congr {d : ℕ} {U : Set (KineticPoint d)}
+theorem boundedSource_weak_source_congr {U : Set (KineticPoint d)}
     (hU : MeasurableSet U) (B : FullKineticCoefficient d) (b : PDE.Vec d → PDE.Vec d)
     (u f g : KineticPoint d → ℝ) (hfg : EqOn f g U)
     (h : IsKineticWeakTransportedSolution B b U u f) :

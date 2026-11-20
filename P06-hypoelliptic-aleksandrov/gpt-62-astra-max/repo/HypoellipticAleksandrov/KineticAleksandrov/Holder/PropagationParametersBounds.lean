@@ -11,9 +11,11 @@ noncomputable section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Holder
 
+variable {d : ℕ} {lam Lam H T0 T1 kx kv h : ℝ} (hH : 0 ≤ H)
+include hH
+
 /-- The source velocity step restriction gives the half-radius containment bound. -/
-theorem propagation_step_velocity {d : ℕ} {lam Lam H T0 T1 kx kv h : ℝ}
-    (hH : 0 ≤ H) (hkv : 0 < kv) (_hh : 0 < h)
+theorem propagation_step_velocity (hkv : 0 < kv) (_hh : 0 < h)
     (hhstar : h ≤ stepSize d lam Lam H T0 T1 kx kv) :
     velocityTubeConstant d lam Lam H T1 * Real.sqrt h ≤ kv / 2 := by
   have hc := (tubeConstants_pos (d := d) (lam := lam) (Lam := Lam) (T1 := T1) hH).1
@@ -28,15 +30,14 @@ theorem propagation_step_velocity {d : ℕ} {lam Lam H T0 T1 kx kv h : ℝ}
     _ = _ := by field_simp
 
 /-- The source position step restriction gives the half-radius containment bound. -/
-theorem propagation_step_position {d : ℕ} {lam Lam H T0 T1 kx kv h : ℝ}
-    (hH : 0 ≤ H) (hkx : 0 < kx) (hh : 0 < h)
+theorem propagation_step_position (hkx : 0 < kx) (hh : 0 < h)
     (hhstar : h ≤ stepSize d lam Lam H T0 T1 kx kv) :
     positionTubeConstant d lam Lam H T1 * h ^ (3 / 2 : ℝ) ≤ kx / 2 := by
   have hc := (tubeConstants_pos (d := d) (lam := lam) (Lam := Lam) (T1 := T1) hH).2
   have hratio : 0 < kx / (2 * positionTubeConstant d lam Lam H T1) := by positivity
   have hb := Real.rpow_le_rpow hh.le
     (hhstar.trans (stepSize_le_position d lam Lam H T0 T1 kx kv))
-    (show (0 : ℝ) ≤ 3 / 2 by norm_num)
+    (show 0 ≤ 3 / 2 by norm_num)
   rw [← Real.rpow_mul hratio.le] at hb
   norm_num only [show (2 / 3 : ℝ) * (3 / 2) = 1 by norm_num, Real.rpow_one] at hb
   calc

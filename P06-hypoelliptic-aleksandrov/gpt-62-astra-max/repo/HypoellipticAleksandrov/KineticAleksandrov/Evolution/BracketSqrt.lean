@@ -80,15 +80,19 @@ theorem posDef_sqrt {B : PDE.Mat d} (hB : B.PosDef) : (CFC.sqrt B).PosDef := by
   have h := congrArg (fun z => (CFC.sqrt B).mulVec z) hxy
   simpa only [Matrix.mulVec_mulVec, CFC.sqrt_mul_sqrt_self B hB.posSemidef.nonneg] using h
 
+section
+variable {β : PDE.Mat d} (hβ : β.PosDef)
+
+include hβ in
 /-- The derivative of squaring at a positive-definite matrix, as a continuous linear
 equivalence (finite-dimensional, from injectivity). -/
-def sylvesterEquiv {β : PDE.Mat d} (hβ : β.PosDef) : PDE.Mat d ≃L[ℝ] PDE.Mat d :=
+def sylvesterEquiv : PDE.Mat d ≃L[ℝ] PDE.Mat d :=
   (LinearEquiv.ofInjectiveEndo (sylvester β) (sylvester_injective hβ)).toContinuousLinearEquiv
 
-theorem sylvesterEquiv_apply {β : PDE.Mat d} (hβ : β.PosDef) (X : PDE.Mat d) :
+theorem sylvesterEquiv_apply (X : PDE.Mat d) :
     sylvesterEquiv hβ X = β * X + X * β := rfl
 
-theorem hasFDerivAt_matrix_sq {β : PDE.Mat d} (hβ : β.PosDef) :
+theorem hasFDerivAt_matrix_sq :
     HasFDerivAt (fun A : PDE.Mat d => A * A)
       ((sylvesterEquiv hβ : PDE.Mat d ≃L[ℝ] PDE.Mat d) : PDE.Mat d →L[ℝ] PDE.Mat d) β := by
   have h : HasFDerivAt (fun A : PDE.Mat d => A * A) _ β :=
@@ -96,6 +100,8 @@ theorem hasFDerivAt_matrix_sq {β : PDE.Mat d} (hβ : β.PosDef) :
   refine h.congr_fderiv ?_
   ext X : 1
   simp [sylvesterEquiv_apply]
+
+end
 
 open Filter Topology in
 /-- Smoothness of `p ↦ √(B p)` at a point, for a smooth positive-definite field `B`,

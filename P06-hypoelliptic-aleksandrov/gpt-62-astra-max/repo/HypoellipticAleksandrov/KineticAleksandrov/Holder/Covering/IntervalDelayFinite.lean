@@ -29,8 +29,8 @@ theorem open_ordConnected_eq_Ioo {s : Set ℝ} (hs : IsOpen s) (hn : s.Nonempty)
   · intro hx
     obtain ⟨a, b, hax, hsub⟩ := mem_nhds_iff_exists_Ioo_subset.mp (hs.mem_nhds hx)
     rcases hax with ⟨hax, hxb⟩
-    have ha : (a+x)/2 ∈ s := hsub ⟨by linarith only [hax], by linarith only [hax, hxb]⟩
-    have hb : (x+b)/2 ∈ s := hsub ⟨by linarith only [hax, hxb], by linarith only [hxb]⟩
+    have ha : (a+x)/2 ∈ s := by grind
+    have hb : (x+b)/2 ∈ s := by grind
     exact ⟨lt_of_le_of_lt (csInf_le hbelow ha) (by linarith only [hax, hxb]),
       lt_of_lt_of_le (by linarith only [hxb]) (le_csSup habove hb)⟩
   · intro hx
@@ -38,8 +38,12 @@ theorem open_ordConnected_eq_Ioo {s : Set ℝ} (hs : IsOpen s) (hn : s.Nonempty)
     obtain ⟨b, hb, hxb⟩ := exists_lt_of_lt_csSup hn hx.2
     exact hc.out ha hb ⟨hax.le, hxb.le⟩
 
+section
+variable {U : Set ℝ} (hU : IsOpen U)
+include hU
+
 /-- The order component of a point in an open real set is open. -/
-theorem isOpen_ordConnectedComponent {U : Set ℝ} (hU : IsOpen U) (x : ℝ) :
+theorem isOpen_ordConnectedComponent (x : ℝ) :
     IsOpen (ordConnectedComponent U x) := by
   rw [isOpen_iff_mem_nhds]
   intro y hy
@@ -48,16 +52,15 @@ theorem isOpen_ordConnectedComponent {U : Set ℝ} (hU : IsOpen U) (x : ℝ) :
 
 /-- A bounded open real set is a countable disjoint union of nonempty open intervals.
 Every nonempty open interval in the set is contained in one of these components. -/
-theorem bounded_open_interval_components {U : Set ℝ} (hU : IsOpen U)
+theorem bounded_open_interval_components
     (hbelow : BddBelow U) (habove : BddAbove U) :
     ∃ C : Set (Set ℝ), C.Countable ∧ C.PairwiseDisjoint id ∧
       (∀ s ∈ C, s.Nonempty ∧ s = Ioo (sInf s) (sSup s)) ∧
       (⋃ s ∈ C, s) = U ∧
       (∀ a b : ℝ, a < b → Ioo a b ⊆ U → ∃ s ∈ C, Ioo a b ⊆ s) := by
-  let C : Set (Set ℝ) := {s | ∃ x ∈ U, s = ordConnectedComponent U x}
+  let C := {s | ∃ x ∈ U, s = ordConnectedComponent U x}
   have hnonempty : ∀ s ∈ C, s.Nonempty := by
-    rintro s ⟨x, hx, rfl⟩
-    exact nonempty_ordConnectedComponent.mpr hx
+    aesop
   have hopen : ∀ s ∈ C, IsOpen s := by
     rintro s ⟨x, _, rfl⟩
     exact isOpen_ordConnectedComponent hU x
@@ -67,10 +70,8 @@ theorem bounded_open_interval_components {U : Set ℝ} (hU : IsOpen U)
     rw [disjoint_left]
     intro z hxz hyz
     exact hne ((ordConnectedComponent_eq hxz).trans (ordConnectedComponent_eq hyz).symm)
-  have hcount : C.Countable := hdisj.countable_of_nonempty_interior fun s hs => by
-    change (interior s).Nonempty
-    rw [(hopen s hs).interior_eq]
-    exact hnonempty s hs
+  have hcount := hdisj.countable_of_nonempty_interior fun s hs => by
+    grind
   refine ⟨C, hcount, hdisj, ?_, ?_, ?_⟩
   · rintro s hs
     rcases hs with ⟨x, hx, rfl⟩
@@ -81,17 +82,17 @@ theorem bounded_open_interval_components {U : Set ℝ} (hU : IsOpen U)
       inferInstance
   · ext x
     constructor
-    · intro hx
-      obtain ⟨s, ⟨y, _, rfl⟩, hx⟩ := mem_iUnion₂.mp hx
-      exact ordConnectedComponent_subset hx
+    · aesop
     · intro hx
       exact mem_iUnion₂.mpr ⟨ordConnectedComponent U x, ⟨x, hx, rfl⟩,
         self_mem_ordConnectedComponent.mpr hx⟩
   · intro a b hab hsub
     let x := (a+b)/2
-    have hx : x ∈ Ioo a b := ⟨by dsimp [x]; linarith, by dsimp [x]; linarith⟩
+    have hx : x ∈ Ioo a b := by grind
     refine ⟨ordConnectedComponent U x, ⟨x, hsub hx, rfl⟩, ?_⟩
     exact subset_ordConnectedComponent hx hsub
+
+end
 
 /-- The backward interval lies in the left extension of any interval containing its delay. -/
 theorem backwardInterval_subset_component_extension {a h m l b : ℝ}
@@ -100,9 +101,7 @@ theorem backwardInterval_subset_component_extension {a h m l b : ℝ}
   have hab : a < a+m*h := by nlinarith only [hh, hm]
   obtain ⟨hla, hright⟩ := (Ioo_subset_Ioo_iff hab).mp hsub
   have hlen : h ≤ (b-l)/m := (le_div_iff₀ hm).mpr (by nlinarith only [hla, hright])
-  intro x hx
-  exact ⟨by linarith only [hx.1, hla, hlen],
-    lt_of_lt_of_le hx.2 (le_trans hab.le hright)⟩
+  grind
 
 /-- The left extension has precisely the delayed-union length multiplier. -/
 theorem volume_component_extension {l b m : ℝ} (hm : 0 < m) :

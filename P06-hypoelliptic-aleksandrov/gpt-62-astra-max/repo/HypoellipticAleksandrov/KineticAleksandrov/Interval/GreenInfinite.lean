@@ -20,8 +20,6 @@ open scoped ENNReal NNReal
 
 /-- Uniform infinite-horizon interval density and norm, obtained from killed slabs. -/
 theorem interval_green_infinite_norm
-    (hH : HormanderHypoellipticityStatement)
-    (hLE : LiebermanEllipsoidDirichletStatement)
     (lam Lam m Lb length : ℝ) (hlam : 0 < lam) (hlamLam : lam ≤ Lam)
     (hm : 0 < m) (hmLb : m ≤ Lb) (hlength : 0 < length)
     (q : ℝ) (hq : 1 < q) (hq2 : q < (3 : ℝ) / 2) :
@@ -42,10 +40,9 @@ theorem interval_green_infinite_norm
   have hq' : q < 2 := by linarith
   have hq0 : 0 < q := by linarith
   have hδ : 0 < 3 - 2 * q := by linarith
-  obtain ⟨A, k, _hA, hk, hslab⟩ := interval_slab_density hH hLE
+  obtain ⟨A, k, _hA, hk, hslab⟩ := interval_slab_density
     lam Lam m Lb length hlam hlamLam hm hmLb hlength q hq hq'
   let N := killedGreenConstant A (3 - 2 * q) k q
-  have hN : N ≠ ⊤ := killedGreenConstant_ne_top hδ hk hq0
   refine ⟨N.toReal + 1, k, by positivity, hk, ?_⟩
   intro a c hac B b hs hJ S K hr hlen σ μ _ Γ hΓ
   have hloc : ∀ T : ℝ, ∃ G : GreenCarrier 1 → ℝ≥0∞, 0 < T →
@@ -56,8 +53,7 @@ theorem interval_green_infinite_norm
           ENNReal.ofReal (T ^ (3 - 2 * q) * Real.exp (-k * T)) := by
     intro T
     by_cases hT : 0 < T
-    · obtain ⟨G, hG⟩ := hslab a c hac B b hs hJ S K hr hlen σ T hT μ Γ hΓ
-      exact ⟨G, fun _ => hG⟩
+    · grind
     · exact ⟨0, fun h => absurd h hT⟩
   choose Gl hGl using hloc
   obtain ⟨G, hGm, hGE, hGae⟩ := exists_global_density K σ μ Γ hΓ Gl
@@ -73,7 +69,7 @@ theorem interval_green_infinite_norm
       _ ≤ _ := (hGl T hT).2.2)
   apply hbd.trans
   apply mul_le_mul' ?_ le_rfl
-  calc N = ENNReal.ofReal N.toReal := (ENNReal.ofReal_toReal hN).symm
+  calc N = ENNReal.ofReal N.toReal := (ENNReal.ofReal_toReal (killedGreenConstant_ne_top hδ hk hq0)).symm
     _ ≤ ENNReal.ofReal (N.toReal + 1) := ENNReal.ofReal_le_ofReal (by linarith)
 
 end HypoellipticAleksandrov.KineticAleksandrov.Interval

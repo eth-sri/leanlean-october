@@ -11,9 +11,13 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov
 
+section
+variable (H : FiniteIntervalUnion) (i : Fin H.count) {v : ℝ}
+    (hv : v ∈ closure (H.component i).carrier)
+
+include hv in
 /-- On the closure of a component, union interior membership is precisely component membership. -/
-theorem FiniteIntervalUnion.mem_carrier_on_component_closure (H : FiniteIntervalUnion)
-    (i : Fin H.count) {v : ℝ} (hv : v ∈ closure (H.component i).carrier) :
+theorem FiniteIntervalUnion.mem_carrier_on_component_closure :
     v ∈ H.carrier ↔ v ∈ (H.component i).carrier := by
   constructor
   · intro hu
@@ -21,25 +25,21 @@ theorem FiniteIntervalUnion.mem_carrier_on_component_closure (H : FiniteInterval
     by_cases hji : j = i
     · exact hji ▸ hj
     · exact False.elim (Set.disjoint_left.mp
-        ((H.disjoint (Ne.symm hji)).closure_left (show IsOpen (H.component j).carrier
-          from isOpen_Ioo)) hv hj)
-  · intro hm
-    exact H.component_subset i hm
+        ((H.disjoint (Ne.symm hji)).closure_left (isOpen_Ioo)) hv hj)
+  · apply H.component_subset
 
+include hv in
 /-- Union and component frontiers coincide on the closure of the chosen component. -/
-theorem FiniteIntervalUnion.mem_frontier_on_component_closure (H : FiniteIntervalUnion)
-    (i : Fin H.count) {v : ℝ} (hv : v ∈ closure (H.component i).carrier) :
+theorem FiniteIntervalUnion.mem_frontier_on_component_closure :
     v ∈ frontier H.carrier ↔ v ∈ frontier (H.component i).carrier := by
   rw [frontier, H.isOpen_carrier.interior_eq, frontier,
     (show IsOpen (H.component i).carrier from isOpen_Ioo).interior_eq]
-  simp only [mem_sdiff]
   exact ⟨fun h => ⟨hv, fun hm => h.2 (H.component_subset i hm)⟩,
     fun h => ⟨closure_mono (H.component_subset i) hv,
       fun hm => h.2 ((H.mem_carrier_on_component_closure i hv).mp hm)⟩⟩
 
 /-- On a chosen closed component, the actual union exit is exactly the interval exit. -/
-theorem FiniteIntervalUnion.exit_on_component_closure (H : FiniteIntervalUnion)
-    (i : Fin H.count) (sMinus T : ℝ) (p : Point)
+theorem FiniteIntervalUnion.exit_on_component_closure (sMinus T : ℝ) (p : Point)
     (hv : p.velocity 0 ∈ Icc (H.component i).lo (H.component i).hi) :
     p ∈ finiteUnionExitSet H sMinus T ↔ p ∈ reconstructionExit (H.component i) sMinus T := by
   have hcl : p.velocity 0 ∈ closure (H.component i).carrier := by
@@ -50,7 +50,7 @@ theorem FiniteIntervalUnion.exit_on_component_closure (H : FiniteIntervalUnion)
       p.velocity 0 = (H.component i).lo ∨ p.velocity 0 = (H.component i).hi := by
     change p.velocity 0 ∈ frontier (Ioo (H.component i).lo (H.component i).hi) ↔ _
     rw [frontier_Ioo (H.component i).ordered]
-    simp only [mem_insert_iff, mem_singleton_iff]
+    simp
   constructor
   · rintro (hp | hp)
     · exact Or.inl ⟨hp.1, hv⟩
@@ -58,6 +58,8 @@ theorem FiniteIntervalUnion.exit_on_component_closure (H : FiniteIntervalUnion)
   · rintro (hp | hp)
     · exact Or.inl ⟨hp.1, closure_mono (H.component_subset i) hcl⟩
     · exact Or.inr ⟨hp.1, hp.2.1, hf.mpr (hfaces.mpr hp.2.2)⟩
+
+end
 
 /-- At a smaller component exit, the union internal boundary is the same interval internal face. -/
 theorem finiteUnionInternalExit_on_component_exit
@@ -83,6 +85,6 @@ theorem finiteUnionInternalExit_on_component_exit
       apply H1.frontier_component_subset i
       change p.velocity 0 ∈ frontier (Ioo (H1.component i).lo (H1.component i).hi)
       rw [frontier_Ioo (H1.component i).ordered]
-      simpa only [mem_insert_iff, mem_singleton_iff] using hs.2.2.1
+      exact hs.2.2.1
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

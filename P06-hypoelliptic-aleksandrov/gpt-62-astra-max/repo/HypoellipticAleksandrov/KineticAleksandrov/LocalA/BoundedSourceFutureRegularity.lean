@@ -1,7 +1,11 @@
 module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.LocalA.BoundedSourceRestriction
-public import HypoellipticAleksandrov.KineticAleksandrov.ClassicalInputs
+public import HypoellipticAleksandrov.KineticAleksandrov.Hormander
+public import HypoellipticAleksandrov.KineticAleksandrov.EllipsoidDirichlet
+public import HypoellipticAleksandrov.Parabolic.ScalarDirichletData
+public import HypoellipticAleksandrov.Parabolic.KrylovCylinder
+public import PDEFoundation.Geometry.EuclideanBall.Basic
 import HypoellipticAleksandrov.KineticAleksandrov.Evolution.ClassicalTerminalWeak
 public import HypoellipticAleksandrov.KineticAleksandrov.Occupation.ParabolicDuhamelSmooth
 
@@ -35,17 +39,13 @@ theorem duhamelPotential_weak_before_source
     hγ s
   have hsub : evolutionPastOpenCylinder Ω γ s ⊆ evolutionPastOpenCylinder Ω γ T :=
     fun p hp => ⟨hp.1.trans_le hsT, hp.2⟩
-  have hw := duhamel_bounded_isKineticWeakTransportedSolution hΩa hΩ hγ B b S K hreal
-    hB hBs hb g hg M hM hgb T
   have hwr := boundedSource_weak_restrict hsub B b (duhamelPotential K T g)
-    (fun p => -g p) hw
+    (fun p => -g p) (duhamel_bounded_isKineticWeakTransportedSolution hΩa hΩ hγ B b S K hreal hB hBs hb g hg M hM hgb T)
   have hsource : EqOn (fun p => -g p) (fun _ => 0)
       (evolutionPastOpenCylinder Ω γ s) := by
     intro p hp
     change -g p = 0
     rw [hgz p hp.1, neg_zero]
-  have hzero := boundedSource_weak_source_congr hU.measurableSet B b
-    (duhamelPotential K T g) (fun p => -g p) (fun _ => 0) hsource hwr
-  exact (isWeakTransportedSolution_comp_iff B b _ _ _).2 hzero
+  exact (isWeakTransportedSolution_comp_iff B b _ _ _).2 (boundedSource_weak_source_congr hU.measurableSet B b (duhamelPotential K T g) (fun p => -g p) (fun _ => 0) hsource hwr)
 
 end HypoellipticAleksandrov.KineticAleksandrov.SectionTwo

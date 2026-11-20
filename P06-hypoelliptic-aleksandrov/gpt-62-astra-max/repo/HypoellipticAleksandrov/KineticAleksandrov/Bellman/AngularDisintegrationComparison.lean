@@ -18,7 +18,7 @@ theorem bellmanAngularPullback_mono {μ η : Measure BellmanPuncturedPlane} (h :
   rw [bellmanAngularPullback, bellmanAngularPullback,
     isOpenEmbedding_bellmanAngularPoint.measurableEmbedding.comap_apply μ E,
     isOpenEmbedding_bellmanAngularPoint.measurableEmbedding.comap_apply η E]
-  exact h _
+  apply h
 
 /-- Weighting both compared measures by the same nonnegative density preserves comparison. -/
 theorem bellman_withDensity_mono_measure {A : Type*} [MeasurableSpace A]
@@ -33,12 +33,9 @@ theorem bellman_withDensity_mono_measure {A : Type*} [MeasurableSpace A]
 theorem bellmanAngularMeasure_mono (β : ℝ)
     {μ η : Measure BellmanPuncturedPlane} (h : μ ≤ η) :
     bellmanAngularMeasure β μ ≤ bellmanAngularMeasure β η := by
-  have hp := bellman_withDensity_mono_measure (bellmanAngularPullback_mono h)
-    (bellmanRadialDegreeWeight β)
-  have hl := Measure.map_mono hp bellmanLogAngularHomeomorph.measurable
+  have hl := Measure.map_mono (bellman_withDensity_mono_measure (bellmanAngularPullback_mono h) (bellmanRadialDegreeWeight β)) bellmanLogAngularHomeomorph.measurable
   have hs := Measure.map_mono
-    (Measure.restrict_mono (s := Ioc (0 : ℝ) 1 ×ˢ univ) Subset.rfl hl) measurable_snd
-  unfold bellmanAngularMeasure bellmanUnitSection bellmanLogAngularMeasure
+    (Measure.restrict_mono (s := Ioc 0 1 ×ˢ univ) Subset.rfl hl) measurable_snd
   exact smul_le_smul_left _ hs
 
 /-- Angular extraction commutes with multiplying the original measure by a scalar. -/

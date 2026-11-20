@@ -11,18 +11,21 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic Set
 open HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 
+section
+variable (a : ℝ → ℝ → ℝ) (h : ℝ) (u : KineticPoint 1 → ℝ) (p : KineticPoint 1)
+
+include h p in
 /-- Translate time while keeping physical position and velocity fixed. -/
-def autonomousTimeShift (h : ℝ) (p : KineticPoint 1) : KineticPoint 1 :=
+def autonomousTimeShift : KineticPoint 1 :=
   ⟨p.time + h, p.position, p.velocity⟩
 
 /-- The time translation is continuous. -/
-theorem continuous_autonomousTimeShift (h : ℝ) : Continuous (autonomousTimeShift h) :=
+theorem continuous_autonomousTimeShift : Continuous (autonomousTimeShift h) :=
   KineticPoint.continuous_mk (continuous_time.add continuous_const)
     continuous_position continuous_velocity
 
 /-- The forward autonomous operator commutes with time translation. -/
-theorem autonomous_operator_timeShift (a : ℝ → ℝ → ℝ) (h : ℝ)
-    (u : KineticPoint 1 → ℝ) (p : KineticPoint 1) :
+theorem autonomous_operator_timeShift :
     transportedForwardOperator (evolutionCoefficient a) (identityDrift 1)
       (fun q => u (autonomousTimeShift h q)) p =
     transportedForwardOperator (evolutionCoefficient a) (identityDrift 1) u
@@ -33,6 +36,8 @@ theorem autonomous_operator_timeShift (a : ℝ → ℝ → ℝ) (h : ℝ)
     deriv_comp_add_const (fun r => u ⟨r, p.position, p.velocity⟩) h p.time
   rw [ht]
   rfl
+
+end
 
 /-- Time translation carries an actual full-space terminal solution to an actual solution. -/
 theorem fullspace_classical_timeShift {a : ℝ → ℝ → ℝ} (h τ : ℝ)
@@ -53,7 +58,7 @@ theorem fullspace_classical_timeShift {a : ℝ → ℝ → ℝ} (h τ : ℝ)
   refine ⟨⟨C, hC0, fun p hp => hC _ (hclosed p hp)⟩,
     hc.comp (continuous_autonomousTimeShift h).continuousOn hclosed, ?_, ?_, ?_, ?_⟩
   · exact hs.comp ((contDiff_fst.add contDiff_const).prodMk contDiff_snd).contDiffOn
-      (fun q hq => ⟨by change q.1 + h < τ + h; linarith [hq.1], by rw [hd]; trivial⟩)
+      (fun q hq => ⟨by linarith [hq.1], by rw [hd]; trivial⟩)
   · intro p hp
     rw [autonomous_operator_timeShift]
     exact hop _ ⟨by change p.time + h < τ + h; linarith [hp.1], by rw [hd]; trivial⟩

@@ -9,9 +9,14 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov ProbabilityTheory
 
+section
+variable {lam Lam : ℝ} (mu initial remainder : Measure Point) (hlam : 0 < lam)
+    (active waiting : ℕ → Measure Point) (hLam : lam ≤ Lam) (A : SmoothAutonomous lam Lam)
+    (c : Clock) (J : Interval) (s T : ℝ) (hT : s < T) (P : Point)
+    (hP : s < P.time ∧ P.time < T ∧ P.velocity 0 ∈ J.carrier) (N : ℕ)
+
 /-- Positive terms of a finite alternating identity are bounded by the original measure. -/
-theorem visit_positive_partial_le (mu initial remainder : Measure Point)
-    (active waiting : ℕ → Measure Point) (N : ℕ)
+theorem visit_positive_partial_le
     (h : mu = initial + ∑ n ∈ Finset.range N, (active n + waiting n) + remainder) :
     ∑ n ∈ Finset.range N, active n ≤ mu := by
   intro B
@@ -24,32 +29,28 @@ theorem visit_positive_partial_le (mu initial remainder : Measure Point)
       le_add_of_nonneg_left zero_le
     _ ≤ _ := le_add_of_nonneg_right zero_le
 
+include hT hP in
 /-- The actual active Green occupations in any finite visit sum are dominated by the outer Green. -/
-theorem visitActiveGreen_partial_le
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (s T : ℝ) (hT : s < T)
-    (P : Point) (hP : s < P.time ∧ P.time < T ∧ P.velocity 0 ∈ J.carrier) (N : ℕ) :
+theorem visitActiveGreen_partial_le :
     ∑ n ∈ Finset.range N,
-      visitUnionGreenKernel hH hLE hlam hLam A (visitActiveUnion c J) s T ∘ₘ
-        visitEntrancePiece hH hLE hlam hLam A c J s T P n ≤
-          visitUnionGreenKernel hH hLE hlam hLam A J.toFiniteUnion s T P :=
+      visitUnionGreenKernel hlam hLam A (visitActiveUnion c J) s T ∘ₘ
+        visitEntrancePiece hlam hLam A c J s T P n ≤
+          visitUnionGreenKernel hlam hLam A J.toFiniteUnion s T P :=
   visit_positive_partial_le _ _ _ _ _ N
-    (visitAlternating_green hH hLE hlam hLam A c J s T hT P hP N)
+    (visitAlternating_green hlam hLam A c J s T hT P hP N)
 
+include hT hP in
 /-- Active outer-face exits in any finite visit sum are dominated by the outer exit. -/
-theorem visitActiveExit_partial_le
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (s T : ℝ) (hT : s < T)
-    (P : Point) (hP : s < P.time ∧ P.time < T ∧ P.velocity 0 ∈ J.carrier) (N : ℕ) :
+theorem visitActiveExit_partial_le :
     ∑ n ∈ Finset.range N,
-      (visitUnionExitKernel hH hLE hlam hLam A (visitActiveUnion c J) s T ∘ₘ
-        visitEntrancePiece hH hLE hlam hLam A c J s T P n).restrict
+      (visitUnionExitKernel hlam hLam A (visitActiveUnion c J) s T ∘ₘ
+        visitEntrancePiece hlam hLam A c J s T P n).restrict
           (finiteUnionExitSet J.toFiniteUnion s T) ≤
-            visitUnionExitKernel hH hLE hlam hLam A J.toFiniteUnion s T P :=
+            visitUnionExitKernel hlam hLam A J.toFiniteUnion s T P :=
   visit_positive_partial_le _ _ _ _ _ N
-    (visitAlternating_exit hH hLE hlam hLam A c J s T hT P hP N)
+    (visitAlternating_exit hlam hLam A c J s T hT P hP N)
+
+end
 
 /-- Finite sums of finite measures evaluate in real mass by summing their real masses. -/
 theorem visit_partial_real_mass (mu : ℕ → Measure Point) [∀ n, IsFiniteMeasure (mu n)]

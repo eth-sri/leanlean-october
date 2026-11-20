@@ -64,7 +64,7 @@ theorem tailRestart_green_identity {lam Lam : ℝ}
     funext tau
     by_cases hh : t < tau.1
     · have hh' : e.1.time + t < e.1.time + tau.1 := by linarith
-      simp only [Set.indicator, Set.mem_ofPred_eq, elapsedPhysicalPoint, hh, hh', ite_true]
+      simp_all [Set.indicator, elapsedPhysicalPoint, hh, hh', ite_true]
     · have hh' : ¬e.1.time + t < e.1.time + tau.1 := by simpa using hh
       simp only [Set.indicator, Set.mem_ofPred_eq, elapsedPhysicalPoint,
         hh, hh', ite_false, lintegral_zero]

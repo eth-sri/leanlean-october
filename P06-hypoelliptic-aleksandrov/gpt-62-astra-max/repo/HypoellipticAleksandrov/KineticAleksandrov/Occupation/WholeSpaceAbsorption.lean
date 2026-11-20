@@ -23,8 +23,7 @@ theorem wholeSpace_absorb {α : Type*} {A : Set α} {W : α → ℝ} {M : ℝ}
     sSup (W '' A) ≤ 2 * M := by
   have hsup : sSup (W '' A) ≤ M + sSup (W '' A) / 2 := by
     apply csSup_le (hne.image W)
-    rintro _ ⟨x, hx, rfl⟩
-    exact hpoint x hx
+    simp_all
   linarith only [hsup]
 
 end HypoellipticAleksandrov.KineticAleksandrov.Occupation

@@ -14,7 +14,6 @@ open scoped ENNReal
 
 /-- Kinetic volume is sigma finite through its literal product-coordinate equivalence. -/
 theorem density_volume_sigmaFinite : SigmaFinite (volume : Measure Point) := by
-  change SigmaFinite (Measure.map (KineticPoint.equivProd 1).symm volume)
   exact (KineticPoint.homeomorphProd 1).symm.measurableEmbedding.sigmaFinite_map
 
 /-- A finite dominated measure inherits a nonnegative measurable density and its Lp norm. -/
@@ -26,9 +25,9 @@ theorem density_of_le_withDensity {X : Type*} [MeasurableSpace X]
     ∃ g : X → ℝ, Measurable g ∧ (∀ x, 0 ≤ g x) ∧
       ν = m.withDensity (fun x => ENNReal.ofReal (g x)) ∧
       MemLp g p m ∧ eLpNorm g p m ≤ eLpNorm f p m := by
-  have hac : ν ≪ m := hle.absolutelyContinuous.trans (withDensity_absolutelyContinuous _ _)
+  have hac := hle.absolutelyContinuous.trans (withDensity_absolutelyContinuous _ _)
   let g := fun x => (ν.rnDeriv m x).toReal
-  have hgm : Measurable g := (Measure.measurable_rnDeriv ν m).ennreal_toReal
+  have hgm := (Measure.measurable_rnDeriv ν m).ennreal_toReal
   have hrle : ∀ᵐ x ∂m, ν.rnDeriv m x ≤ ENNReal.ofReal (f x) := by
     apply ae_le_of_forall_setLIntegral_le_of_sigmaFinite₀
       (Measure.measurable_rnDeriv ν m).aemeasurable
@@ -63,9 +62,6 @@ theorem density_restrict_of_le_withDensity {X : Type*} [MeasurableSpace X]
       MemLp g p (m.restrict Q) ∧
       eLpNorm g p (m.restrict Q) ≤ eLpNorm f p (m.restrict D) := by
   let F := D.indicator f
-  have hFm : Measurable F := hf.indicator hD
-  have hF0 : ∀ x, 0 ≤ F x := fun x => indicator_nonneg (fun _ _ => hf0 _) x
-  have hFp : MemLp F p m := (memLp_indicator_iff_restrict hD).2 hfp
   have hd : m.withDensity (fun x => ENNReal.ofReal (F x)) =
       (m.restrict D).withDensity (fun x => ENNReal.ofReal (f x)) := by
     rw [← withDensity_indicator hD]
@@ -73,7 +69,7 @@ theorem density_restrict_of_le_withDensity {X : Type*} [MeasurableSpace X]
     ext x
     by_cases hx : x ∈ D <;> simp [F, hx]
   obtain ⟨g, hgm, hg0, hgd, hgp, hgn⟩ :=
-    density_of_le_withDensity m ν F hFm hF0 p hFp (hd.symm ▸ hle)
+    density_of_le_withDensity m ν F (hf.indicator hD) (fun x => indicator_nonneg (fun _ _ => hf0 _) x) p ((memLp_indicator_iff_restrict hD).2 hfp) (hd.symm ▸ hle)
   refine ⟨g, hgm, hg0, ?_, hgp.restrict Q, ?_⟩
   · rw [hgd, restrict_withDensity hQ]
   · exact (eLpNorm_restrict_le g p m Q).trans
@@ -83,8 +79,6 @@ theorem density_restrict_of_le_withDensity {X : Type*} [MeasurableSpace X]
 theorem cylinder_subset_density_strip (Z₀ : Point) (R : ℝ) (hR : 0 < R) :
     forwardCylinder Z₀ R hR ⊆
       {z | Z₀.time < z.time ∧ z.time < Z₀.time + R ^ 2 ∧
-        z.velocity 0 ∈ (capacityCylinderInterval Z₀ R hR).carrier} := by
-  intro z hz
-  exact ⟨hz.1, hz.2.1, (capacityCylinderPole Z₀ z R hR hz).2.2⟩
+        z.velocity 0 ∈ (capacityCylinderInterval Z₀ R hR).carrier} := fun z hz => ⟨hz.1, hz.2.1, (capacityCylinderPole Z₀ z R hR hz).2.2⟩
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

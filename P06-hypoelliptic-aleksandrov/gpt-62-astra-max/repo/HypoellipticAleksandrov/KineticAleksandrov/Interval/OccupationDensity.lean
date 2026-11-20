@@ -23,8 +23,7 @@ theorem exists_real_density_of_le_withDensity {X : Type*} [MeasurableSpace X]
     ∃ g : X → ℝ, Measurable g ∧ (∀ x, 0 ≤ g x) ∧ Integrable g m ∧
       (∀ᵐ x ∂m, g x ≤ f x) ∧
       (∀ φ : X → ℝ, (∫ x, φ x * g x ∂m) = ∫ x, φ x ∂ν) := by
-  have hac : ν ≪ m := hle.absolutelyContinuous.trans (withDensity_absolutelyContinuous _ _)
-  let g := fun x => (ν.rnDeriv m x).toReal
+  have hac := hle.absolutelyContinuous.trans (withDensity_absolutelyContinuous _ _)
   have hrle : ∀ᵐ x ∂m, ν.rnDeriv m x ≤ ENNReal.ofReal (f x) := by
     apply ae_le_of_forall_setLIntegral_le_of_sigmaFinite₀
       (Measure.measurable_rnDeriv ν m).aemeasurable
@@ -33,13 +32,12 @@ theorem exists_real_density_of_le_withDensity {X : Type*} [MeasurableSpace X]
     rw [← Measure.withDensity_rnDeriv_eq ν m hac, withDensity_apply _ hE,
       withDensity_apply _ hE] at h
     exact h
-  refine ⟨g, (Measure.measurable_rnDeriv ν m).ennreal_toReal,
+  refine ⟨(fun x => (ν.rnDeriv m x).toReal), (Measure.measurable_rnDeriv ν m).ennreal_toReal,
     fun _ => ENNReal.toReal_nonneg, ?_, ?_, ?_⟩
-  · simpa only [integrableOn_univ] using
+  · simpa using
       Measure.integrableOn_toReal_rnDeriv (μ := ν) (ν := m) (measure_ne_top ν univ)
   · filter_upwards [hrle] with x hx
-    exact (ENNReal.toReal_mono ENNReal.ofReal_ne_top hx).trans_eq
-      (ENNReal.toReal_ofReal (hf0 x))
+    exact ENNReal.toReal_le_of_le_ofReal (hf0 x) hx
   · intro φ
     simpa only [mul_comm] using integral_toReal_rnDeriv_mul hac (f := φ)
 

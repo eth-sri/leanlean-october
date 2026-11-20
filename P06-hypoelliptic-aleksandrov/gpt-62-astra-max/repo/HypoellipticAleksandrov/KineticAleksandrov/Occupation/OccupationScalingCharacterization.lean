@@ -13,8 +13,10 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Occupation
 open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic SectionTwo Scaling MeasureTheory Set
 open scoped ENNReal
 
+variable {d : ℕ} (K : WholeKernel d) (σ₀ : ℝ) {T : ℝ} (hT : 0 < T) (ρ : Measure (PDE.Vec d))
+
 /-- Elapsed-time pairing is the ordinary open-interval pairing with the marginal kernel. -/
-theorem occupation_rhs_interval {d : ℕ} (K : WholeKernel d) (σ T : ℝ) (hT : 0 < T)
+theorem occupation_rhs_interval (σ T : ℝ) (hT : 0 < T)
     (ρ : Measure (PDE.Vec d)) (φ : TimeVelocity d → ℝ) :
     (∫ v, ∫ τ : ElapsedTime (ENNReal.ofReal T),
       ∫ w, φ (τ.1, w) ∂K.firstMarginal
@@ -23,17 +25,15 @@ theorem occupation_rhs_interval {d : ℕ} (K : WholeKernel d) (σ T : ℝ) (hT :
     ∫ v, (∫ t in Ioo 0 T, ∫ w, φ (t, w) ∂Green.occupationKernel K σ t v) ∂ρ := by
   apply integral_congr_ae
   refine Filter.Eventually.of_forall fun v => ?_
-  have hh := Green.integral_elapsed_finite T hT
-    (fun t => ∫ w, φ (t, w) ∂Green.occupationKernel K σ t v)
   dsimp only
-  rw [← hh]
+  rw [← (Green.integral_elapsed_finite T hT (fun t => ∫ w, φ (t, w) ∂Green.occupationKernel K σ t v))]
   apply integral_congr_ae
   refine Filter.Eventually.of_forall fun τ => ?_
   dsimp only
   rw [Green.occupationKernel_of_nonneg K σ τ.1 τ.2.1.le v]
 
 /-- Bounded-Borel pullback by the forward parabolic dilation. -/
-def occupation_scaledTest {d : ℕ} (T : ℝ) (φ : BoundedBorel (TimeVelocity d)) :
+def occupation_scaledTest (T : ℝ) (φ : BoundedBorel (TimeVelocity d)) :
     BoundedBorel (TimeVelocity d) :=
   ⟨fun q => φ (parabolicAffine 0 0 (Real.sqrt T) q),
     φ.measurable.comp ((contDiff_infty_parabolicAffine 0 0 (Real.sqrt T)).continuous.measurable),
@@ -42,8 +42,7 @@ def occupation_scaledTest {d : ℕ} (T : ℝ) (φ : BoundedBorel (TimeVelocity d
       exact ⟨C, hC, fun q => hb _⟩⟩
 
 /-- The real-interval occupation pairing of the constructed scaled kernel. -/
-theorem occupation_rhs_scaled {d : ℕ} (K : WholeKernel d) (σ₀ : ℝ)
-    {T : ℝ} (hT : 0 < T) (ρ : Measure (PDE.Vec d))
+theorem occupation_rhs_scaled
     (φ : TimeVelocity d → ℝ) :
     let r : {r : ℝ // 0 < r} := ⟨Real.sqrt T, Real.sqrt_pos.mpr hT⟩
     let Φ := KineticAffineScaling.ofRadius σ₀ 0 0 (identityDrift d) r
@@ -57,7 +56,7 @@ theorem occupation_rhs_scaled {d : ℕ} (K : WholeKernel d) (σ₀ : ℝ)
   let r : {r : ℝ // 0 < r} := ⟨Real.sqrt T, Real.sqrt_pos.mpr hT⟩
   let Φ := KineticAffineScaling.ofRadius σ₀ 0 0 (identityDrift d) r
   let Kt := KineticAffineScaling.pushKernel (KineticAffineScaling.mapsDomain_wholeSpace Φ) K
-  have hs : Real.sqrt T ≠ 0 := (Real.sqrt_pos.mpr hT).ne'
+  have hs := (Real.sqrt_pos.mpr hT).ne'
   have hsq := Real.sq_sqrt hT.le
   have he : MeasurableEmbedding (fun v : PDE.Vec d => (Real.sqrt T)⁻¹ • v) :=
     (Homeomorph.smulOfNeZero (Real.sqrt T)⁻¹ (inv_ne_zero hs)).measurableEmbedding
@@ -71,7 +70,7 @@ theorem occupation_rhs_scaled {d : ℕ} (K : WholeKernel d) (σ₀ : ℝ)
   have hkernel := firstMarginal_radius_query σ₀ r K t ht.1.le
     ((Real.sqrt T)⁻¹ • v)
   have hcancel : r.1 • ((Real.sqrt T)⁻¹ • v) = v := by
-    rw [smul_smul, mul_inv_cancel₀ hs, one_smul]
+    aesop
   have hKT : Green.occupationKernel Kt 0 t ((Real.sqrt T)⁻¹ • v) =
       (Green.occupationKernel K σ₀ (T * t) v).map
         (fun w => (Real.sqrt T)⁻¹ • w) := by
@@ -82,7 +81,7 @@ theorem occupation_rhs_scaled {d : ℕ} (K : WholeKernel d) (σ₀ : ℝ)
     rw [hcancel] at hkernel
     have hh := Green.occupationKernel_of_nonneg K σ₀
       (T * t) (mul_nonneg hT.le ht.1.le) v
-    simpa only [r, hsq, zero_add, hh] using hkernel
+    simp_all <;> grind
   rw [hKT, he.integral_map]
   apply integral_congr_ae
   refine Filter.Eventually.of_forall fun w => ?_
@@ -92,11 +91,10 @@ theorem occupation_rhs_scaled {d : ℕ} (K : WholeKernel d) (σ₀ : ℝ)
   · change 0 + (Real.sqrt T) ^ 2 * t = T * t
     rw [hsq, zero_add]
   · change 0 + Real.sqrt T • ((Real.sqrt T)⁻¹ • w) = w
-    rw [zero_add, smul_smul, mul_inv_cancel₀ hs, one_smul]
+    aesop
 
 /-- A unit-time density for the constructed pushforward yields the original slab density. -/
-theorem isOccupationDensity_scaled {d : ℕ} (K : WholeKernel d) (σ₀ : ℝ)
-    {T : ℝ} (hT : 0 < T) (ρ : Measure (PDE.Vec d)) (gt : TimeVelocity d → ℝ)
+theorem isOccupationDensity_scaled (gt : TimeVelocity d → ℝ)
     (hgt : IsOccupationDensity
       (KineticAffineScaling.pushKernel (KineticAffineScaling.mapsDomain_wholeSpace
         (KineticAffineScaling.ofRadius σ₀ 0 0 (identityDrift d)
@@ -111,15 +109,11 @@ theorem isOccupationDensity_scaled {d : ℕ} (K : WholeKernel d) (σ₀ : ℝ)
   intro φ
   rw [occupation_scaledDensity_pairing hT]
   have hh := hgt.2.2 (occupation_scaledTest T φ)
-  change (∫ q in Ioo (0 : ℝ) 1 ×ˢ univ,
+  change (∫ q in Ioo 0 1 ×ˢ univ,
     φ (parabolicAffine 0 0 (Real.sqrt T) q) * gt q) = _ at hh
   rw [hh, occupation_rhs_interval _ 0 1 zero_lt_one]
-  change T * (∫ v, (∫ t in Ioo (0 : ℝ) 1,
-    ∫ w, φ (parabolicAffine 0 0 (Real.sqrt T) (t, w)) ∂_) ∂_) = _
-  have hs := occupation_rhs_scaled K σ₀ hT ρ φ
-  have hp := occupation_rhs_interval K σ₀ T hT ρ φ
-  have hm := congrArg (fun a : ℝ => T * a) hs
+  have hm := congrArg (fun a : ℝ => T * a) (occupation_rhs_scaled K σ₀ hT ρ φ)
   rw [← mul_assoc, mul_inv_cancel₀ hT.ne', one_mul] at hm
-  exact hm.trans hp.symm
+  exact hm.trans (occupation_rhs_interval K σ₀ T hT ρ φ).symm
 
 end HypoellipticAleksandrov.KineticAleksandrov.Occupation

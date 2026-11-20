@@ -20,16 +20,19 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Evolution
 
 open HypoellipticAleksandrov MeasureTheory Set
 
-private theorem smooth_direction {n : ℕ} {U : Set (EvolutionVec n)} (hU : IsOpen U)
-    {u : EvolutionVec n → ℝ} (hu : ContDiffOn ℝ (⊤ : ℕ∞) u U) (v : EvolutionVec n) :
+variable {n : ℕ} {U : Set (EvolutionVec n)} (hU : IsOpen U) {B : FullKineticCoefficient n}
+    (hB : IsSmoothFullKineticCoefficient B) (hBs : IsSymmetricFullKineticCoefficient B)
+    {b : PDE.Vec n → PDE.Vec n} (hb : IsSmoothDrift b) (ε : ℝ) {u : EvolutionVec n → ℝ}
+    (hu : ContDiffOn ℝ (⊤ : ℕ∞) u U)
+include hU hu
+
+private theorem smooth_direction (v : EvolutionVec n) :
     ContDiffOn ℝ (⊤ : ℕ∞) (fun x => fderiv ℝ u x v) U :=
   (hu.fderiv_of_isOpen hU (by simp)).clm_apply contDiffOn_const
 
+include hB hb in
 /-- The regularized kinetic operator of a smooth function is smooth on an open set. -/
-theorem contDiffOn_regularizedOperator {n : ℕ} {U : Set (EvolutionVec n)} (hU : IsOpen U)
-    {B : FullKineticCoefficient n} (hB : IsSmoothFullKineticCoefficient B)
-    {b : PDE.Vec n → PDE.Vec n} (hb : IsSmoothDrift b) (ε : ℝ)
-    {u : EvolutionVec n → ℝ} (hu : ContDiffOn ℝ (⊤ : ℕ∞) u U) :
+theorem contDiffOn_regularizedOperator :
     ContDiffOn ℝ (⊤ : ℕ∞) (regularizedOperator B b ε u) U := by
   have hA : ∀ i j, ContDiff ℝ (⊤ : ℕ∞) (fun x : EvolutionVec n =>
       B (timeCoord n x) (diffusedCoord n x) (transportedCoord n x) i j) :=
@@ -45,13 +48,10 @@ theorem contDiffOn_regularizedOperator {n : ℕ} {U : Set (EvolutionVec n)} (hU 
   · exact contDiffOn_const.mul (ContDiffOn.sum fun i _ =>
       smooth_direction hU (smooth_direction hU hu (basisZ i)) (basisZ i))
 
+include hB hBs hb in
 /-- Integration against the regularized adjoint equals integration of the classical
 operator for an actually smooth interior function. -/
-theorem integral_regularizedAdjoint_contDiffOn {n : ℕ} {U : Set (EvolutionVec n)}
-    (hU : IsOpen U) {B : FullKineticCoefficient n} (hB : IsSmoothFullKineticCoefficient B)
-    (hBs : IsSymmetricFullKineticCoefficient B) {b : PDE.Vec n → PDE.Vec n}
-    (hb : IsSmoothDrift b) (ε : ℝ) {u : EvolutionVec n → ℝ}
-    (hu : ContDiffOn ℝ (⊤ : ℕ∞) u U)
+theorem integral_regularizedAdjoint_contDiffOn
     (ψ : EvolutionVec n → ℝ) (hψ : ContDiff ℝ (⊤ : ℕ∞) ψ)
     (hc : HasCompactSupport ψ) (hs : tsupport ψ ⊆ U) :
     (∫ x in U, u x * regularizedAdjoint B b ε ψ x) =
@@ -97,12 +97,9 @@ theorem integral_regularizedAdjoint_contDiffOn {n : ℕ} {U : Set (EvolutionVec 
   exact congrFun (congrFun (hBs (timeCoord n x) (diffusedCoord n x)
     (transportedCoord n x)) i) j
 
+include hB hBs hb in
 /-- A smooth regularized weak solution satisfies its zero-source equation pointwise. -/
-theorem regularizedOperator_eq_zero_of_smooth_weak {n : ℕ} {U : Set (EvolutionVec n)}
-    (hU : IsOpen U) {B : FullKineticCoefficient n} (hB : IsSmoothFullKineticCoefficient B)
-    (hBs : IsSymmetricFullKineticCoefficient B) {b : PDE.Vec n → PDE.Vec n}
-    (hb : IsSmoothDrift b) (ε : ℝ) {u : EvolutionVec n → ℝ}
-    (hu : ContDiffOn ℝ (⊤ : ℕ∞) u U)
+theorem regularizedOperator_eq_zero_of_smooth_weak
     (hw : IsWeakRegularizedSolution B b ε U u (fun _ => 0)) :
     ∀ x ∈ U, regularizedOperator B b ε u x = 0 := by
   have hop := (contDiffOn_regularizedOperator hU hB hb ε hu).continuousOn
@@ -111,8 +108,7 @@ theorem regularizedOperator_eq_zero_of_smooth_weak {n : ℕ} {U : Set (Evolution
       have h1 := integral_regularizedAdjoint_contDiffOn hU hB hBs hb ε hu ψ hψ hc hs
       have h2 := hw.2 ψ hψ hc hs
       have hEq : (∫ x in U, regularizedOperator B b ε u x * ψ x) = 0 := by
-        rw [← h1, h2]
-        simp only [zero_mul, integral_zero]
+        aesop
       rw [setIntegral_eq_integral_of_forall_compl_eq_zero (fun x hx => by
         rw [image_eq_zero_of_notMem_tsupport (fun h => hx (hs h)), mul_zero])] at hEq
       simpa only [smul_eq_mul, mul_comm] using hEq)

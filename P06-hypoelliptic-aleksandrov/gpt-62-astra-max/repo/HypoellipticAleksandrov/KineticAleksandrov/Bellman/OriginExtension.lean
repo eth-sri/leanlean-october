@@ -1,3 +1,0 @@
-module
-public import HypoellipticAleksandrov.KineticAleksandrov.Bellman.OriginExtensionDistribution
-public import HypoellipticAleksandrov.KineticAleksandrov.Bellman.OriginExtensionBoundary

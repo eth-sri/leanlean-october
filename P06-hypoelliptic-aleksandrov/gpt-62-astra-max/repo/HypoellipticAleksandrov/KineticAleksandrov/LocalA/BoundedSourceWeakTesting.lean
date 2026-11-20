@@ -39,10 +39,9 @@ theorem duhamel_smooth_product_identity (hΩa : IsAdmissibleEvolutionDomain Ω)
       duhamelPotential K T (φ ∘ KineticPoint.equivProd d) ⟨q.1, q.2.1, q.2.2⟩) =
       -(∫ q, ψ (packQ d q) * φ q) := by
   let g := φ ∘ KineticPoint.equivProd d
-  have hg : Continuous g := hφ.continuous.comp (KineticPoint.homeomorphProd d).continuous
-  have hgc : HasCompactSupport g := hφc.comp_homeomorph (KineticPoint.homeomorphProd d)
-  have hgs : ContDiff ℝ (⊤ : ℕ∞) (fun q : ℝ × EvolutionAmbientState d =>
-      g ⟨q.1, q.2.1, q.2.2⟩) := hφ
+  have hg := hφ.continuous.comp (KineticPoint.homeomorphProd d).continuous
+  have hgc := hφc.comp_homeomorph (KineticPoint.homeomorphProd d)
+  have hgs := hφ
   have hgn : ∀ p, 0 ≤ g p := fun p => (hφr _).1
   have hgU : tsupport g ⊆ evolutionPastOpenCylinder Ω γ T := by
     intro p hp
@@ -71,7 +70,7 @@ theorem boundedSourceAdjoint_support {B : FullKineticCoefficient d}
   · intro x hx
     by_contra hnot
     exact hx (transportedAdjoint_eq_zero_of_notMem_tsupport ψ hnot)
-  · exact isClosed_tsupport ψ
+  · apply isClosed_tsupport
 
 /-- Compact weak tests have a uniform lower time bound in product coordinates. -/
 theorem exists_boundedSource_test_floor (Λ : ℝ × EvolutionAmbientState d → ℝ)

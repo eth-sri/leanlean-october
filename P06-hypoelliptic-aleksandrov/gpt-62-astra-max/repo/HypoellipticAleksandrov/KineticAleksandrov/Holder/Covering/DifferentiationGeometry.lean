@@ -18,16 +18,19 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Holder.Covering
 
 open Set
 
+section
+variable {d : ℕ} (P X : KineticPoint d)
+
 /-- The top of a time-centered cylinder based at P. -/
-def centeredTop {d : ℕ} (P : KineticPoint d) (r : ℝ) : KineticPoint d :=
+def centeredTop (P : KineticPoint d) (r : ℝ) : KineticPoint d :=
   ⟨P.time + r ^ 2 / 2, P.position + (r ^ 2 / 2) • P.velocity, P.velocity⟩
 
 /-- The literal time-centered cylinder used for differentiation. -/
-def centeredCylinder {d : ℕ} (P : KineticPoint d) (r : ℝ) : Set (KineticPoint d) :=
+def centeredCylinder (P : KineticPoint d) (r : ℝ) : Set (KineticPoint d) :=
   backwardCylinder (centeredTop P r) r
 
 /-- Centering preserves the free-transport position coordinate. -/
-theorem relativePosition_centeredTop {d : ℕ} (P X : KineticPoint d) (r : ℝ) :
+theorem relativePosition_centeredTop (r : ℝ) :
     relativePosition (centeredTop P r) X = relativePosition P X := by
   ext i
   simp only [relativePosition, centeredTop, Pi.sub_apply, Pi.add_apply, Pi.smul_apply,
@@ -35,7 +38,7 @@ theorem relativePosition_centeredTop {d : ℕ} (P X : KineticPoint d) (r : ℝ) 
   ring
 
 /-- Membership in the centered basis is stated in its physical Euclidean coordinates. -/
-theorem mem_centeredCylinder_iff {d : ℕ} (P X : KineticPoint d) {r : ℝ}
+theorem mem_centeredCylinder_iff {r : ℝ}
     (hr : 0 < r) :
     X ∈ centeredCylinder P r ↔
       |X.time-P.time| < r ^ 2 / 2 ∧
@@ -52,23 +55,25 @@ theorem mem_centeredCylinder_iff {d : ℕ} (P X : KineticPoint d) {r : ℝ}
   · rintro ⟨⟨h1, h2⟩, hv, hx⟩
     exact ⟨by linarith only [h1], by linarith only [h2], hv, hx⟩
 
+end
+
+variable {d : ℕ} (P : KineticPoint d) {r : ℝ} (hr : 0 < r)
+
+include hr in
 /-- The distinguished point belongs to each positive centered cylinder. -/
-theorem self_mem_centeredCylinder {d : ℕ} (P : KineticPoint d) {r : ℝ}
-    (hr : 0 < r) : P ∈ centeredCylinder P r := by
+theorem self_mem_centeredCylinder : P ∈ centeredCylinder P r := by
   rw [mem_centeredCylinder_iff P P hr]
-  have hz : PDE.vecEuclideanNorm (0 : PDE.Vec d) = 0 :=
-    PDE.vecEuclideanNorm_eq_zero_iff.mpr rfl
-  simp only [sub_self, abs_zero, relativePosition_self, hz]
+  simp only [sub_self, abs_zero, relativePosition_self, (PDE.vecEuclideanNorm_eq_zero_iff.mpr rfl)]
   exact ⟨half_pos (sq_pos_of_pos hr), hr, pow_pos hr 3⟩
 
 /-- Relative position plus transport displacement is the physical position difference. -/
-theorem position_sub_eq_relative {d : ℕ} (P X : KineticPoint d) :
+theorem position_sub_eq_relative (P X : KineticPoint d) :
     X.position-P.position = relativePosition P X + (X.time-P.time) • P.velocity := by
-  simp only [relativePosition, sub_add_cancel]
+  simp [relativePosition]
 
+include hr in
 /-- Small centered cylinders have uniformly small Euclidean coordinate displacements. -/
-theorem centeredCylinder_coordinate_bounds {d : ℕ} (P : KineticPoint d) {r : ℝ}
-    (hr : 0 < r) (hr1 : r ≤ 1) {X : KineticPoint d}
+theorem centeredCylinder_coordinate_bounds (hr1 : r ≤ 1) {X : KineticPoint d}
     (hX : X ∈ centeredCylinder P r) :
     |X.time-P.time| < r ∧
       PDE.vecEuclideanNorm (X.velocity-P.velocity) < r ∧
@@ -97,24 +102,21 @@ theorem centeredCylinder_coordinate_bounds {d : ℕ} (P : KineticPoint d) {r : �
     _ = r*(1+PDE.vecEuclideanNorm P.velocity) := by ring
 
 /-- The centered kinetic basis eventually fits in every ordinary metric neighborhood. -/
-theorem centeredCylinder_subset_ball {d : ℕ} (P : KineticPoint d) {eps : ℝ}
+theorem centeredCylinder_subset_ball {eps : ℝ}
     (heps : 0 < eps) :
     ∃ r0 : ℝ, 0 < r0 ∧ ∀ r : ℝ, 0 < r → r < r0 →
       centeredCylinder P r ⊆ Metric.ball P eps := by
   let L := 1 + PDE.vecEuclideanNorm P.velocity
-  have hL : 0 < L := by dsimp [L]; linarith [PDE.vecEuclideanNorm_nonneg P.velocity]
-  have hL1 : 1 ≤ L := by dsimp [L]; linarith [PDE.vecEuclideanNorm_nonneg P.velocity]
+  have hL : 0 < L := by linarith [PDE.vecEuclideanNorm_nonneg P.velocity]
+  have hL1 : 1 ≤ L := by linarith [PDE.vecEuclideanNorm_nonneg P.velocity]
   refine ⟨min 1 (eps/L), lt_min zero_lt_one (div_pos heps hL), ?_⟩
   intro r hr hrr X hX
-  have hr1 : r ≤ 1 := (hrr.trans_le (min_le_left _ _)).le
-  have hrL : r*L < eps := (lt_div_iff₀ hL).mp (hrr.trans_le (min_le_right _ _))
-  obtain ⟨ht, hv, hx⟩ := centeredCylinder_coordinate_bounds P hr hr1 hX
+  have hrL := (lt_div_iff₀ hL).mp (hrr.trans_le (min_le_right _ _))
+  obtain ⟨ht, hv, hx⟩ := centeredCylinder_coordinate_bounds P hr ((hrr.trans_le (min_le_left _ _)).le) hX
   have hrle : r ≤ r*L := by nlinarith only [hr.le, hL1]
   have hpos : dist X.position P.position < eps := by
-    rw [dist_eq_norm]
     exact (PDE.norm_le_vecEuclideanNorm _).trans_lt (hx.trans hrL)
   have hvel : dist X.velocity P.velocity < eps := by
-    rw [dist_eq_norm]
     exact (PDE.norm_le_vecEuclideanNorm _).trans_lt (hv.trans_le hrle |>.trans hrL)
   rw [Metric.mem_ball, ← (KineticPoint.isometryEquivProd d).dist_eq]
   change max (dist X.time P.time)
@@ -123,7 +125,7 @@ theorem centeredCylinder_subset_ball {d : ℕ} (P : KineticPoint d) {eps : ℝ}
   exact ⟨ht.trans_le hrle |>.trans hrL, hpos, hvel⟩
 
 /-- Every sufficiently small centered cylinder stays in a prescribed open neighborhood. -/
-theorem centeredCylinder_eventually_subset_open {d : ℕ} {U : Set (KineticPoint d)}
+theorem centeredCylinder_eventually_subset_open {U : Set (KineticPoint d)}
     (hU : IsOpen U) {P : KineticPoint d} (hP : P ∈ U) :
     ∃ r0 : ℝ, 0 < r0 ∧ ∀ r : ℝ, 0 < r → r < r0 → centeredCylinder P r ⊆ U := by
   obtain ⟨eps, heps, hball⟩ := Metric.isOpen_iff.mp hU P hP

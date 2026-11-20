@@ -52,10 +52,11 @@ local notation "κ" => terminalFiberKernel n hn lam Lam m L_b hlam hlamLam hm hm
 local notation "P₀" => terminalOperators n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
   hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx
 
+variable (q : EvolutionQuery Ω γ) (F : BoundedBorel (EvolutionAmbientState n))
+
 /-- At every query where a fixed smooth compact datum is admissible, its upper-time
 measurable probe approximations converge to the terminal measure integral. -/
 theorem tendsto_upper_terminal_probe
-    (q : EvolutionQuery Ω γ) (F : BoundedBorel (EvolutionAmbientState n))
     (hF : IsSmoothCompactTerminalDatum Ω γ q.1.2.1 F) :
     Tendsto (fun j => extendedTerminalProbe n Ω γ B b hEx
       (terminalTimeMesh j q.1.2.1) F (evolutionQueryPoint q)) atTop
@@ -68,12 +69,10 @@ theorem tendsto_upper_terminal_probe
   obtain ⟨M, hM0, herr⟩ := terminalOperators_terminal_time_error n hn lam Lam m L_b
     hlam hlamLam hm hmLb Ω γ B b hΩ hγ hB_smooth hB_symm hB_ell
     hb_smooth hb_lipschitz hb_coercive hEx τ F hF
-  have hnear : ∀ᶠ j in atTop, dist (terminalTimeMesh j τ) τ < δ :=
-    (tendsto_terminalTimeMesh τ).eventually (Metric.ball_mem_nhds τ hδ)
   have hevent : ∀ᶠ j in atTop,
       |extendedTerminalProbe n Ω γ B b hEx (terminalTimeMesh j τ) F (evolutionQueryPoint q) -
         P₀ σ τ q.2.1 (terminalStateDatum F) p| ≤ (terminalTimeMesh j τ - τ) * M := by
-    filter_upwards [hnear] with j hj
+    filter_upwards [((tendsto_terminalTimeMesh τ).eventually (Metric.ball_mem_nhds τ hδ))] with j hj
     have hτj := le_terminalTimeMesh j τ
     have hFj := hwindow (terminalTimeMesh j τ) hj
     have hs : ∀ t ∈ Icc τ (terminalTimeMesh j τ),
@@ -100,7 +99,7 @@ theorem tendsto_upper_terminal_probe
     apply tendsto_iff_norm_sub_tendsto_zero.mpr
     simp only [Real.norm_eq_abs]
     apply squeeze_zero' (Eventually.of_forall fun j => abs_nonneg _) hevent
-    simpa only [sub_self, zero_mul] using ((tendsto_terminalTimeMesh τ).sub_const τ).mul_const M
+    simpa using ((tendsto_terminalTimeMesh τ).sub_const τ).mul_const M
   have heq : P₀ σ τ q.2.1 (terminalStateDatum F) p = ∫ x, F x ∂(μT q) := by
     rw [terminalOperators_apply_smooth]
     exact ((terminalMeasure_spec n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
@@ -110,8 +109,7 @@ theorem tendsto_upper_terminal_probe
 
 /-- Fixed compact smooth test integrals are jointly measurable on the subtype of queries
 where the test datum is supported in the terminal fiber. -/
-theorem measurable_terminal_probe_on_admissible_queries
-    (F : BoundedBorel (EvolutionAmbientState n)) :
+theorem measurable_terminal_probe_on_admissible_queries :
     Measurable (fun q : {q : EvolutionQuery Ω γ //
       IsSmoothCompactTerminalDatum Ω γ q.1.2.1 F} => ∫ x, F x ∂(μT q.1)) := by
   apply measurable_of_tendsto_metrizable
@@ -127,7 +125,6 @@ theorem measurable_terminal_probe_on_admissible_queries
 /-- A fixed smooth compact test integral, taken as zero when the test is not admissible,
 is jointly measurable on the entire valid query space. -/
 theorem measurable_valid_terminal_probe
-    (F : BoundedBorel (EvolutionAmbientState n))
     (hFs : ContDiff ℝ (⊤ : ℕ∞) F) (hFc : HasCompactSupport F) :
     Measurable (validTerminalProbeIntegral n Ω γ μT F) := by
   classical
@@ -135,13 +132,11 @@ theorem measurable_valid_terminal_probe
   let D : Set (EvolutionQuery Ω γ) :=
     {q | IsSmoothCompactTerminalDatum Ω γ q.1.2.1 F}
   have hs : MeasurableSet D := by
-    have hopen := IsCompact.isOpen_terminal_support_times
-      (isOpen_of_isAdmissibleEvolutionDomain hΩ) hγ.1 hFc
     have hm : Measurable (fun q : EvolutionQuery Ω γ => q.1.2.1) :=
       measurable_fst.comp (measurable_snd.comp measurable_subtype_coe)
     simpa only [D, IsSmoothCompactTerminalDatum, hFs, hFc, true_and,
       Set.preimage, Set.mem_ofPred_eq] using
-      hopen.measurableSet.preimage hm
+      (IsCompact.isOpen_terminal_support_times (isOpen_of_isAdmissibleEvolutionDomain hΩ) hγ.1 hFc).measurableSet.preimage hm
   apply measurable_of_restrict_of_restrict_compl hs
   · convert measurable_terminal_probe_on_admissible_queries n hn lam Lam m L_b
       hlam hlamLam hm hmLb Ω γ B b hΩ hγ hB_smooth hB_symm hB_ell
@@ -150,7 +145,7 @@ theorem measurable_valid_terminal_probe
     exact ite_eq_left q.2
   · have hf : Dᶜ.domRestrict (fun q : EvolutionQuery Ω γ =>
         if IsSmoothCompactTerminalDatum Ω γ q.1.2.1 F then ∫ x, F x ∂(μT q) else 0) =
-        (fun _ : ↥(Dᶜ) => (0 : ℝ)) := by
+        (fun _ : ↥(Dᶜ) => 0) := by
       funext q
       exact ite_eq_right q.2
     rw [hf]

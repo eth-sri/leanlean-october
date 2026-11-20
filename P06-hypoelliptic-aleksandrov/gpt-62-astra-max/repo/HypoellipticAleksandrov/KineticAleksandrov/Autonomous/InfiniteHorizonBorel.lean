@@ -1,3 +1,4 @@
 module
-public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.InfiniteHorizonRestriction
+public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.InfiniteHorizonMeasure
+public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.DomainDominationMeasure
 import HypoellipticAleksandrov.KineticAleksandrov.Evolution.JointQueryBorelDense

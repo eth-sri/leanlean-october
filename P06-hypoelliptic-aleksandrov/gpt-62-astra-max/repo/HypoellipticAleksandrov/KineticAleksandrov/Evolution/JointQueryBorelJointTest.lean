@@ -55,7 +55,7 @@ theorem measurable_joint_terminal_probe
     apply measurable_countable_lookup
       (fun q : EvolutionQuery Ω γ => terminalTimeMeshIndex j q.1.2.1)
       (fun k q => validTerminalProbeIntegral n Ω γ μT
-        (jointTerminalProbeSlice Φ ((k : ℝ) / ((j : ℝ) + 1))) q)
+        (jointTerminalProbeSlice Φ (k / (j + 1))) q)
     · intro k
       obtain ⟨hr, hcompact⟩ := jointTerminalProbeSlice_regular Φ hΦ hc
         ((k : ℝ) / ((j : ℝ) + 1))
@@ -77,7 +77,7 @@ theorem measurable_joint_terminal_probe
     (fun j => (Φ.measurable.comp (measurable_const.prodMk measurable_id)).aestronglyMeasurable)
     (integrable_const C)
     (fun j => Eventually.of_forall fun x => by
-      simpa only [Real.norm_eq_abs] using hC (terminalTimeMesh j q.1.2.1, x))
+      exact hC (terminalTimeMesh j q.1.2.1, x))
     (Eventually.of_forall fun x => hΦ.continuous.continuousAt.tendsto.comp
       ((tendsto_terminalTimeMesh q.1.2.1).prodMk_nhds tendsto_const_nhds))
   have hnear := (tendsto_terminalTimeMesh q.1.2.1).eventually

@@ -53,12 +53,12 @@ theorem returnCylinder_bounds (z p : Point) (r : ℝ) (hr : 0 < r)
       (PDE.continuous_vecEuclideanNorm.comp
         ((continuous_position.sub continuous_const).sub
           ((continuous_time.sub continuous_const).smul continuous_const)))
-      (continuous_const : Continuous (fun _ : Point => r ^ 3))
+      continuous_const
   apply closure_minimal (s := backwardCylinder z r) ?_ hclosed hp
   intro q hq
   refine ⟨abs_le.mpr ⟨by linarith [hq.1], by nlinarith [hq.2.1, sq_nonneg r]⟩,
     ((PDE.mem_euclideanBall_iff_vecEuclideanNorm_lt hr).mp hq.2.2.1).le, ?_⟩
-  simpa only [sub_zero] using
+  simpa using
     ((PDE.mem_euclideanBall_iff_vecEuclideanNorm_lt (pow_pos hr 3)).mp hq.2.2.2).le
 
 /-- Every return box used in the iteration lies in the reference region. -/
@@ -77,13 +77,12 @@ theorem returnBox_cylinder_subset (v a b : ℝ) (hv : |v| ≤ 1)
     (z : Point) (hz : z ∈ returnBox v a) :
     closure (backwardCylinder z (2 * ((b - a) / 4096))) ⊆ returnBox v b := by
   let r := 2 * ((b - a) / 4096)
-  have hr : 0 < r := by dsimp [r]; positivity
+  have hr : 0 < r := by positivity
   have hr1 : r ≤ 1 := by dsimp [r]; linarith
   have hrsq : r ^ 2 ≤ r := by nlinarith
   have hrcube : r ^ 3 ≤ r := by
-    have hh := mul_le_mul_of_nonneg_right hrsq hr.le
     nlinarith
-  have hvelz : PDE.vecEuclideanNorm z.velocity ≤ 2 :=
+  have hvelz :=
     ((returnBox_subset_reference v a hv (by linarith)) hz).2.2
   intro p hp
   obtain ⟨ht, hvp, hxp⟩ := returnCylinder_bounds z p r hr hp

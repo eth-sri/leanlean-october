@@ -19,33 +19,32 @@ open Set MeasureTheory HypoellipticAleksandrov
 
 /-- The corrected mass conditions, assuming the terminal domination estimate. -/
 theorem positionVisitMassesStatement_holds_of_terminal_domination
-    (hTerminal : ∀ (hH : HormanderHypoellipticityStatement)
-      (hLE : LiebermanEllipsoidDirichletStatement)
+    (hTerminal : ∀
       (lam Lam : ℝ) (hlam : 0 < lam) (hLam : lam ≤ Lam)
       (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (T : ℝ) (P : Point),
       |c.vbar| = 2 * c.r → 0 < T → closure c.active ⊆ J.carrier →
       P.velocity 0 ∈ closure c.entrance →
       ∀ (N : ℕ) (b : ℝ), P.time ≤ b → b ≤ P.time + T →
-        enlargedActiveTerminal hH hLE hlam hLam A c J P.time (P.time + T) P N b ≤
-          enlargedFullSpaceTerminal hH hLE hlam hLam A P b) :
+        enlargedActiveTerminal hlam hLam A c J P.time (P.time + T) P N b ≤
+          enlargedFullSpaceTerminal hlam hLam A P b) :
     PositionVisitMassesStatement := by
-  intro hH hLE lam Lam hlam hLam
+  intro lam Lam hlam hLam
   refine ⟨enlargedVisitMassConstant lam Lam, enlargedVisitMassConstant_pos hlam hLam, ?_⟩
   intro A c J R T P hR hT hTR hbar hJ hvel
   dsimp only
   have hPT : P.time < P.time + T := by linarith
-  have : IsFiniteMeasure (visitsFromZero hH hLE hlam hLam A c J T P) :=
-    enlargedVisitStarts_isFiniteMeasure hH hLE hlam hLam A c J R T P
+  have : IsFiniteMeasure (visitsFromZero hlam hLam A c J T P) :=
+    enlargedVisitStarts_isFiniteMeasure hlam hLam A c J R T P
       hR hT hTR hbar hJ hvel
   refine ⟨inferInstance, ?_, ?_, ?_, ?_, ?_⟩
-  · exact enlargedVisitStarts_ae_support hH hLE hlam hLam A c J P.time (P.time + T)
+  · exact enlargedVisitStarts_ae_support hlam hLam A c J P.time (P.time + T)
       P le_rfl hPT
-  · exact enlargedVisitStarts_mass_le hH hLE hlam hLam A c J R T P hR hT hTR hbar hJ hvel
+  · apply enlargedVisitStarts_mass_le <;> assumption
   · intro j
-    exact enlargedPositionVisitMass_sum _ c P.time 0 j
+    apply enlargedPositionVisitMass_sum
   · intro N
-    exact enlarged_active_occupation_le_fullspace hH hLE hlam hLam A c J T hT P
+    exact enlarged_active_occupation_le_fullspace hlam hLam A c J T hT P
       (hJ (subset_closure (enlarged_closedEntrance_subset_active c hvel))) N
-  · exact hTerminal hH hLE lam Lam hlam hLam A c J T P hbar hT hJ hvel
+  · apply hTerminal <;> assumption
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

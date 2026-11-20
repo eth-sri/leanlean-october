@@ -30,15 +30,12 @@ theorem bellmanGaussianExponent_le_smallTime (t : BellmanPositiveTime) (ht : t.v
       7 * t.val ^ 2 * q.2 ^ 2) / (8 * t.val ^ 3) ≤ 0 :=
     div_nonpos_of_nonpos_of_nonneg (neg_nonpos.mpr hQ)
       (mul_nonneg (by norm_num) (pow_nonneg t.property.le 3))
-  rw [← hidentity] at hneg
-  rw [neg_div]
-  linarith only [hneg]
+  grind
 
 /-- Exponential decay dominates the quadratic inverse-power singularity. -/
 theorem bellman_exp_neg_le_inv_sq (y : ℝ) (hy : 0 < y) :
     Real.exp (-y) ≤ 2 / y ^ 2 := by
-  have h := Real.pow_div_factorial_le_exp y hy.le 2
-  have hm := mul_le_mul_of_nonneg_right h (Real.exp_pos (-y)).le
+  have hm := mul_le_mul_of_nonneg_right (Real.pow_div_factorial_le_exp y hy.le 2) (Real.exp_pos (-y)).le
   have hexp : Real.exp y * Real.exp (-y) = 1 := by
     rw [← Real.exp_add, add_neg_cancel, Real.exp_zero]
   rw [hexp] at hm
@@ -52,8 +49,7 @@ theorem bellmanGaussianKernel_le_smallTime (t : BellmanPositiveTime) (ht : t.val
     bellmanGaussianKernel t q ≤ 64 * Real.sqrt 3 / (Real.pi * a ^ 2) := by
   have hE : bellmanGaussianExponent t q ≤ -a / (8 * t.val) := by
     refine (bellmanGaussianExponent_le_smallTime t ht q).trans ?_
-    exact div_le_div_of_nonneg_right (neg_le_neg hq)
-      (mul_nonneg (by norm_num) t.property.le)
+    bound
   have he : Real.exp (bellmanGaussianExponent t q) ≤
       2 / (a / (8 * t.val)) ^ 2 := by
     refine (Real.exp_le_exp.mpr hE).trans ?_
@@ -62,9 +58,8 @@ theorem bellmanGaussianKernel_le_smallTime (t : BellmanPositiveTime) (ht : t.val
       (div_pos ha (mul_pos (by norm_num) t.property))
   have hc : 0 ≤ Real.sqrt 3 / (2 * Real.pi * t.val ^ 2) :=
     div_nonneg (Real.sqrt_nonneg _) (by positivity)
-  have hm := mul_le_mul_of_nonneg_left he hc
   unfold bellmanGaussianKernel
-  refine hm.trans_eq ?_
+  refine (mul_le_mul_of_nonneg_left he hc).trans_eq ?_
   field_simp [ne_of_gt t.property]
   norm_num
 

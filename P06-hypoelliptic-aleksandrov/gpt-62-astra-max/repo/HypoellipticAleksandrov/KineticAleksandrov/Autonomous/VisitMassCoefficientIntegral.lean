@@ -9,16 +9,18 @@ import Mathlib.Tactic
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov
 
+variable {lam Lam : ℝ} (hlam : 0 < lam) (A : SmoothAutonomous lam Lam) (mu : Measure Point)
+
 /-- The physical autonomous coefficient is continuous in native kinetic coordinates. -/
-theorem visitCoefficient_continuous {lam Lam : ℝ} (A : SmoothAutonomous lam Lam) :
+theorem visitCoefficient_continuous :
     Continuous (fun p : Point => A.a (p.position 0) (p.velocity 0)) :=
   A.smooth.continuous.comp
     (((continuous_apply 0).comp continuous_position).prodMk
       ((continuous_apply 0).comp continuous_velocity))
 
+include hlam in
 /-- The quadratic Green integrand is integrable against every finite physical measure. -/
-theorem visitCoefficient_integrable {lam Lam : ℝ} (hlam : 0 < lam)
-    (A : SmoothAutonomous lam Lam) (mu : Measure Point) [IsFiniteMeasure mu] :
+theorem visitCoefficient_integrable [IsFiniteMeasure mu] :
     Integrable (fun p => 2 * A.a (p.position 0) (p.velocity 0)) mu := by
   apply Integrable.mono' (integrable_const (2 * Lam))
     ((continuous_const.mul (visitCoefficient_continuous A)).measurable.aestronglyMeasurable)
@@ -28,9 +30,9 @@ theorem visitCoefficient_integrable {lam Lam : ℝ} (hlam : 0 < lam)
   rw [Real.norm_eq_abs, abs_of_nonneg (by nlinarith [(A.bounds (p.position 0) (p.velocity 0)).1])]
   nlinarith [(A.bounds (p.position 0) (p.velocity 0)).2]
 
+include hlam in
 /-- Ellipticity bounds the actual quadratic Green term by twice Lam times occupation mass. -/
-theorem visitCoefficient_integral_le {lam Lam : ℝ} (hlam : 0 < lam)
-    (A : SmoothAutonomous lam Lam) (mu : Measure Point) [IsFiniteMeasure mu] :
+theorem visitCoefficient_integral_le [IsFiniteMeasure mu] :
     (∫ p, 2 * A.a (p.position 0) (p.velocity 0) ∂mu) ≤ 2 * Lam * (mu univ).toReal := by
   have hi := integral_mono_ae (visitCoefficient_integrable hlam A mu)
     (integrable_const (2 * Lam))

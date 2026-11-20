@@ -17,7 +17,7 @@ theorem position_two_index_young_source (w a : ℤ × ℤ → ℝ≥0∞) (q : �
   have he (g : ℤ × ℤ) : (∑' h, w (g - h) * a h) =
       ∑' h, w h * a (g - h) := by
     have h := (Equiv.subLeft g).tsum_eq (fun h => w (g - h) * a h)
-    simpa only [Equiv.subLeft_apply, sub_sub_cancel] using h.symm
+    simpa using h.symm
   simp_rw [he]
   exact position_two_index_young w a q hq
 
@@ -42,9 +42,6 @@ theorem position_overlap_power_sum (c₀ : ℝ) (hc₀ : 0 < c₀)
           a (positionIndexEmbedding z) := by
         apply ENNReal.tsum_le_tsum
         intro z
-        change _ ≤ D * w (positionIndexEmbedding b - positionIndexEmbedding z) *
-          positionMassSequence nu c s x (positionIndexEmbedding z)
-        rw [positionMassSequence_embed]
         exact mul_le_mul_left (positionOverlapWeight_le c₀ hc₀ b.1 z.1 b.2 z.2) _
       _ = D * ∑' z : ℕ × ℤ,
           w (positionIndexEmbedding b - positionIndexEmbedding z) *
@@ -59,7 +56,7 @@ theorem position_overlap_power_sum (c₀ : ℝ) (hc₀ : 0 < c₀)
       ENNReal.tsum_le_tsum (fun b => ENNReal.rpow_le_rpow (hcell b) (by linarith))
     _ = D ^ q * ∑' b : ℕ × ℤ,
         (∑' h, w (positionIndexEmbedding b - h) * a h) ^ q := by
-      simp_rw [ENNReal.mul_rpow_of_nonneg _ _ (by linarith : 0 ≤ q)]
+      simp_rw [ENNReal.mul_rpow_of_nonneg _ _ (by linarith)]
       rw [ENNReal.tsum_mul_left]
     _ ≤ D ^ q * ∑' g, (∑' h, w (g - h) * a h) ^ q :=
       mul_le_mul_right (ENNReal.tsum_comp_le_tsum_of_injective
@@ -67,7 +64,7 @@ theorem position_overlap_power_sum (c₀ : ℝ) (hc₀ : 0 < c₀)
     _ ≤ D ^ q * ((∑' h, w h) ^ q * ∑' g, a g ^ q) :=
       mul_le_mul_right (position_two_index_young_source w a q hq) _
     _ = _ := by
-      rw [← mul_assoc, ← ENNReal.mul_rpow_of_nonneg _ _ (by linarith : 0 ≤ q),
+      rw [← mul_assoc, ← ENNReal.mul_rpow_of_nonneg _ _ (by linarith),
         positionMassSequence_power_sum nu c s x q (by linarith)]
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

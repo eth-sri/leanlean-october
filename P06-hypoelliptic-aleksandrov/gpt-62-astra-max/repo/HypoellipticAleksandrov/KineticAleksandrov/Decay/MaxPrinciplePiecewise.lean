@@ -50,11 +50,8 @@ theorem nonpos_on_piecewise_maximumClosedTube {d : ℕ}
   | succ n ih =>
     intro r hr hγ hu hc hreg hB hsub ht hl
     let s : Fin (n + 2) → ℝ := fun i => r i.succ
-    have hs : StrictMono s := hr.comp Fin.strictMono_succ
     have htail : maximumClosedTube Ω γ (s 0) (s (Fin.last (n + 1))) ⊆
-        maximumClosedTube Ω γ (r 0) (r (Fin.last (n + 2))) := by
-      intro p hp
-      exact ⟨⟨(hr.monotone (Fin.zero_le _)).trans hp.1.1, hp.1.2⟩, hp.2⟩
+        maximumClosedTube Ω γ (r 0) (r (Fin.last (n + 2))) := fun p hp => ⟨⟨(hr.monotone (Fin.zero_le _)).trans hp.1.1, hp.1.2⟩, hp.2⟩
     have hcTail : IsTransportIndependentOn u
         (maximumClosedTube Ω γ (s 0) (s (Fin.last (n + 1)))) ∨
         IsUniformlyNegAtInfinityOn u
@@ -65,15 +62,13 @@ theorem nonpos_on_piecewise_maximumClosedTube {d : ℕ}
         intro M
         obtain ⟨R, hR, hb⟩ := hn M
         exact ⟨R, hR, fun p hp => hb p (htail hp)⟩
-    have htailResult := ih s hs
+    have htailResult := ih s (hr.comp Fin.strictMono_succ)
       (hγ.mono (Icc_subset_Icc (hr.monotone (Fin.zero_le _)) le_rfl))
       (hu.mono htail) hcTail
       (fun i => hreg i.succ) (fun i => hB i.succ) (fun i => hsub i.succ)
       (fun p hp => ht p (htail hp)) (fun p hp => hl p (htail hp))
     have hhead : maximumClosedTube Ω γ (r 0) (s 0) ⊆
-        maximumClosedTube Ω γ (r 0) (r (Fin.last (n + 2))) := by
-      intro p hp
-      exact ⟨⟨hp.1.1, hp.1.2.trans (hr.monotone (Fin.le_last _))⟩, hp.2⟩
+        maximumClosedTube Ω γ (r 0) (r (Fin.last (n + 2))) := fun p hp => ⟨⟨hp.1.1, hp.1.2.trans (hr.monotone (Fin.le_last _))⟩, hp.2⟩
     have hcHead : IsTransportIndependentOn u (maximumClosedTube Ω γ (r 0) (s 0)) ∨
         IsUniformlyNegAtInfinityOn u (maximumClosedTube Ω γ (r 0) (s 0)) := by
       rcases hc with hi | hn
@@ -83,7 +78,7 @@ theorem nonpos_on_piecewise_maximumClosedTube {d : ℕ}
         obtain ⟨R, hR, hb⟩ := hn M
         exact ⟨R, hR, fun p hp => hb p (hhead hp)⟩
     have hheadResult := nonpos_on_maximumClosedTube
-      (hr (show (0 : Fin (n + 3)) < (0 : Fin (n + 2)).succ by simp)) hΩ hcΩ
+      (hr (show 0 < (0 : Fin (n + 2)).succ by simp)) hΩ hcΩ
       (hγ.mono (Icc_subset_Icc le_rfl (hr.monotone (Fin.le_last _))))
       (hu.mono hhead) hcHead (hreg 0) (hB 0) (hsub 0)
       (fun p hp heq => htailResult p

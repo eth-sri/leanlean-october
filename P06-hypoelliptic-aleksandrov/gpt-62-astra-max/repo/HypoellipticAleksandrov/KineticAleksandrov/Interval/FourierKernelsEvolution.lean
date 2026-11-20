@@ -17,8 +17,6 @@ open HypoellipticAleksandrov.KineticAleksandrov.Decay
 
 /-- The clauses hold for every kernel realizing the same interval problem. -/
 theorem interval_evolution_clauses
-    (hH : HormanderHypoellipticityStatement)
-    (hLE : LiebermanEllipsoidDirichletStatement)
     {lam Lam m Lb a c : ℝ} (hac : a < c)
     (B : CoefficientField 1) (b : PDE.Vec 1 → PDE.Vec 1)
     (hs : SourceSetting lam Lam m Lb (PDE.oneDimensionalAxisBox a c) B b)
@@ -33,10 +31,9 @@ theorem interval_evolution_clauses
       (zIndependentCoefficient B) K ∧
     IsTranslationCovariantEvolution (PDE.oneDimensionalAxisBox a c) stationary hJ K := by
   obtain ⟨S₀, K₀, hr₀, hm, hp, hc⟩ :=
-    exists_interval_evolution hH hLE lam Lam m Lb a c hac B b hs
+    exists_interval_evolution lam Lam m Lb a c hac B b hs
   have hK := (terminalEvolution_unique (PDE.oneDimensionalAxisBox a c) stationary
     (interval_admissible hac) (zIndependentCoefficient B) b S S₀ K K₀ hr hr₀).2
-  subst K₀
-  exact ⟨hm, hp, hc⟩
+  grind
 
 end HypoellipticAleksandrov.KineticAleksandrov.Interval

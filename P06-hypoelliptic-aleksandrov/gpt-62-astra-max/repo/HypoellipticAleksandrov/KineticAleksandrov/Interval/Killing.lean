@@ -33,8 +33,7 @@ private theorem master_mass_eq_marginal_mass {d : ℕ} {Ω : Set (PDE.Vec d)}
   rw [Measure.map_apply measurable_subtype_coe MeasurableSet.univ,
     MovingFiberKernel.firstMarginal, ProbabilityTheory.Kernel.fst_apply,
     Measure.map_apply measurable_fst MeasurableSet.univ] at h
-  simpa only [preimage_univ] using h
-
+  exact h
 
 /-- Scalar marginal mass equals the ambient master mass of the same query. -/
 theorem interval_parabolic_mass_eq_master {a c : ℝ}
@@ -50,12 +49,10 @@ theorem interval_parabolic_mass_eq_master {a c : ℝ}
   obtain ⟨Q, hfirst, _⟩ := hp (fun _ _ _ _ => rfl)
   unfold P parabolicMarginalAmbientMeasure
   rw [Measure.map_apply measurable_subtype_coe MeasurableSet.univ, preimage_univ]
-  exact master_mass_eq_marginal_mass hJ K σ τ hστ v z hv (hfirst σ τ hστ ⟨v, hv⟩ z)
+  apply_rules [master_mass_eq_marginal_mass]
 
 /-- The positive marginal is bounded by the half-line barrier at the nearer endpoint. -/
 theorem interval_killing
-    (hH : HormanderHypoellipticityStatement)
-    (hLE : LiebermanEllipsoidDirichletStatement)
     {lam Lam m Lb a c : ℝ} (hac : a < c)
     (B : CoefficientField 1) (b : PDE.Vec 1 → PDE.Vec 1)
     (hsetting : SourceSetting lam Lam m Lb (PDE.oneDimensionalAxisBox a c) B b)
@@ -68,14 +65,13 @@ theorem interval_killing
     (hv : v ∈ movingDomain (PDE.oneDimensionalAxisBox a c) stationary σ) :
     (P K hJ (scalarQuery σ τ hστ.le v hv)).real univ ≤
       intervalErf (min (v 0 - a) (c - v 0) / (2 * Real.sqrt (lam * (τ - σ)))) := by
-  have hp := (interval_evolution_clauses hH hLE hac B b hsetting hJ S K hr).2.1
+  have hp := (interval_evolution_clauses hac B b hsetting hJ S K hr).2.1
   have hleft := interval_endpoint_mass_bound hac hστ hsetting.1.1
     (s := 1) (e := a) (by norm_num) B hsetting.1 hJ K hp
     (fun w hw => by
-      have h := PDE.mem_oneDimensionalAxisBox_iff.mp hw
-      simpa only [one_mul, PDE.vecOneCoordinate] using sub_pos.mpr h.1)
+      simpa only [one_mul, PDE.vecOneCoordinate] using sub_pos.mpr (PDE.mem_oneDimensionalAxisBox_iff.mp hw).1)
     (fun w hw => by
-      simpa only [one_mul] using sub_nonneg.mpr (interval_coordinate_closure hw).1) v hv
+      simpa using sub_nonneg.mpr (interval_coordinate_closure hw).1) v hv
   have hright := interval_endpoint_mass_bound hac hστ hsetting.1.1
     (s := -1) (e := c) (by norm_num) B hsetting.1 hJ K hp
     (fun w hw => by
@@ -84,15 +80,13 @@ theorem interval_killing
       have hc : w 0 < c := h.2
       linarith)
     (fun w hw => by
-      have h := (interval_coordinate_closure hw).2
-      linarith) v hv
+      linarith [(interval_coordinate_closure hw).2]) v hv
   rcases le_total (v 0 - a) (c - v 0) with hl | hr
   · rw [min_eq_left hl]
-    simpa only [intervalHeat, one_mul] using hleft
+    simpa [intervalHeat] using hleft
   · rw [min_eq_right hr]
     convert hright using 1
     unfold intervalHeat
-    congr 2
     ring
 
 /-- Fourier total variation is bounded by scalar marginal mass on the same kernel. -/

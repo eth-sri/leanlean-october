@@ -31,39 +31,48 @@ open scoped BigOperators MatrixOrder
 def movingLensSignXi (kappa : ℝ) : ℝ :=
   kappa ^ 3 / 2
 
+section
+variable (d : ℕ) (lam Lam kappa : ℝ)
+include d lam Lam kappa
+
 /-- A uniform upper bound for the signed lower-order bracket in the barrier
 identity. -/
-def movingLensSignB (d : ℕ) (lam Lam kappa : ℝ) : ℝ :=
+def movingLensSignB : ℝ :=
   let _ := lam
   movingLensSignXi kappa + 1 + (d : ℝ) * kappa ^ (-4 : ℤ) +
     2 * (d : ℝ) * |Lam|
 
 /-- The two-region radius threshold for the moving-lens sign argument. -/
-def movingLensSignR0 (d : ℕ) (lam Lam kappa : ℝ) : ℝ :=
+def movingLensSignR0 : ℝ :=
   (movingLensSignB d lam Lam kappa + 2 * lam) /
     (movingLensSignB d lam Lam kappa + 4 * lam)
 
 /-- The natural exponent selected uniformly before every coefficient and lens
 datum. -/
-def movingLensSignExponent (d : ℕ) (lam Lam kappa : ℝ) : ℕ :=
+def movingLensSignExponent : ℕ :=
   1 + ⌈2 * movingLensSignB d lam Lam kappa /
     (movingLensSignXi kappa * (1 - movingLensSignR0 d lam Lam kappa) ^ 2)⌉₊
+
+end
 
 private theorem movingLensSignXi_pos {kappa : ℝ} (hkappa : 0 < kappa) :
     0 < movingLensSignXi kappa := by
   unfold movingLensSignXi
   positivity
 
-private theorem movingLensSignB_pos (d : ℕ) {lam Lam kappa : ℝ}
-    (hkappa : 0 < kappa) :
+section
+variable (d : ℕ) {lam Lam kappa : ℝ} (hlam : 0 < lam) (hkappa : 0 < kappa)
+include hkappa
+
+private theorem movingLensSignB_pos :
     0 < movingLensSignB d lam Lam kappa := by
   unfold movingLensSignB
   have hxi := movingLensSignXi_pos hkappa
   have hpow : 0 ≤ kappa ^ (-4 : ℤ) := by positivity
   positivity
 
-private theorem movingLensSignR0_mem_Ioo (d : ℕ) {lam Lam kappa : ℝ}
-    (hlam : 0 < lam) (hkappa : 0 < kappa) :
+include hlam in
+private theorem movingLensSignR0_mem_Ioo :
     movingLensSignR0 d lam Lam kappa ∈ Set.Ioo (0 : ℝ) 1 := by
   unfold movingLensSignR0
   have hB := movingLensSignB_pos d (lam := lam) (Lam := Lam) hkappa
@@ -73,8 +82,12 @@ private theorem movingLensSignR0_mem_Ioo (d : ℕ) {lam Lam kappa : ℝ}
   · rw [div_lt_iff₀ hden]
     linarith
 
-private theorem vecDot_mulVec_lower_of_loewner {d : ℕ} {lam : ℝ}
-    {M : PDE.Mat d} (hlower : lam • (1 : PDE.Mat d) ≤ M)
+end
+
+section
+variable {d : ℕ} {lam : ℝ} {Lam : ℝ} {M : PDE.Mat d}
+
+private theorem vecDot_mulVec_lower_of_loewner (hlower : lam • (1 : PDE.Mat d) ≤ M)
     (v : PDE.Vec d) :
     lam * PDE.vecNormSq v ≤ PDE.vecDot v (M *ᵥ v) := by
   have hgap : (M - lam • (1 : PDE.Mat d)).PosSemidef := Matrix.le_iff.mp hlower
@@ -83,8 +96,7 @@ private theorem vecDot_mulVec_lower_of_loewner {d : ℕ} {lam : ℝ}
     Matrix.one_mulVec, dotProduct_sub, dotProduct_smul, smul_eq_mul] at hquad
   simpa only [PDE.vecNormSq, PDE.vecDot, dotProduct, mul_comm] using sub_nonneg.mp hquad
 
-private theorem trace_le_natCast_mul_of_loewner_upper {d : ℕ} {Lam : ℝ}
-    {M : PDE.Mat d} (hupper : M ≤ Lam • (1 : PDE.Mat d)) :
+private theorem trace_le_natCast_mul_of_loewner_upper (hupper : M ≤ Lam • (1 : PDE.Mat d)) :
     M.trace ≤ (d : ℝ) * Lam := by
   have hgap : (Lam • (1 : PDE.Mat d) - M).PosSemidef := Matrix.le_iff.mp hupper
   have htrace := hgap.trace_nonneg
@@ -92,7 +104,7 @@ private theorem trace_le_natCast_mul_of_loewner_upper {d : ℕ} {Lam : ℝ}
     Fintype.card_fin, smul_eq_mul] at htrace
   linarith
 
-private theorem two_vecDot_le_vecNormSq_add {d : ℕ} (v w : PDE.Vec d) :
+private theorem two_vecDot_le_vecNormSq_add (v w : PDE.Vec d) :
     2 * PDE.vecDot v w ≤ PDE.vecNormSq v + PDE.vecNormSq w := by
   have hcs : PDE.vecDot v w ^ 2 ≤ PDE.vecNormSq v * PDE.vecNormSq w :=
     PDE.sq_vecDot_le_vecNormSq_mul_vecNormSq v w
@@ -100,14 +112,14 @@ private theorem two_vecDot_le_vecNormSq_add {d : ℕ} (v w : PDE.Vec d) :
   have hw : 0 ≤ PDE.vecNormSq w := PDE.vecNormSq_nonneg w
   nlinarith [sq_nonneg (PDE.vecNormSq v - PDE.vecNormSq w)]
 
-private theorem movingLensRadiusSq_nonneg_of_den_pos {d : ℕ} {xi eps : ℝ}
+private theorem movingLensRadiusSq_nonneg_of_den_pos {xi eps : ℝ}
     {y : PDE.Vec d} {z : TimeVelocity d}
     (hden : 0 < movingLensDenominator xi eps z.1) :
     0 ≤ movingLensRadiusSq xi eps y z := by
   unfold movingLensRadiusSq
   exact div_nonneg (PDE.vecNormSq_nonneg _) hden.le
 
-private theorem vecNormSq_displacement_lt_one_of_normalized_data {d : ℕ}
+private theorem vecNormSq_displacement_lt_one_of_normalized_data
     {xi eps kappa : ℝ} {y : PDE.Vec d} {z : TimeVelocity d}
     (hden : 0 < movingLensDenominator xi eps z.1)
     (hden_lt : movingLensDenominator xi eps z.1 < kappa ^ 2)
@@ -117,6 +129,8 @@ private theorem vecNormSq_displacement_lt_one_of_normalized_data {d : ℕ}
   have hradius := (movingLensRadiusSq_lt_one_iff hden).mp hr
   have hkappa_sq : kappa ^ 2 ≤ 1 := by nlinarith
   exact hradius.trans (hden_lt.trans_le hkappa_sq)
+
+end
 
 private theorem movingLensSign_bracket_le (d : ℕ) {lam Lam kappa eps : ℝ}
     {y : PDE.Vec d} {z : TimeVelocity d}

@@ -48,8 +48,7 @@ theorem isOpen_duhamelFiber (hΩ : IsOpen Ω) (hγ : Continuous γ) (T : ℝ) :
   have hc : Continuous (fun p : TimeVelocity d => p.2 - γ p.1) :=
     continuous_snd.sub (hγ.comp continuous_fst)
   have h1 : IsOpen {p : TimeVelocity d | p.2 - γ p.1 ∈ Ω} := hΩ.preimage hc
-  have h2 : IsOpen {p : TimeVelocity d | p.1 < T} := isOpen_lt continuous_fst continuous_const
-  convert h2.inter h1 using 1
+  convert (isOpen_lt continuous_fst continuous_const).inter h1 using 1
   ext p
   simp only [duhamelFiber, mem_ofPred_eq, mem_inter_iff]
   change (_ ∧ _ ∈ PDE.translateSet (γ p.1) Ω) ↔ _
@@ -68,10 +67,6 @@ def sliceBorel (g : TimeVelocity d → ℝ) (hg : Continuous g) (hc : HasCompact
     obtain ⟨C, hC⟩ := hg.bounded_above_of_compact_support hc
     refine ⟨max C 0, le_max_right _ _, fun v => ?_⟩
     simpa only [Real.norm_eq_abs] using (hC (r, v)).trans (le_max_left _ _)⟩
-
-@[simp] theorem sliceBorel_apply (g : TimeVelocity d → ℝ) (hg : Continuous g)
-    (hc : HasCompactSupport g) (r : ℝ) (v : PDE.Vec d) : sliceBorel g hg hc r v = g (r, v) :=
-  rfl
 
 /-- Slices of a smooth compactly supported source in `U₀` are smooth compact terminal data. -/
 theorem isSmoothCompactScalarTerminalDatum_slice (g : TimeVelocity d → ℝ)

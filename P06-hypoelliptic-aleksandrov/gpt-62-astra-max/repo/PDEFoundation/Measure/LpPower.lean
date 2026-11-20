@@ -32,18 +32,15 @@ theorem toReal_eLpNorm_ofReal_eq_integral_rpow_norm_rpow_inv
     (eLpNorm f (ENNReal.ofReal p) μ).toReal =
       (∫ x, ‖f x‖ ^ p ∂μ) ^ (1 / p : ℝ) := by
   have hp0 : ENNReal.ofReal p ≠ 0 := by
-    intro hzero
-    exact (not_le_of_gt hp) (ENNReal.ofReal_eq_zero.mp hzero)
-  have hpReal : (ENNReal.ofReal p).toReal = p :=
-    ENNReal.toReal_ofReal hp.le
+    positivity
   rw [hf.eLpNorm_eq_integral_rpow_norm hp0 ENNReal.ofReal_ne_top]
   have hnonneg :
       0 ≤
         (∫ x, ‖f x‖ ^ (ENNReal.ofReal p).toReal ∂μ) ^
           ((ENNReal.ofReal p).toReal)⁻¹ := by
     positivity
-  rw [ENNReal.toReal_ofReal hnonneg, hpReal]
-  simp only [one_div]
+  rw [ENNReal.toReal_ofReal hnonneg, (ENNReal.toReal_ofReal hp.le)]
+  simp
 
 /-- Raising the real `L^p` norm to the exponent recovers the integral of the
 `p`th power. -/
@@ -54,15 +51,8 @@ theorem toReal_eLpNorm_ofReal_rpow_eq_integral_rpow_norm
     (eLpNorm f (ENNReal.ofReal p) μ).toReal ^ p =
       ∫ x, ‖f x‖ ^ p ∂μ := by
   rw [toReal_eLpNorm_ofReal_eq_integral_rpow_norm_rpow_inv hp hf]
-  have hintegralNonneg :
-      0 ≤ ∫ x, ‖f x‖ ^ p ∂μ :=
-    integral_nonneg_of_ae <|
-      Filter.Eventually.of_forall fun x =>
-        Real.rpow_nonneg (norm_nonneg _) _
-  rw [← Real.rpow_mul hintegralNonneg]
-  have hpNe : p ≠ 0 :=
-    hp.ne'
-  rw [show (1 / p : ℝ) * p = 1 by field_simp [hpNe]]
-  simp only [Real.rpow_one]
+  rw [← Real.rpow_mul (integral_nonneg_of_ae <| Filter.Eventually.of_forall fun x => Real.rpow_nonneg (norm_nonneg _) _)]
+  rw [show (1 / p) * p = 1 by field_simp [hp.ne']]
+  simp
 
 end PDE

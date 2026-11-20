@@ -41,7 +41,7 @@ theorem measurable_countable_lookup {X : Type*} [MeasurableSpace X]
     Measurable (fun x => v (I x) x) := by
   have hLookup : Measurable (fun z : ℤ × X => v z.1 z.2) :=
     measurable_from_prod_countable_right hv
-  exact hLookup.comp (hI.prodMk measurable_id)
+  fun_prop
 
 section EvolutionData
 
@@ -86,17 +86,14 @@ theorem measurable_extendedTerminalProbe
   classical
   unfold extendedTerminalProbe
   split_ifs with hF
-  · have hu := (hEx τ F hF).choose_spec.1
-    have hs : IsClosed (evolutionPastClosedCylinder Ω γ τ) :=
-      (isClosed_le continuous_time continuous_const).inter
-        (isClosed_setOf_mem_closure_movingDomain hγ.1)
-    exact hu.2.1.measurable_piecewise continuousOn_const hs.measurableSet
-  · exact measurable_const
+  · exact ((hEx τ F hF).choose_spec.1).2.1.measurable_piecewise continuousOn_const ((isClosed_le continuous_time continuous_const).inter (isClosed_setOf_mem_closure_movingDomain hγ.1)).measurableSet
+  fun_prop
+
+variable (σ τ : ℝ) (j : ℕ) (hστ : σ ≤ τ) (p : EvolutionState Ω γ σ)
+    (F : BoundedBorel (EvolutionAmbientState n))
 
 /-- On a valid earlier source the extension is exactly the terminal integral operator. -/
 theorem extendedTerminalProbe_eq_operator
-    (σ τ : ℝ) (hστ : σ ≤ τ) (p : EvolutionState Ω γ σ)
-    (F : BoundedBorel (EvolutionAmbientState n))
     (hF : IsSmoothCompactTerminalDatum Ω γ τ F) :
     extendedTerminalProbe n Ω γ B b hEx τ F
       ⟨σ, p.1.1, p.1.2⟩ = P₀ σ τ hστ (terminalStateDatum F) p := by
@@ -107,12 +104,10 @@ theorem extendedTerminalProbe_eq_operator
     σ τ hστ p F hF _ (hEx τ F hF).choose_spec.1).symm
 
 /-- The upper-time countable probe approximation is measurable on valid queries. -/
-theorem measurable_upper_terminal_probe
-    (j : ℕ) (F : BoundedBorel (EvolutionAmbientState n)) :
+theorem measurable_upper_terminal_probe :
     Measurable (fun q : EvolutionQuery Ω γ =>
       extendedTerminalProbe n Ω γ B b hEx
-        (terminalTimeMesh j q.1.2.1) F (evolutionQueryPoint q)) := by
-  exact measurable_mesh_query_lookup j
+        (terminalTimeMesh j q.1.2.1) F (evolutionQueryPoint q)) := measurable_mesh_query_lookup j
     (fun k => extendedTerminalProbe n Ω γ B b hEx ((k : ℝ) / ((j : ℝ) + 1)) F)
     (fun k => measurable_extendedTerminalProbe n hn lam Lam m L_b
       hlam hlamLam hm hmLb Ω γ B b hΩ hγ hB_smooth hB_symm hB_ell

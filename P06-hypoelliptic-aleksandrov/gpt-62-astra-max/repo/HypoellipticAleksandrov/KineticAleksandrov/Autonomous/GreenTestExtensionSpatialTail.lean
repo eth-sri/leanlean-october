@@ -27,18 +27,15 @@ theorem reconstructionSpatialBarrier_tail (H : Interval) (T R C : ℝ) (hC : 0 �
     (p : Point) (ht : p.time ≤ T) (hx : R ≤ |p.velocity 0|) :
     C ≤ C * Real.exp (-R) * reconstructionSpatialBarrier (max |H.lo| |H.hi| + 1) T p := by
   have hV : 0 ≤ max |H.lo| |H.hi| + 1 := by positivity
-  have ht' : 1 ≤ Real.exp ((max |H.lo| |H.hi| + 1) * (T - p.time)) :=
+  have ht' :=
     Real.one_le_exp_iff.mpr (mul_nonneg hV (sub_nonneg.mpr ht))
-  have hx' := (Real.exp_le_exp.mpr hx).trans
-    (reconstructionSpatialWeight_exp_abs_le (p.velocity 0))
   have hq : Real.exp R ≤ reconstructionSpatialBarrier (max |H.lo| |H.hi| + 1) T p := by
     unfold reconstructionSpatialBarrier
     exact (by simpa only [one_mul] using
-      mul_le_mul ht' hx' (Real.exp_pos R).le (le_trans zero_le_one ht'))
-  have hmul := mul_le_mul_of_nonneg_left hq (mul_nonneg hC (Real.exp_pos (-R)).le)
+      mul_le_mul ht' ((Real.exp_le_exp.mpr hx).trans (reconstructionSpatialWeight_exp_abs_le (p.velocity 0))) (Real.exp_pos R).le (le_trans zero_le_one ht'))
   have he : Real.exp (-R) * Real.exp R = 1 := by
     rw [← Real.exp_add, neg_add_cancel, Real.exp_zero]
-  simpa only [mul_assoc, he, mul_one] using hmul
+  simpa only [mul_assoc, he, mul_one] using (mul_le_mul_of_nonneg_left hq (mul_nonneg hC (Real.exp_pos (-R)).le))
 
 /-- Every nonnegative scalar multiple remains an actual classical supersolution. -/
 theorem reconstructionSpatialBarrier_scaled_operator {lam Lam : ℝ}
@@ -49,9 +46,6 @@ theorem reconstructionSpatialBarrier_scaled_operator {lam Lam : ℝ}
   rw [← viscousTransportedOperator_zero,
     viscousTransportedOperator_const_mul C (reconstructionSpatialBarrier_regular _ _ p),
     viscousTransportedOperator_zero]
-  have hh := reconstructionSpatialBarrier_operator_le A.a H T p hp
-  have hw : 0 ≤ reconstructionSpatialWeight (p.velocity 0) :=
-    add_nonneg (Real.exp_pos _).le (Real.exp_pos _).le
-  exact mul_nonpos_of_nonneg_of_nonpos hC (hh.trans (neg_nonpos.mpr hw))
+  exact mul_nonpos_of_nonneg_of_nonpos hC ((reconstructionSpatialBarrier_operator_le A.a H T p hp).trans (neg_nonpos.mpr (add_nonneg (Real.exp_pos _).le (Real.exp_pos _).le)))
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

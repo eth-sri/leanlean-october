@@ -21,7 +21,6 @@ variable {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
 /-- A positive bounded source supported strictly in the future gives a continuous literal
 potential on every compact regular collar lying strictly before the source starts. -/
 theorem continuousOn_duhamelFuture_compact_collar
-    (hH : HormanderHypoellipticityStatement)
     (hΩa : IsAdmissibleEvolutionDomain Ω) (hΩ : MeasurableSet Ω) (hγ : Continuous γ)
     (B : FullKineticCoefficient d) (b : PDE.Vec d → PDE.Vec d)
     (S : TerminalOperatorFamily Ω γ) (K : MovingFiberKernel Ω γ)
@@ -57,23 +56,19 @@ theorem continuousOn_duhamelFuture_compact_collar
       (hgb : ∀ p, |g p| ≤ Cg) : ∀ z ∈ U,
       |duhamelPotential K T g (P z)| ≤ (T - a) * Cg := by
     intro z hz
-    have hzT : (P z).time ≤ T := (hUpast hz).1.le.trans hsT
-    exact (abs_duhamelPotential_le K g Cg hCg hgb (P z) T hzT).trans
+    exact (abs_duhamelPotential_le K g Cg hCg hgb (P z) T ((hUpast hz).1.le.trans hsT)).trans
       (mul_le_mul_of_nonneg_right (sub_le_sub_left (hUfloor z hz) T) hCg)
-  have hum : Measurable u := (measurable_duhamelPotential K hΩ hγ T F hF).comp P.measurable
   have hub : ∀ᵐ z ∂μ, |u z| ≤ (T - a) * (M + 2) := by
     apply ae_restrict_of_forall_mem hU.measurableSet
-    intro z hz
-    exact hbound F (M + 2) (by linarith) (fun p => by
-      rw [abs_of_nonneg (hFb p).1]; linarith [(hFb p).2]) z hz
-  have hu : MemLp u 2 μ := MemLp.of_bound hum.aestronglyMeasurable.restrict
-    ((T - a) * (M + 2)) (by simpa only [Real.norm_eq_abs] using hub)
+    grind
+  have hu : MemLp u 2 μ := MemLp.of_bound ((measurable_duhamelPotential K hΩ hγ T F hF).comp P.measurable).aestronglyMeasurable.restrict
+    ((T - a) * (M + 2)) (by exact hub)
   obtain ⟨v, hvc, hve, hidentify⟩ :=
-    exists_continuousRepresentative_identified_by_homogeneous_limits hH B b hB hb
+    exists_continuousRepresentative_identified_by_homogeneous_limits B b hB hb
       lam Lam m hlam hm hell hcoerc U C hU hC hCi hCU u hu hw
   have heq : EqOn u v C := by
     intro z hz
-    let ν : Measure (KineticPoint d) := μ.map P + Measure.dirac (P z)
+    let ν := μ.map P + Measure.dirac (P z)
     have hfloor : ∀ᵐ p ∂ν, a ≤ p.time := by
       apply ae_add_measure_iff.mpr
       refine ⟨?_, ?_⟩
@@ -92,20 +87,18 @@ theorem continuousOn_duhamelFuture_compact_collar
         rw [abs_of_nonneg (hfb n p).1]; exact (hfb n p).2)
     have hfn (n : ℕ) : MemLp (fn n) 2 μ :=
       MemLp.of_bound (hfnm n).aestronglyMeasurable.restrict ((T - a) * (M + 2))
-        (by simpa only [Real.norm_eq_abs] using hfnb n)
+        (by exact hfnb n)
     have hconv := ae_add_measure_iff.mp hlim
-    have hae : ∀ᵐ w ∂μ, Tendsto (fun n => fn n w) atTop (𝓝 (u w)) :=
-      ae_of_ae_map P.measurable.aemeasurable hconv.1
     have hp : Tendsto (fun n => fn n z) atTop (𝓝 (u z)) := by
-      simpa only [ae_dirac_eq, eventually_pure, fn, u, Function.comp_def] using hconv.2
+      simpa [eventually_pure, fn, u] using hconv.2
     have hstrong := tendsto_toLp_two_of_bounded_ae μ fn u hfn hu
       ((T - a) * (M + 2)) (mul_nonneg (sub_nonneg.mpr (has.trans hsT)) (by linarith))
-      hfnb hub hae
+      hfnb hub (ae_of_ae_map P.measurable.aemeasurable hconv.1)
     have hfnc (n : ℕ) : ContinuousOn (fn n) U :=
       (hfc n).comp P.continuous.continuousOn (fun w hw =>
         ⟨(hUpast hw).1.le.trans hsT, subset_closure (hUpast hw).2⟩)
     have hfnw (n : ℕ) := boundedSource_ambientWeak_restrict hUpast B b (fn n) (hfw n)
-    exact hidentify fn hfn hfnc hfnw hstrong z hz hp
+    apply hidentify <;> assumption
   exact (hvc.mono hCU).congr (fun z hz => heq hz)
 
 end HypoellipticAleksandrov.KineticAleksandrov.SectionTwo

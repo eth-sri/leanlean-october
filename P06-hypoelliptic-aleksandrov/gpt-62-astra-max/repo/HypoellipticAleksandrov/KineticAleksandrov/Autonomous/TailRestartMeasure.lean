@@ -15,43 +15,39 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov
 open SectionTwo
 
+variable {lam Lam : ℝ} (H : Interval) (hlam : 0 < lam) (s : ℝ) (hLam : lam ≤ Lam)
+    (A : SmoothAutonomous lam Lam) (c : Clock) (e : Point) (he : e.velocity 0 ∈ c.active) (t : ℝ)
+    (ht : 0 ≤ t)
+
 /-- Put a native terminal state on its physical absolute-time slice. -/
-def activeRestartPoint (H : Interval) (s : ℝ)
+def activeRestartPoint
     (w : EvolutionState (intervalDomain H) (fun _ => 0) s) : Point :=
   ⟨s, w.1.2, w.1.1⟩
 
 /-- Restoring physical coordinates on a fixed time slice is measurable. -/
-theorem measurable_activeRestartPoint (H : Interval) (s : ℝ) :
-    Measurable (activeRestartPoint H s) := by
-  exact (KineticPoint.measurable_equivProd_symm 1).comp
+theorem measurable_activeRestartPoint :
+    Measurable (activeRestartPoint H s) := (KineticPoint.measurable_equivProd_symm 1).comp
     (measurable_const.prodMk
       ((measurable_snd.comp measurable_subtype_coe).prodMk
         (measurable_fst.comp measurable_subtype_coe)))
 
+include hlam hLam A he ht in
 /-- The surviving terminal measure, restored to the source's physical spacetime coordinates. -/
-def activeRestartMeasure
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (e : Point)
-    (he : e.velocity 0 ∈ c.active) (t : ℝ) (ht : 0 ≤ t) : Measure Point :=
-  ((stripEvolution hH hLE hlam hLam A c.activeInterval).2.fiberKernel
+def activeRestartMeasure : Measure Point :=
+  ((stripEvolution hlam hLam A c.activeInterval).2.fiberKernel
     (intervalDomain_measurable c.activeInterval) e.time (e.time + t)
     (le_add_of_nonneg_right ht)
     (stripPoleState c.activeInterval ⊤ ⟨e, WithTop.coe_lt_top _, he⟩)).map
       (activeRestartPoint c.activeInterval (e.time + t))
 
 /-- The mass of the remaining terminal measure is exactly the surviving killed mass. -/
-theorem activeRestartMeasure_mass
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (e : Point)
-    (he : e.velocity 0 ∈ c.active) (t : ℝ) (ht : 0 ≤ t) :
-    activeRestartMeasure hH hLE hlam hLam A c e he t ht univ =
-      ENNReal.ofReal (activeSurvivingMass hH hLE hlam hLam A c e he t ht) := by
-  let E := stripEvolution hH hLE hlam hLam A c.activeInterval
+theorem activeRestartMeasure_mass :
+    activeRestartMeasure hlam hLam A c e he t ht univ =
+      ENNReal.ofReal (activeSurvivingMass hlam hLam A c e he t ht) := by
+  let E := stripEvolution hlam hLam A c.activeInterval
   let z := stripPoleState c.activeInterval ⊤ ⟨e, WithTop.coe_lt_top _, he⟩
   have hmass := stripSurvivingMass_eq_kernel_mass A c.activeInterval E
-    (stripEvolution_spec hH hLE hlam hLam A c.activeInterval)
+    (stripEvolution_spec hlam hLam A c.activeInterval)
     e.time (e.time + t) (le_add_of_nonneg_right ht) z
   change (Measure.map (activeRestartPoint c.activeInterval (e.time + t))
     (E.2.fiberKernel (intervalDomain_measurable c.activeInterval)
@@ -66,17 +62,15 @@ theorem activeRestartMeasure_mass
         ENNReal.one_lt_top).ne).symm
 
 /-- Remaining terminal mass obeys the source uniform exponential decay. -/
-theorem activeRestartMeasure_mass_exp
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam) :
+theorem activeRestartMeasure_mass_exp :
     ∃ C c₀ : ℝ, 0 < C ∧ 0 < c₀ ∧ ∀ (A : SmoothAutonomous lam Lam) (c : Clock)
       (e : Point) (he : e.velocity 0 ∈ c.active) (t : ℝ) (ht : 0 ≤ t),
-      activeRestartMeasure hH hLE hlam hLam A c e he t ht univ ≤
+      activeRestartMeasure hlam hLam A c e he t ht univ ≤
         ENNReal.ofReal (C * Real.exp (-c₀ * t / c.r ^ 2)) := by
-  obtain ⟨C, c₀, hC, hc₀, hb⟩ := active_survival_exp hH hLE hlam hLam
+  obtain ⟨C, c₀, hC, hc₀, hb⟩ := active_survival_exp hlam hLam
   refine ⟨C, c₀, hC, hc₀, ?_⟩
   intro A c e he t ht
   rw [activeRestartMeasure_mass]
-  exact ENNReal.ofReal_le_ofReal (hb A c e he t ht)
+  apply_rules [ENNReal.ofReal_le_ofReal]
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

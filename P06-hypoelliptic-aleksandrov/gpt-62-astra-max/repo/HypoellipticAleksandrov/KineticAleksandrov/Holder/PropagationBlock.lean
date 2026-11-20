@@ -40,22 +40,17 @@ theorem propagation_one_block {d : ℕ} (hd : 1 ≤ d)
       (barrierW d lam Lam H T1 * Real.sqrt h)),
       gaussianBarrier lam Lam H h (barrierL d lam Lam H T1)
         ell tminus sblock x v P ≤ u P := by
-  let R := barrierW d lam Lam H T1 * Real.sqrt h
-  let P₀ : KineticPoint d :=
-    ⟨tminus + sblock + h, x (sblock + h), v (sblock + h)⟩
-  have hR : 0 < R := mul_pos
+  have hR : 0 < (barrierW d lam Lam H T1 * Real.sqrt h) := mul_pos
     (lt_of_lt_of_le (by norm_num) (two_le_barrierW hH)) (Real.sqrt_pos.mpr hh)
   have hQO := (propagation_block_containment hH hT0 hT1 hkx hkv hh hhstar
     tminus sblock TP hsblock hblock hv.continuous hkin hLip).trans htube
-  apply admissible_test_le_of_zero_source hu P₀ hR hQO
+  apply admissible_test_le_of_zero_source hu ⟨tminus + sblock + h, x (sblock + h), v (sblock + h)⟩ hR hQO
     (gaussianBarrier_isSmoothNear hlam hh Lam H (barrierL d lam Lam H T1)
       ell tminus sblock hx hv _)
   · intro P hP
     exact (gaussianBarrier_nonpos_boundary hd hlam hLam hH hT0 hT1 hh hhstar
       hell tminus sblock hv.continuous hkin hLip P hP).trans
       (hnonneg P (hQO (mem_kineticBoundary_iff.mp hP).1))
-  · exact gaussianBarrier_localizedSource_zero hlam hh hR Lam H
-      (barrierL d lam Lam H T1) ell tminus sblock hLam hH hell A hA
-      hx hv hkin hLip u hinit
+  · apply gaussianBarrier_localizedSource_zero <;> assumption
 
 end HypoellipticAleksandrov.KineticAleksandrov.Holder

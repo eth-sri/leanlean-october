@@ -42,7 +42,7 @@ theorem autonomous_fullElliptic {lam Lam : ℝ} (A : SmoothAutonomous lam Lam) :
           (continuous_apply 0 |>.comp continuous_velocity))
     exact hc.measurable
   · intro p
-    exact autonomousCoefficient_symmetric A.a p.time p.position p.velocity
+    apply autonomousCoefficient_symmetric
   · exact Filter.Eventually.of_forall fun p =>
       (autonomousCoefficient_bounds A p.time p.position p.velocity).1
   · exact Filter.Eventually.of_forall fun p =>
@@ -80,16 +80,14 @@ theorem return_patch_double (lam Lam : ℝ) (hlam : 0 < lam) (hLam : lam ≤ Lam
     ext i <;> simp [z', returnDoubleCenter, kineticAffine, samplingCenter] <;> ring
   have hregion : closure (kineticAffine z' (2 * ell) ''
       referenceRegion 1 0 (referenceBound 0)) ⊆ {p | 0 < p.time} := by
-    have hclosed : IsClosed {p : Point | z.time - 12 * ell ^ 2 ≤ p.time} :=
-      isClosed_le continuous_const continuous_time
     have hsub : kineticAffine z' (2 * ell) '' referenceRegion 1 0 (referenceBound 0) ⊆
         {p : Point | z.time - 12 * ell ^ 2 ≤ p.time} := by
       rintro _ ⟨q, hq, rfl⟩
-      have ht : -5 < q.time := by simpa only [Nat.cast_zero, zero_add] using hq.1
+      have ht : -5 < q.time := by simpa using hq.1
       change z.time - 12 * ell ^ 2 ≤ z.time + 8 * ell ^ 2 + (2 * ell) ^ 2 * q.time
       nlinarith [sq_nonneg ell]
     intro q hq
-    have hq' := closure_minimal hsub hclosed hq
+    have hq' := closure_minimal hsub (isClosed_le continuous_const continuous_time) hq
     change z.time - 12 * ell ^ 2 ≤ q.time at hq'
     change 0 < q.time
     linarith

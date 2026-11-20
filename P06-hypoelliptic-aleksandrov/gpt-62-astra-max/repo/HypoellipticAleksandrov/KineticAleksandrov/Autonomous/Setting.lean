@@ -38,35 +38,44 @@ structure Clock where
   positive : 0 < r
   radius : r ≤ (2 / 3 : ℝ) * |vbar|
 
+section
+variable (c : Clock)
+include c
+
 /-- Closed core velocity interval. -/
-def Clock.core (c : Clock) : Set ℝ :=
+def Clock.core : Set ℝ :=
   Set.Icc (c.vbar - c.r / 4) (c.vbar + c.r / 4)
 
 /-- Open entrance velocity interval. -/
-def Clock.entrance (c : Clock) : Set ℝ :=
+def Clock.entrance : Set ℝ :=
   Set.Ioo (c.vbar - c.r / 2) (c.vbar + c.r / 2)
 
 /-- Open active velocity interval. -/
-def Clock.active (c : Clock) : Set ℝ :=
+def Clock.active : Set ℝ :=
   Set.Ioo (c.vbar - 3 * c.r / 4) (c.vbar + 3 * c.r / 4)
+
+end
 
 /-- Normalized active velocity interval. -/
 def normalizedActive : Set ℝ := Set.Ioo (-3 / 4 : ℝ) (3 / 4)
 
+variable (a : ℝ → ℝ → ℝ)
+include a
+
 /-- Lift the scalar autonomous coefficient to the full coefficient carrier. -/
-def autonomousCoefficient (a : ℝ → ℝ → ℝ) : FullKineticCoefficient 1 :=
+def autonomousCoefficient : FullKineticCoefficient 1 :=
   fun _ x v _ _ => a (x 0) (v 0)
 
 /-- Exchange physical position and velocity for the Section Two evolution carrier. -/
-def evolutionCoefficient (a : ℝ → ℝ → ℝ) : FullKineticCoefficient 1 :=
+def evolutionCoefficient : FullKineticCoefficient 1 :=
   fun _ y z _ _ => a (z 0) (y 0)
 
 /-- Source reflection of an autonomous coefficient. -/
-def reflectedAutonomous (a : ℝ → ℝ → ℝ) : ℝ → ℝ → ℝ :=
+def reflectedAutonomous : ℝ → ℝ → ℝ :=
   fun x v => a (-x) v
 
 /-- The scalar forward operator, retaining the kinetic derivative evaluators. -/
-def forwardScalarOperator (a : ℝ → ℝ → ℝ) (u : Point → ℝ) (p : Point) : ℝ :=
+def forwardScalarOperator (u : Point → ℝ) (p : Point) : ℝ :=
   Parabolic.kineticTimeDerivative u p +
     p.velocity 0 * Parabolic.kineticPositionGradient u p 0 +
       a (p.position 0) (p.velocity 0) * Parabolic.kineticVelocityHessian u p 0 0

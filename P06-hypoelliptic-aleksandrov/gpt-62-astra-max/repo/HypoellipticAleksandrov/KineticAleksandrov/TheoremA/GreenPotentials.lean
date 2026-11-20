@@ -16,7 +16,7 @@ open scoped Topology
 variable {d : ℕ}
 
 /-- The Green source integral has the regularity, sign and equation required by abstract ABP. -/
-theorem green_potentials (hH : HormanderHypoellipticityStatement)
+theorem green_potentials
     {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (B : CoefficientField d) (hB : IsSmoothCoefficient B)
     (hBs : IsSymmetricCoefficient B) (hlo : HasLowerEllipticity lam B)
@@ -43,41 +43,31 @@ theorem green_potentials (hH : HormanderHypoellipticityStatement)
   let V := W ∘ sectionTwoPoint
   let F := fun P => ∫ z, g z ∂cylinderGreenMeasure K Z₀ R hR P
   have hg : Continuous g := by
-    have heq : (fun P => g ((KineticPoint.equivProd d).symm
-        ((KineticPoint.homeomorphProd d) P))) = g := by
-      funext P
-      rfl
-    rw [← heq]
     exact hgs.continuous.comp (KineticPoint.homeomorphProd d).continuous
-  have hg₂ : Continuous g₂ := hg.comp (continuous_sectionTwoPoint d)
-  have hgc₂ : HasCompactSupport g₂ := hasCompactSupport_sectionTwoPoint hgc
+  have hg₂ := hg.comp (continuous_sectionTwoPoint d)
+  have hgc₂ := hasCompactSupport_sectionTwoPoint hgc
   have hgs₂ := contDiff_sectionTwoPoint_source hgs
   have hg₂0 : ∀ P, 0 ≤ g₂ P := fun P => hg0 _
   have hgU : tsupport g₂ ⊆ evolutionPastOpenCylinder (wholeSpace d) (fun _ => 0) T := by
     intro P hP
-    have hp := hgQ ((tsupport_comp_subset_preimage g (continuous_sectionTwoPoint d)) hP)
-    have ht := ((mem_forwardCylinder_iff _ _ _ hR).1 hp).2.1
+    have ht := ((mem_forwardCylinder_iff _ _ _ hR).1 (hgQ ((tsupport_comp_subset_preimage g (continuous_sectionTwoPoint d)) hP))).2.1
     exact ⟨ht, by simp [movingDomain_wholeSpace]⟩
-  have hcoeff : IsSectionTwoCoefficient lam Lam B :=
-    ⟨hlam, hLam, isSmoothFullKineticCoefficient_zIndependent hB, hBs, hlo, hhi⟩
-  obtain ⟨hfull, hsym, hell⟩ := sectionTwoCoefficient_fullBounds lam Lam B hcoeff
-  have hW := duhamelPotential_contDiffOn hH (wholeSpace_admissible d)
+  obtain ⟨hfull, hsym, hell⟩ := sectionTwoCoefficient_fullBounds lam Lam B ⟨hlam, hLam, isSmoothFullKineticCoefficient_zIndependent hB, hBs, hlo, hhi⟩
+  have hW := duhamelPotential_contDiffOn (wholeSpace_admissible d)
     MeasurableSet.univ continuous_const (zIndependentCoefficient B) (identityDrift d)
     S K hreal hfull hsym (identityDrift_smooth d) g₂ hg₂0 hg₂ hgc₂ hgs₂ T hgU
-    hlam (by norm_num : (0 : ℝ) < 1) hell (identityDrift_bounds d).2
-  have hEQ := duhamelPotential_source_equation hH (wholeSpace_admissible d)
+    hlam (by norm_num) hell (identityDrift_bounds d).2
+  have hEQ := duhamelPotential_source_equation (wholeSpace_admissible d)
     MeasurableSet.univ continuous_const (zIndependentCoefficient B) (identityDrift d)
     S K hreal hfull hsym (identityDrift_smooth d) g₂ hg₂0 hg₂ hgc₂ hgs₂ T hgU
-    hlam (by norm_num : (0 : ℝ) < 1) hell (identityDrift_bounds d).2
-  have heq : ∀ P, P.time < T → F P = V P :=
+    hlam (by norm_num) hell (identityDrift_bounds d).2
+  have heq :=
     fun P hP => integral_cylinderGreenMeasure K Z₀ R hR g hg0 hg hgc hgQ P hP
-  have hQ := isOpen_forwardCylinder Z₀ R hR
   have hQt : ∀ P ∈ forwardCylinder Z₀ R hR, P.time < T :=
     fun P hP => ((mem_forwardCylinder_iff _ _ _ hR).1 hP).2.1
-  let swap : EvolutionVec d → EvolutionVec d := fun x =>
+  let swap := fun x =>
     packPoint (timeCoord d x) (transportedCoord d x) (diffusedCoord d x)
-  have hswap : ContDiff ℝ (⊤ : ℕ∞) swap := by
-    exact (evolutionProdCLE d).symm.contDiff.comp
+  have hswap : ContDiff ℝ (⊤ : ℕ∞) swap := (evolutionProdCLE d).symm.contDiff.comp
       ((Evolution.timeCoord d).contDiff.prodMk
         ((transportedCoord d).contDiff.prodMk (diffusedCoord d).contDiff))
   have hmap : MapsTo swap (evolutionHomeomorph d ⁻¹' forwardCylinder Z₀ R hR)
@@ -93,8 +83,7 @@ theorem green_potentials (hH : HormanderHypoellipticityStatement)
     simp only [V, W, swap, Function.comp_apply, evolutionHomeomorph_apply,
       timeCoord_packPoint, diffusedCoord_packPoint, transportedCoord_packPoint]
     rfl
-  have hF := hV.congr (fun x hx => heq _ (hQt _ hx))
-  refine ⟨isKineticC112On_of_contDiffOn hQ hF, ?_, ?_⟩
+  refine ⟨isKineticC112On_of_contDiffOn (isOpen_forwardCylinder Z₀ R hR) (hV.congr (fun x hx => heq _ (hQt _ hx))), ?_, ?_⟩
   · intro P hP
     exact integral_nonneg hg0
   · intro P hP
@@ -105,9 +94,7 @@ theorem green_potentials (hH : HormanderHypoellipticityStatement)
     rw [forwardKineticOperator_eq_of_eventuallyEq _ hn,
       forwardKineticOperator_eq_lop_identity]
     have hw : V ∘ sectionTwoPoint = W := by
-      funext q
       rfl
-    rw [hw]
     exact hEQ _ ⟨hQt P hP, by simp [movingDomain_wholeSpace]⟩
 
 end HypoellipticAleksandrov.KineticAleksandrov.TheoremA

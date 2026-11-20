@@ -32,8 +32,11 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Decay
 variable {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E] [FiniteDimensional ℝ E]
   [MeasurableSpace E] [BorelSpace E]
 
+section
+variable {μ ν : Measure E}
+
 /-- Compact sets inside an open set carrying the test *inequality* are dominated. -/
-theorem measure_compact_le_of_smooth_le {μ ν : Measure E} [IsFiniteMeasure μ]
+theorem measure_compact_le_of_smooth_le [IsFiniteMeasure μ]
     [IsFiniteMeasure ν] {U : Set E}
     (h : ∀ φ : E → ℝ, ContDiff ℝ (⊤ : ℕ∞) φ → HasCompactSupport φ → tsupport φ ⊆ U →
       (∀ x, 0 ≤ φ x ∧ φ x ≤ 1) → ∫ x, φ x ∂μ ≤ ∫ x, φ x ∂ν)
@@ -41,36 +44,35 @@ theorem measure_compact_le_of_smooth_le {μ ν : Measure E} [IsFiniteMeasure μ]
     μ C ≤ ν V := by
   obtain ⟨φ, hφ, hφc, hφV, hφr, hφ1⟩ :=
     SectionTwo.exists_smooth_cutoff hC hV hCV
-  have hcont : Continuous φ := hφ.continuous
   have hint : ∀ (m : Measure E) [IsFiniteMeasure m], Integrable φ m := fun m _ =>
-    hcont.integrable_of_hasCompactSupport hφc
+    (hφ.continuous).integrable_of_hasCompactSupport hφc
   have h1 : μ.real C ≤ ∫ x, φ x ∂μ := by
-    calc μ.real C = ∫ x, C.indicator (1 : E → ℝ) x ∂μ := by
+    calc μ.real C = ∫ x, C.indicator 1 x ∂μ := by
           rw [integral_indicator_one hC.measurableSet]
       _ ≤ ∫ x, φ x ∂μ := by
-          refine integral_mono ((integrable_const (1 : ℝ)).indicator hC.measurableSet)
+          refine integral_mono ((integrable_const 1).indicator hC.measurableSet)
             (hint μ) ?_
           intro x
           by_cases hx : x ∈ C
-          · simp [hx, hφ1 x hx]
-          · simpa [hx] using (hφr x).1
+          · aesop
+          simp_all
   have h2 : ∫ x, φ x ∂ν ≤ ν.real V := by
-    calc ∫ x, φ x ∂ν ≤ ∫ x, V.indicator (1 : E → ℝ) x ∂ν := by
+    calc ∫ x, φ x ∂ν ≤ ∫ x, V.indicator 1 x ∂ν := by
           refine integral_mono (hint ν)
-            ((integrable_const (1 : ℝ)).indicator hV.measurableSet) ?_
+            ((integrable_const 1).indicator hV.measurableSet) ?_
           intro x
           by_cases hx : x ∈ V
-          · simpa [hx] using (hφr x).2
+          · simp_all
           · have : φ x = 0 := by
               by_contra hne
               exact hx (hφV (subset_tsupport φ hne))
             simp [hx, this]
       _ = ν.real V := by rw [integral_indicator_one hV.measurableSet]
-  have h3 : μ.real C ≤ ν.real V := h1.trans ((h φ hφ hφc (hφV.trans hVU) hφr).trans h2)
+  have h3 := h1.trans ((h φ hφ hφc (hφV.trans hVU) hφr).trans h2)
   exact (ENNReal.toReal_le_toReal (measure_ne_top _ _) (measure_ne_top _ _)).mp h3
 
 /-- Open sets inside `U` are dominated, by inner regularity of finite Borel measures. -/
-theorem measure_open_le_of_smooth_le {μ ν : Measure E} [IsFiniteMeasure μ]
+theorem measure_open_le_of_smooth_le [IsFiniteMeasure μ]
     [IsFiniteMeasure ν] {U : Set E}
     (h : ∀ φ : E → ℝ, ContDiff ℝ (⊤ : ℕ∞) φ → HasCompactSupport φ → tsupport φ ⊆ U →
       (∀ x, 0 ≤ φ x ∧ φ x ≤ 1) → ∫ x, φ x ∂μ ≤ ∫ x, φ x ∂ν)
@@ -81,7 +83,7 @@ theorem measure_open_le_of_smooth_le {μ ν : Measure E} [IsFiniteMeasure μ]
 
 /-- Finite Borel measures with `μ Uᶜ = 0` that satisfy the smooth-test inequality for tests
 supported in the open set `U` are ordered: `μ ≤ ν`.  Only `μ` needs to vanish off `U`. -/
-theorem measure_le_of_smooth_integral_le {μ ν : Measure E} [IsFiniteMeasure μ]
+theorem measure_le_of_smooth_integral_le [IsFiniteMeasure μ]
     [IsFiniteMeasure ν] {U : Set E} (hU : IsOpen U) (hμ : μ Uᶜ = 0)
     (h : ∀ φ : E → ℝ, ContDiff ℝ (⊤ : ℕ∞) φ → HasCompactSupport φ → tsupport φ ⊆ U →
       (∀ x, 0 ≤ φ x ∧ φ x ≤ 1) → ∫ x, φ x ∂μ ≤ ∫ x, φ x ∂ν) :
@@ -89,9 +91,7 @@ theorem measure_le_of_smooth_integral_le {μ ν : Measure E} [IsFiniteMeasure μ
   have hopen : ∀ O : Set E, μ O ≤ μ (O ∩ U) := by
     intro O
     calc μ O ≤ μ ((O ∩ U) ∪ Uᶜ) := measure_mono (fun x hx => by
-          by_cases hxU : x ∈ U
-          · exact Or.inl ⟨hx, hxU⟩
-          · exact Or.inr hxU)
+          grind)
       _ ≤ μ (O ∩ U) + μ Uᶜ := measure_union_le _ _
       _ = μ (O ∩ U) := by rw [hμ, add_zero]
   have hopenle : ∀ O : Set E, IsOpen O → μ O ≤ ν O := fun O hO =>
@@ -102,6 +102,8 @@ theorem measure_le_of_smooth_integral_le {μ ν : Measure E} [IsFiniteMeasure μ
   refine le_iInf₂ fun O hAO => ?_
   exact le_iInf fun hO => (measure_mono hAO).trans (hopenle O hO)
 
+end
+
 /-- A finite Borel measure all of whose smooth `[0,1]`-valued tests supported in the open
 set `U` integrate to zero gives no mass to `U`. -/
 theorem measure_eq_zero_of_smooth_integral_eq_zero {μ : Measure E} [IsFiniteMeasure μ]
@@ -111,8 +113,7 @@ theorem measure_eq_zero_of_smooth_integral_eq_zero {μ : Measure E} [IsFiniteMea
     μ U = 0 := by
   have hle : ∀ φ : E → ℝ, ContDiff ℝ (⊤ : ℕ∞) φ → HasCompactSupport φ → tsupport φ ⊆ U →
       (∀ x, 0 ≤ φ x ∧ φ x ≤ 1) → ∫ x, φ x ∂μ ≤ ∫ x, φ x ∂(0 : Measure E) := by
-    intro φ a b c d
-    simp [h φ a b c d]
+    aesop
   have := measure_open_le_of_smooth_le hle hU subset_rfl
   simpa using this
 
@@ -125,8 +126,6 @@ theorem measure_eq_zero_of_smooth_integral_eq_zero_of_support {μ : Measure E}
     μ F = 0 := by
   have h0 := measure_eq_zero_of_smooth_integral_eq_zero (hF.inter hD) h
   refine measure_mono_null (fun x hx => ?_) (measure_union_null h0 hμ)
-  by_cases hxD : x ∈ D
-  · exact Or.inl ⟨hx, hxD⟩
-  · exact Or.inr hxD
+  grind
 
 end HypoellipticAleksandrov.KineticAleksandrov.Decay
