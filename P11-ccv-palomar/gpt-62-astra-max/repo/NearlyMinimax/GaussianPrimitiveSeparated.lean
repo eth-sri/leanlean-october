@@ -16,56 +16,58 @@ namespace NearlyMinimax
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 500000
 
-abbrev GaussianPrimitiveIndex (d : ℕ) := (Fin d × Fin d) × (Bool × Bool) × Bool
-abbrev GaussianPrimitiveMark (d : ℕ) := Covariate d × GaussianPrimitiveIndex d
+section
+variable (d : ℕ)
 
-def gaussianPrimitiveMeasure (d : ℕ) : Measure (GaussianPrimitiveMark d) :=
+abbrev GaussianPrimitiveIndex := (Fin d × Fin d) × (Bool × Bool) × Bool
+abbrev GaussianPrimitiveMark := Covariate d × GaussianPrimitiveIndex d
+
+def gaussianPrimitiveMeasure : Measure (GaussianPrimitiveMark d) :=
   (standardGaussianPi d).prod Measure.count
 
-def gaussianTrig {d : ℕ} (lam t : ℝ) (Z x : Covariate d) (s : Bool) : ℝ :=
+end
+
+section
+variable {d : ℕ} (lam t : ℝ) (e : GaussianPrimitiveMark d) (Z x y : Covariate d) (β β' : Fin d →₀ ℕ)
+
+def gaussianTrig (s : Bool) : ℝ :=
   if s then Real.sin (gaussianPhase (fun l => Real.sqrt (2 * lam * t) * x l) Z)
   else Real.cos (gaussianPhase (fun l => Real.sqrt (2 * lam * t) * x l) Z)
 
-theorem gaussianTrig_abs_le_one {d : ℕ} (lam t : ℝ) (Z x : Covariate d) (s : Bool) :
+theorem gaussianTrig_abs_le_one (s : Bool) :
     |gaussianTrig lam t Z x s| ≤ 1 := by
   cases s <;> simp only [gaussianTrig, Bool.false_eq_true, ite_false, ite_true]
   · exact abs_le.mpr ⟨Real.neg_one_le_cos _, Real.cos_le_one _⟩
   · exact abs_le.mpr ⟨Real.neg_one_le_sin _, Real.sin_le_one _⟩
 
-theorem gaussianTrig_cos_difference {d : ℕ} (lam t : ℝ) (Z x y : Covariate d) :
+theorem gaussianTrig_cos_difference :
     Real.cos (gaussianPhase (gaussianSpatialFrequency lam t x y) Z) =
-      ∑ s : Bool, gaussianTrig lam t Z x s * gaussianTrig lam t Z y s := by
+      ∑ s, gaussianTrig lam t Z x s * gaussianTrig lam t Z y s := by
   have he : gaussianPhase (gaussianSpatialFrequency lam t x y) Z =
       gaussianPhase (fun l => Real.sqrt (2 * lam * t) * y l) Z -
       gaussianPhase (fun l => Real.sqrt (2 * lam * t) * x l) Z := by
-    simp only [gaussianPhase, gaussianSpatialFrequency, Finset.sum_sub_distrib]
+    simp [gaussianPhase, gaussianSpatialFrequency]
     rw [← Finset.sum_sub_distrib]
     apply Finset.sum_congr rfl
     intro l hl
     ring
   rw [he, Real.cos_sub]
-  simp only [Fintype.sum_bool, gaussianTrig, Bool.false_eq_true, ite_false, ite_true]
-  ring
+  simp [gaussianTrig] <;> ring
 
-def gaussianAffinePolynomial {d : ℕ} (a : Fin d) (s : Bool) : MvPolynomial (Fin d) ℝ :=
+def gaussianAffinePolynomial (a : Fin d) (s : Bool) : MvPolynomial (Fin d) ℝ :=
   if s then C (-8) * X a else C 2
 
-def gaussianAffineFactor {d : ℕ} (a : Fin d) (s : Bool) (y : Covariate d) : ℝ :=
+def gaussianAffineFactor (a : Fin d) (s : Bool) (y : Covariate d) : ℝ :=
   if s then 1 else y a / 2
 
-theorem gaussianAffineFactor_abs_le_one {d : ℕ} (a : Fin d) (s : Bool) (y : Covariate d)
+theorem gaussianAffineFactor_abs_le_one {a : Fin d} (s : Bool) {y : Covariate d}
     (hy : |y a| ≤ 2) : |gaussianAffineFactor a s y| ≤ 1 := by
-  cases s
-  · simp only [gaussianAffineFactor, Bool.false_eq_true, ite_false, abs_div,
-      abs_of_pos (by norm_num : (0 : ℝ) < 2)]
-    exact (div_le_iff₀ (by norm_num : (0 : ℝ) < 2)).mpr (by simpa using hy)
-  · simp [gaussianAffineFactor]
+  grind [gaussianAffineFactor]
 
-theorem spatialCardinalAffine_gaussian_expansion {d : ℕ} (x y : Covariate d) :
+theorem spatialCardinalAffine_gaussian_expansion :
     spatialCardinalAffine x y =
-      ∑ a : Fin d, C (y a - x a) *
-        ∑ s : Bool, C (gaussianAffineFactor a s y) * gaussianAffinePolynomial a s := by
-  unfold spatialCardinalAffine
+      ∑ a, C (y a - x a) *
+        ∑ s, C (gaussianAffineFactor a s y) * gaussianAffinePolynomial a s := by
   apply Finset.sum_congr rfl
   intro a ha
   simp only [Fintype.sum_bool, gaussianAffineFactor, gaussianAffinePolynomial,
@@ -74,111 +76,104 @@ theorem spatialCardinalAffine_gaussian_expansion {d : ℕ} (x y : Covariate d) :
   have hy : y a / 2 * 2 = y a := by ring
   rw [hy]
   simp only [C_1, one_mul]
-  simp only [map_mul, map_neg]
+  simp
   ring
 
-theorem spatialCardinalAffine_gaussian_coeff {d : ℕ} (x y : Covariate d) (β : Fin d →₀ ℕ) :
+theorem spatialCardinalAffine_gaussian_coeff :
     (spatialCardinalAffine x y).coeff β =
-      ∑ a : Fin d, (y a - x a) *
-        ∑ s : Bool, gaussianAffineFactor a s y * (gaussianAffinePolynomial a s).coeff β := by
+      ∑ a, (y a - x a) *
+        ∑ s, gaussianAffineFactor a s y * (gaussianAffinePolynomial a s).coeff β := by
   rw [spatialCardinalAffine_gaussian_expansion]
   simp only [coeff_sum, coeff_C_mul]
 
-def gaussianPrimitiveLeft {d : ℕ} (lam t : ℝ) (e : GaussianPrimitiveMark d) (x : Covariate d) : ℝ :=
+def gaussianPrimitiveLeft : ℝ :=
   gaussianTrig lam t e.1 x e.2.2.2
 
-def gaussianPrimitiveRight {d : ℕ} (lam t : ℝ) (e : GaussianPrimitiveMark d) (y : Covariate d) : ℝ :=
+def gaussianPrimitiveRight : ℝ :=
   gaussianTrig lam t e.1 y e.2.2.2 *
     gaussianAffineFactor e.2.1.1 e.2.2.1.1 y * gaussianAffineFactor e.2.1.2 e.2.2.1.2 y
 
-def gaussianPrimitiveAmplitude {d : ℕ} (lam : ℝ) (e : GaussianPrimitiveMark d)
-    (β β' : Fin d →₀ ℕ) : ℝ :=
+def gaussianPrimitiveAmplitude : ℝ :=
   lam / 2 * gaussianHermite e.2.1.1 e.2.1.2 e.1 *
     (gaussianAffinePolynomial e.2.1.1 e.2.2.1.1).coeff β *
       (gaussianAffinePolynomial e.2.1.2 e.2.2.1.2).coeff β'
 
-theorem gaussianPrimitiveLeft_bound {d : ℕ} (lam t : ℝ) (e : GaussianPrimitiveMark d) (x : Covariate d) :
-    |gaussianPrimitiveLeft lam t e x| ≤ 1 := gaussianTrig_abs_le_one _ _ _ _ _
-
-theorem gaussianPrimitiveRight_bound {d : ℕ} (lam t : ℝ) (e : GaussianPrimitiveMark d)
-    (y : Covariate d) (hy : ∀ a, |y a| ≤ 2) : |gaussianPrimitiveRight lam t e y| ≤ 1 := by
+theorem gaussianPrimitiveRight_bound
+    {y : Covariate d} (hy : ∀ a, |y a| ≤ 2) : |gaussianPrimitiveRight lam t e y| ≤ 1 := by
   unfold gaussianPrimitiveRight
   rw [abs_mul, abs_mul]
-  have h1 := gaussianTrig_abs_le_one lam t e.1 y e.2.2.2
-  have h2 := gaussianAffineFactor_abs_le_one e.2.1.1 e.2.2.1.1 y (hy _)
-  have h3 := gaussianAffineFactor_abs_le_one e.2.1.2 e.2.2.1.2 y (hy _)
-  exact (mul_le_mul (mul_le_mul h1 h2 (abs_nonneg _) (by norm_num)) h3
-    (abs_nonneg _) (by norm_num)).trans_eq (by ring)
+  bound [gaussianTrig_abs_le_one lam t e.1 y e.2.2.2, gaussianAffineFactor_abs_le_one (a := e.2.1.1) e.2.2.1.1 (hy _), gaussianAffineFactor_abs_le_one (a := e.2.1.2) e.2.2.1.2 (hy _)]
 
-theorem gaussianPrimitiveLeft_measurable {d : ℕ} (lam t : ℝ) (x : Covariate d) :
-    Measurable (fun e : GaussianPrimitiveMark d => gaussianPrimitiveLeft lam t e x) := by
+end
+
+variable {d : ℕ} (lam t : ℝ) (x y : Covariate d) (β β' : Fin d →₀ ℕ)
+
+theorem gaussianPrimitiveLeft_measurable :
+    Measurable (fun e => gaussianPrimitiveLeft lam t e x) := by
   apply measurable_from_prod_countable_left
   intro h
-  change Measurable (fun Z : Covariate d => gaussianTrig lam t Z x h.2.2)
-  cases h.2.2 <;> simp only [gaussianTrig, Bool.false_eq_true, ite_false, ite_true] <;>
+  change Measurable (fun Z => gaussianTrig lam t Z x h.2.2)
+  cases h.2.2 <;> simp [gaussianTrig] <;>
     unfold gaussianPhase <;> fun_prop
 
-theorem gaussianPrimitiveRight_measurable {d : ℕ} (lam t : ℝ) (y : Covariate d) :
-    Measurable (fun e : GaussianPrimitiveMark d => gaussianPrimitiveRight lam t e y) := by
+theorem gaussianPrimitiveRight_measurable :
+    Measurable (fun e => gaussianPrimitiveRight lam t e y) := by
   apply measurable_from_prod_countable_left
   intro h
   unfold gaussianPrimitiveRight
-  dsimp only
-  have hm : Measurable (fun Z : Covariate d => gaussianTrig lam t Z y h.2.2) := by
-    cases h.2.2 <;> simp only [gaussianTrig, Bool.false_eq_true, ite_false, ite_true] <;>
+  dsimp
+  have hm : Measurable (fun Z => gaussianTrig lam t Z y h.2.2) := by
+    cases h.2.2 <;> simp [gaussianTrig] <;>
       unfold gaussianPhase <;> fun_prop
-  exact (hm.mul_const _).mul_const _
+  fun_prop
 
-theorem gaussianPrimitiveAmplitude_measurable {d : ℕ} (lam : ℝ) (β β' : Fin d →₀ ℕ) :
-    Measurable (fun e : GaussianPrimitiveMark d => gaussianPrimitiveAmplitude lam e β β') := by
+theorem gaussianPrimitiveAmplitude_measurable :
+    Measurable (fun e => gaussianPrimitiveAmplitude lam e β β') := by
   apply measurable_from_prod_countable_left
   intro h
   unfold gaussianPrimitiveAmplitude
-  dsimp only
-  have hm : Measurable (fun Z : Covariate d => gaussianHermite h.1.1 h.1.2 Z) :=
+  dsimp
+  have hm : Measurable (fun Z => gaussianHermite h.1.1 h.1.2 Z) :=
     measurable_const.sub ((measurable_pi_apply _).mul (measurable_pi_apply _))
-  exact ((hm.const_mul _).mul_const _).mul_const _
+  fun_prop
 
-theorem gaussianPrimitiveAmplitude_slice_integrable {d : ℕ} (lam : ℝ)
-    (β β' : Fin d →₀ ℕ) (h : GaussianPrimitiveIndex d) :
+theorem gaussianPrimitiveAmplitude_slice_integrable (h : GaussianPrimitiveIndex d) :
     Integrable (fun Z => gaussianPrimitiveAmplitude lam (Z, h) β β') (standardGaussianPi d) := by
   change Integrable (fun Z => lam / 2 * gaussianHermite h.1.1 h.1.2 Z *
     (gaussianAffinePolynomial h.1.1 h.2.1.1).coeff β *
     (gaussianAffinePolynomial h.1.2 h.2.1.2).coeff β') (standardGaussianPi d)
   exact (((gaussianHermite_integrable h.1.1 h.1.2).const_mul _).mul_const _).mul_const _
 
-theorem gaussianPrimitiveAmplitude_integrable {d : ℕ} (lam : ℝ) (β β' : Fin d →₀ ℕ) :
-    Integrable (fun e : GaussianPrimitiveMark d => gaussianPrimitiveAmplitude lam e β β')
+theorem gaussianPrimitiveAmplitude_integrable :
+    Integrable (fun e => gaussianPrimitiveAmplitude lam e β β')
       (gaussianPrimitiveMeasure d) :=
-  joint_finite_integrable _ _
+  joint_finite_integrable
     (fun h => (gaussianPrimitiveAmplitude_measurable lam β β').comp
       (measurable_id.prodMk measurable_const))
     (gaussianPrimitiveAmplitude_slice_integrable lam β β')
 
 theorem finite_injective_indicator_sum_le_one {I X : Type*} [Fintype I] [DecidableEq X]
-    (f : I → X) (hf : Function.Injective f) (x : X) :
+    {f : I → X} (hf : Function.Injective f) (x : X) :
     (∑ i, if x = f i then (1 : ℝ) else 0) ≤ 1 := by
   classical
   by_cases hx : ∃ i, f i = x
   · obtain ⟨i, hi⟩ := hx
-    have he (j : I) : x = f j ↔ j = i := by
-      rw [← hi]
-      exact ⟨fun h => (hf h).symm, fun h => by rw [h]⟩
+    have he j : x = f j ↔ j = i := by
+      aesop
     simp_rw [he]
     simp
-  · have he (j : I) : x ≠ f j := by intro h; exact hx ⟨j, h.symm⟩
-    simp only [ite_eq_right (he _), Finset.sum_const_zero]
-    norm_num
+  · have he j : x ≠ f j := by bound
+    simp_all
 
-theorem gaussianPrimitive_finite_action {d : ℕ} (lam t : ℝ) (x y Z : Covariate d)
+theorem gaussianPrimitive_finite_action (Z : Covariate d)
     (β β' : Fin d →₀ ℕ) :
-    (∑ h : GaussianPrimitiveIndex d,
+    (∑ h,
       gaussianPrimitiveLeft lam t (Z, h) x * gaussianPrimitiveRight lam t (Z, h) y *
         gaussianPrimitiveAmplitude lam (Z, h) β β') =
-      lam / 2 * ∑ a : Fin d, ∑ b : Fin d,
+      lam / 2 * ∑ a, ∑ b,
         gaussianHermite a b Z *
-          (∑ s : Bool, gaussianAffineFactor a s y * (gaussianAffinePolynomial a s).coeff β) *
-          (∑ s : Bool, gaussianAffineFactor b s y * (gaussianAffinePolynomial b s).coeff β') *
+          (∑ s, gaussianAffineFactor a s y * (gaussianAffinePolynomial a s).coeff β) *
+          (∑ s, gaussianAffineFactor b s y * (gaussianAffinePolynomial b s).coeff β') *
           Real.cos (gaussianPhase (gaussianSpatialFrequency lam t x y) Z) := by
   classical
   simp only [Fintype.sum_prod_type]
@@ -188,8 +183,8 @@ theorem gaussianPrimitive_finite_action {d : ℕ} (lam t : ℝ) (x y Z : Covaria
   rw [Finset.mul_sum]
   apply Finset.sum_congr rfl
   intro b hb
-  have hphase (s s' : Bool) :
-      (∑ p : Bool, gaussianPrimitiveLeft lam t (Z, ((a, b), ((s, s'), p))) x *
+  have hphase s s' :
+      (∑ p, gaussianPrimitiveLeft lam t (Z, ((a, b), ((s, s'), p))) x *
         gaussianPrimitiveRight lam t (Z, ((a, b), ((s, s'), p))) y *
           gaussianPrimitiveAmplitude lam (Z, ((a, b), ((s, s'), p))) β β') =
       (lam / 2 * gaussianHermite a b Z * Real.cos
@@ -197,139 +192,100 @@ theorem gaussianPrimitive_finite_action {d : ℕ} (lam t : ℝ) (x y Z : Covaria
           (gaussianAffineFactor a s y * (gaussianAffinePolynomial a s).coeff β) *
           (gaussianAffineFactor b s' y * (gaussianAffinePolynomial b s').coeff β') := by
     rw [gaussianTrig_cos_difference]
-    simp only [Finset.mul_sum, Finset.sum_mul]
-    apply Finset.sum_congr rfl
-    intro p hp
-    unfold gaussianPrimitiveLeft gaussianPrimitiveRight gaussianPrimitiveAmplitude
-    dsimp only
-    ring
+    simp [gaussianPrimitiveLeft, gaussianPrimitiveRight, gaussianPrimitiveAmplitude] <;> ring
   simp_rw [hphase]
-  have he := Fintype.sum_mul_sum
-    (fun s : Bool => gaussianAffineFactor a s y * (gaussianAffinePolynomial a s).coeff β)
-    (fun s' : Bool => gaussianAffineFactor b s' y * (gaussianAffinePolynomial b s').coeff β')
-  calc
-    _ = (lam / 2 * gaussianHermite a b Z * Real.cos
-        (gaussianPhase (gaussianSpatialFrequency lam t x y) Z)) *
-        (∑ s : Bool, ∑ s' : Bool,
-          (gaussianAffineFactor a s y * (gaussianAffinePolynomial a s).coeff β) *
-          (gaussianAffineFactor b s' y * (gaussianAffinePolynomial b s').coeff β')) := by
-      simp only [Finset.mul_sum]
-      apply Finset.sum_congr rfl
-      intro s hs
-      apply Finset.sum_congr rfl
-      intro s' hs'
-      ring
-    _ = _ := by rw [← he]; ring
+  simp <;> ring
 
-theorem gaussianPrimitive_observable_integrable {d : ℕ} (lam t : ℝ) (x y : Covariate d)
-    (β β' : Fin d →₀ ℕ) :
-    Integrable (fun e : GaussianPrimitiveMark d => gaussianPrimitiveLeft lam t e x *
+theorem gaussianPrimitive_observable_integrable :
+    Integrable (fun e => gaussianPrimitiveLeft lam t e x *
       gaussianPrimitiveRight lam t e y * gaussianPrimitiveAmplitude lam e β β')
       (gaussianPrimitiveMeasure d) := by
   let L := ∑ h : GaussianPrimitiveIndex d,
     |gaussianAffineFactor h.1.1 h.2.1.1 y * gaussianAffineFactor h.1.2 h.2.1.2 y|
-  have hm : Measurable (fun e : GaussianPrimitiveMark d =>
+  have hm : Measurable (fun e =>
       gaussianPrimitiveLeft lam t e x * gaussianPrimitiveRight lam t e y) :=
-    (gaussianPrimitiveLeft_measurable lam t x).mul (gaussianPrimitiveRight_measurable lam t y)
-  have hb (e : GaussianPrimitiveMark d) :
+    (gaussianPrimitiveLeft_measurable lam t x).mul (gaussianPrimitiveRight_measurable ..)
+  have hb e :
       ‖gaussianPrimitiveLeft lam t e x * gaussianPrimitiveRight lam t e y‖ ≤ L := by
     unfold gaussianPrimitiveLeft gaussianPrimitiveRight
     rw [Real.norm_eq_abs, abs_mul, abs_mul, abs_mul]
     have htrig := mul_le_mul (gaussianTrig_abs_le_one lam t e.1 x e.2.2.2)
       (gaussianTrig_abs_le_one lam t e.1 y e.2.2.2) (abs_nonneg _) (by norm_num)
-    have hl : |gaussianAffineFactor e.2.1.1 e.2.2.1.1 y| *
+    let affineFactor := gaussianAffineFactor e.2.1.1 e.2.2.1.1 y
+    have hl : |affineFactor| *
         |gaussianAffineFactor e.2.1.2 e.2.2.1.2 y| ≤ L := by
-      dsimp [L]
       rw [← abs_mul]
       exact Finset.single_le_sum (fun h _ => abs_nonneg
         (gaussianAffineFactor h.1.1 h.2.1.1 y * gaussianAffineFactor h.1.2 h.2.1.2 y))
         (Finset.mem_univ e.2)
     calc
       _ = (|gaussianTrig lam t e.1 x e.2.2.2| * |gaussianTrig lam t e.1 y e.2.2.2|) *
-          (|gaussianAffineFactor e.2.1.1 e.2.2.1.1 y| * |gaussianAffineFactor e.2.1.2 e.2.2.1.2 y|) := by ring
-      _ ≤ _ := (mul_le_mul_of_nonneg_right htrig (mul_nonneg (abs_nonneg _) (abs_nonneg _))).trans
+          (|affineFactor| * |gaussianAffineFactor e.2.1.2 e.2.2.1.2 y|) := by ring
+      _ ≤ _ := (mul_le_mul_of_nonneg_right htrig (by positivity)).trans
         (by simpa using hl)
-  have hi := (gaussianPrimitiveAmplitude_integrable lam β β').mul_bdd hm.aestronglyMeasurable
-    (Filter.Eventually.of_forall hb)
-  convert hi using 1
+  convert ((gaussianPrimitiveAmplitude_integrable lam β β').mul_bdd hm.aestronglyMeasurable (Filter.Eventually.of_forall hb)) using 1
   funext e
   ring
 
-theorem gaussianAffine_coefficient_bilinear {d : ℕ} (lam t : ℝ) (hlam : 0 ≤ lam) (ht : 0 ≤ t)
+theorem gaussianAffine_coefficient_bilinear (hlam : 0 ≤ lam) (ht : 0 ≤ t)
     (x y : Covariate d) (va vb : Fin d → ℝ) :
     t * lam ^ 2 * Real.exp (-(t * lam * spatialSquaredDistance x y)) *
       (∑ a, (y a - x a) * va a) * (∑ b, (y b - x b) * vb b) =
-      lam / 2 * ∑ a : Fin d, ∑ b : Fin d,
+      lam / 2 * ∑ a, ∑ b,
         ∫ Z, gaussianHermite a b Z * va a * vb b *
           Real.cos (gaussianPhase (gaussianSpatialFrequency lam t x y) Z) ∂standardGaussianPi d := by
   simp_rw [standardGaussian_hermite_cos_integral_const,
-    gaussianSpatialFrequency_squared lam t hlam ht x y]
+    (by unfold gaussianSpatialFrequency spatialSquaredDistance; simp_rw [mul_pow, Real.sq_sqrt (by positivity : 0 ≤ 2 * lam * t)]; rw [Finset.mul_sum] : ∑ l, gaussianSpatialFrequency lam t x y l ^ 2 = 2 * lam * t * spatialSquaredDistance x y)]
   have he : -(2 * lam * t * spatialSquaredDistance x y) / 2 =
       -(t * lam * spatialSquaredDistance x y) := by ring
-  rw [he]
   unfold gaussianSpatialFrequency
-  simp only [Finset.mul_sum, Finset.sum_mul]
+  simp [Finset.mul_sum, Finset.sum_mul]
   conv_lhs => rw [Finset.sum_comm]
-  apply Finset.sum_congr rfl
-  intro a ha
-  apply Finset.sum_congr rfl
-  intro b hb
-  have hs := Real.sq_sqrt (by positivity : 0 ≤ 2 * lam * t)
-  calc
-    _ = lam / 2 * (2 * lam * t) * (y a - x a) * (y b - x b) * va a * vb b *
-        Real.exp (-(t * lam * spatialSquaredDistance x y)) := by ring
-    _ = lam / 2 * (Real.sqrt (2 * lam * t) ^ 2) * (y a - x a) * (y b - x b) * va a * vb b *
-        Real.exp (-(t * lam * spatialSquaredDistance x y)) := by rw [hs]
-    _ = _ := by ring
+  grind [Real.sq_sqrt (by positivity : 0 ≤ 2 * lam * t)]
 
 /-- Exact coefficientwise positive separated representation of the original
 G_t affine covariance. All Fourier, Fubini, and coefficient identities are
 derived from the actual Gaussian product law. -/
-theorem gaussianPrimitive_separated_exact {d : ℕ} (lam t : ℝ) (hlam : 0 ≤ lam) (ht : 0 ≤ t)
+theorem gaussianPrimitive_separated_exact {lam t : ℝ} (hlam : 0 ≤ lam) (ht : 0 ≤ t)
     (x y : Covariate d) (β β' : Fin d →₀ ℕ) :
     t * lam ^ 2 * Real.exp (-(t * lam * spatialSquaredDistance x y)) *
       (spatialCardinalAffine x y).coeff β * (spatialCardinalAffine x y).coeff β' =
       ∫ e, gaussianPrimitiveLeft lam t e x * gaussianPrimitiveRight lam t e y *
         gaussianPrimitiveAmplitude lam e β β' ∂gaussianPrimitiveMeasure d := by
-  rw [gaussianPrimitiveMeasure, integral_prod _ (gaussianPrimitive_observable_integrable lam t x y β β')]
+  rw [gaussianPrimitiveMeasure, integral_prod _ (gaussianPrimitive_observable_integrable ..)]
   simp only [integral_count, gaussianPrimitive_finite_action]
-  let va := fun a : Fin d => ∑ s : Bool, gaussianAffineFactor a s y * (gaussianAffinePolynomial a s).coeff β
-  let vb := fun b : Fin d => ∑ s : Bool, gaussianAffineFactor b s y * (gaussianAffinePolynomial b s).coeff β'
-  have hi (a b : Fin d) : Integrable (fun Z : Covariate d => gaussianHermite a b Z * va a * vb b *
+  let va := fun a => ∑ s, gaussianAffineFactor a s y * (gaussianAffinePolynomial a s).coeff β
+  let vb := fun b => ∑ s, gaussianAffineFactor b s y * (gaussianAffinePolynomial b s).coeff β'
+  have hi a b : Integrable (fun Z => gaussianHermite a b Z * va a * vb b *
       Real.cos (gaussianPhase (gaussianSpatialFrequency lam t x y) Z)) (standardGaussianPi d) := by
-    have hm : Measurable (fun Z : Covariate d => Real.cos
+    have hm : Measurable (fun Z => Real.cos
         (gaussianPhase (gaussianSpatialFrequency lam t x y) Z)) := by
       unfold gaussianPhase
       fun_prop
     exact (((gaussianHermite_integrable a b).mul_const (va a)).mul_const (vb b)).mul_bdd
-      hm.aestronglyMeasurable (Filter.Eventually.of_forall (fun Z => by
-        rw [Real.norm_eq_abs]
-        exact abs_le.mpr ⟨Real.neg_one_le_cos _, Real.cos_le_one _⟩))
-  change _ = ∫ Z, lam / 2 * ∑ a : Fin d, ∑ b : Fin d,
-    gaussianHermite a b Z * va a * vb b * Real.cos
-      (gaussianPhase (gaussianSpatialFrequency lam t x y) Z) ∂standardGaussianPi d
+      hm.aestronglyMeasurable (Filter.Eventually.of_forall (fun Z => abs_le.mpr ⟨Real.neg_one_le_cos _, Real.cos_le_one _⟩))
   rw [integral_const_mul, integral_finsetSum _ (fun a _ => integrable_finsetSum _ (fun b _ => hi a b))]
   simp_rw [integral_finsetSum _ (fun b _ => hi _ b)]
   rw [spatialCardinalAffine_gaussian_coeff, spatialCardinalAffine_gaussian_coeff]
-  exact gaussianAffine_coefficient_bilinear lam t hlam ht x y va vb
+  solve_by_elim [gaussianAffine_coefficient_bilinear]
 
 theorem gaussianPrimitiveMeasure_finite (d : ℕ) : IsFiniteMeasure (gaussianPrimitiveMeasure d) := by
   unfold gaussianPrimitiveMeasure
   infer_instance
 
-theorem gaussianPrimitiveLeft_scale_measurable {d : ℕ} (lam : ℝ) (x : Covariate d) :
+theorem gaussianPrimitiveLeft_scale_measurable :
     Measurable (fun z : ℝ × GaussianPrimitiveMark d => gaussianPrimitiveLeft lam z.1 z.2 x) := by
   have hm : Measurable (fun z : (ℝ × Covariate d) × GaussianPrimitiveIndex d =>
       gaussianPrimitiveLeft lam z.1.1 (z.1.2, z.2) x) := by
     apply measurable_from_prod_countable_left
     intro h
     change Measurable (fun z : ℝ × Covariate d => gaussianTrig lam z.1 z.2 x h.2.2)
-    cases h.2.2 <;> simp only [gaussianTrig, Bool.false_eq_true, ite_false, ite_true] <;>
+    cases h.2.2 <;> simp [gaussianTrig] <;>
       unfold gaussianPhase <;> fun_prop
   exact hm.comp ((measurable_fst.prodMk (measurable_fst.comp measurable_snd)).prodMk
     (measurable_snd.comp measurable_snd))
 
-theorem gaussianPrimitiveRight_scale_measurable {d : ℕ} (lam : ℝ) (y : Covariate d) :
+theorem gaussianPrimitiveRight_scale_measurable :
     Measurable (fun z : ℝ × GaussianPrimitiveMark d => gaussianPrimitiveRight lam z.1 z.2 y) := by
   have hm : Measurable (fun z : (ℝ × Covariate d) × GaussianPrimitiveIndex d =>
       gaussianPrimitiveRight lam z.1.1 (z.1.2, z.2) y) := by
@@ -338,9 +294,9 @@ theorem gaussianPrimitiveRight_scale_measurable {d : ℕ} (lam : ℝ) (y : Covar
     change Measurable (fun z : ℝ × Covariate d => gaussianTrig lam z.1 z.2 y h.2.2 *
       gaussianAffineFactor h.1.1 h.2.1.1 y * gaussianAffineFactor h.1.2 h.2.1.2 y)
     have ht : Measurable (fun z : ℝ × Covariate d => gaussianTrig lam z.1 z.2 y h.2.2) := by
-      cases h.2.2 <;> simp only [gaussianTrig, Bool.false_eq_true, ite_false, ite_true] <;>
+      cases h.2.2 <;> simp [gaussianTrig] <;>
         unfold gaussianPhase <;> fun_prop
-    exact (ht.mul_const _).mul_const _
+    fun_prop
   exact hm.comp ((measurable_fst.prodMk (measurable_fst.comp measurable_snd)).prodMk
     (measurable_snd.comp measurable_snd))
 

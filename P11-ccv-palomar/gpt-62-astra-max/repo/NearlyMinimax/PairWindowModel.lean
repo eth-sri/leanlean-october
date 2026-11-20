@@ -12,253 +12,210 @@ open scoped BigOperators
 namespace NearlyMinimax
 set_option backward.isDefEq.respectTransparency false
 
-def regularObservationLabel {d : ℕ} (k : ℕ) (hk : 0 < k) :
+variable {d : ℕ} {C : ModelConstants d} {θ : RegressionParameter d} (hθ : Admissible C θ) {k : ℕ}
+    (hk : 0 < k)
+
+def regularObservationLabel :
     Observation d → (Fin d → Fin k) := fun z => regularGridCell k hk z.1
 
-theorem regularObservationLabel_measurable {d : ℕ} (k : ℕ) (hk : 0 < k) :
-    Measurable (regularObservationLabel (d := d) k hk) :=
+theorem regularObservationLabel_measurable :
+    Measurable (regularObservationLabel (d := d) hk) :=
   (regular_grid_cell_measurable k hk).comp measurable_fst
 
-theorem regularObservationLabel_fiber {d : ℕ} (k : ℕ) (hk : 0 < k)
+theorem regularObservationLabel_fiber
     (c : Fin d → Fin k) :
-    (regularObservationLabel (d := d) k hk) ⁻¹' {c} =
+    (regularObservationLabel hk) ⁻¹' {c} =
       Prod.fst ⁻¹' ((regularGridCell k hk) ⁻¹' {c}) := rfl
 
-theorem regularObservationLabel_mass {d : ℕ} (C : ModelConstants d)
-    (θ : RegressionParameter d) (hθ : Admissible C θ) (k : ℕ) (hk : 0 < k)
+include hθ in
+theorem regularObservationLabel_mass
     (c : Fin d → Fin k) :
-    (observationLaw θ).real ((regularObservationLabel k hk) ⁻¹' {c}) =
-      regularGridProbability θ k hk c := by
-  have hA : MeasurableSet ((regularGridCell k hk) ⁻¹' {c}) :=
-    (measurableSet_singleton c).preimage (regular_grid_cell_measurable k hk)
-  exact (observationLaw_fst_measurePreserving C θ hθ).measureReal_preimage
-    hA.nullMeasurableSet
+    (observationLaw θ).real ((regularObservationLabel hk) ⁻¹' {c}) =
+      regularGridProbability θ hk c := (observationLaw_fst_measurePreserving hθ).measureReal_preimage
+    ((measurableSet_singleton c).preimage (regular_grid_cell_measurable k hk)).nullMeasurableSet
 
-def regularPairScore {d : ℕ} (θ : RegressionParameter d) (k : ℕ) (hk : 0 < k) :
+def regularPairScore (θ : RegressionParameter d) {k : ℕ} (hk : 0 < k) :
     Observation d × Observation d → ℝ :=
-  pairWindowScore (regularObservationLabel k hk) Prod.snd θ.variance
+  pairWindowScore (regularObservationLabel hk) Prod.snd θ.variance
 
-theorem regularPairScore_memLp {d : ℕ} (C : ModelConstants d)
-    (θ : RegressionParameter d) (hθ : Admissible C θ) (k : ℕ) (hk : 0 < k) :
-    MemLp (regularPairScore θ k hk) 2 ((observationLaw θ).prod (observationLaw θ)) := by
+include hθ in
+theorem regularPairScore_memLp :
+    MemLp (regularPairScore θ hk) 2 ((observationLaw θ).prod (observationLaw θ)) := by
   let := observationLaw_isProbability C θ hθ
   exact pairWindowScore_memLp (observationLaw θ) _
-    (regularObservationLabel_measurable k hk) Prod.snd measurable_snd θ.variance
-    (observationLaw_response_fourth_integrable C θ hθ)
+    (regularObservationLabel_measurable hk) measurable_snd θ.variance
+    (observationLaw_response_fourth_integrable hθ)
 
-theorem regularPairScore_kernel_energy_le {d : ℕ} (C : ModelConstants d)
-    (θ : RegressionParameter d) (hθ : Admissible C θ) (k : ℕ) (hk : 0 < k) :
-    (∫ z, regularPairScore θ k hk z ^ 2
+include hθ in
+theorem regularPairScore_kernel_energy_le :
+    (∫ z, regularPairScore θ hk z ^ 2
       ∂(observationLaw θ).prod (observationLaw θ)) ≤
       (8 * responseFourthBound C + 2 * θ.variance ^ 2) *
-        regularGridCollisionMass θ k hk := by
+        regularGridCollisionMass θ hk := by
   let := observationLaw_isProbability C θ hθ
   have hh := pairWindowScore_energy_le (observationLaw θ) _
-    (regularObservationLabel_measurable k hk) Prod.snd measurable_snd
+    (regularObservationLabel_measurable hk) measurable_snd
     θ.variance (responseFourthBound C)
-    (observationLaw_response_fourth_integrable C θ hθ) (fun c => by
-      rw [regularObservationLabel_mass C θ hθ k hk c,
-        regularObservationLabel_fiber k hk c]
-      have hm := observationLaw_localized_fourth_integral_le C θ hθ
-        ((regularGridCell k hk) ⁻¹' {c})
-        ((measurableSet_singleton _).preimage (regular_grid_cell_measurable k hk))
-      exact hm)
-  simpa only [regularObservationLabel_mass C θ hθ k hk,
+    (observationLaw_response_fourth_integrable hθ) (fun c => by
+      rw [regularObservationLabel_mass hθ hk c,
+        regularObservationLabel_fiber hk c]
+      exact observationLaw_localized_fourth_integral_le hθ (A := ((regularGridCell k hk) ⁻¹' {c})) ((measurableSet_singleton _).preimage (regular_grid_cell_measurable k hk)))
+  simpa only [regularObservationLabel_mass hθ hk,
     regularPairScore, regularGridCollisionMass] using hh
 
-theorem regularPairScore_row_energy_le {d : ℕ} (C : ModelConstants d)
-    (θ : RegressionParameter d) (hθ : Admissible C θ) (k : ℕ) (hk : 0 < k) :
-    (∫ x, (∫ y, regularPairScore θ k hk (x, y) ∂observationLaw θ) ^ 2
+include hθ in
+theorem regularPairScore_row_energy_le :
+    (∫ x, (∫ y, regularPairScore θ hk (x, y) ∂observationLaw θ) ^ 2
       ∂observationLaw θ) ≤
-      2 * (C.densityUpper / (k : ℝ) ^ d) ^ 2 *
+      2 * (C.densityUpper / k ^ d) ^ 2 *
         (responseFourthBound C + (|θ.variance| + responseSecondBound C) ^ 2) := by
   let := observationLaw_isProbability C θ hθ
   let := designLaw_isProbability C θ hθ
-  have hρ : 0 < C.densityUpper := (by norm_num : (0 : ℝ) < 1).trans C.one_lt_densityUpper
-  have hg : (∫ z : Observation d, z.2 ^ 4 ∂observationLaw θ) ≤ responseFourthBound C := by
-    simpa using observationLaw_localized_fourth_integral_le C θ hθ Set.univ MeasurableSet.univ
+  have hρ  := (by norm_num : (0 : ℝ) < 1).trans C.one_lt_densityUpper
   apply pairWindowScore_row_energy_le (observationLaw θ) _
-    (regularObservationLabel_measurable k hk) Prod.snd measurable_snd
+    (regularObservationLabel_measurable hk) measurable_snd
     θ.variance (responseSecondBound C) (responseFourthBound C)
-    (C.densityUpper / (k : ℝ) ^ d) (responseSecondBound_pos C).le
-    (by positivity) (observationLaw_response_memLp_two C θ hθ).integrable_sq
-    (observationLaw_response_fourth_integrable C θ hθ) hg
+    (C.densityUpper / k ^ d) (responseSecondBound_pos C).le
+    (by positivity) (observationLaw_response_memLp_two hθ).integrable_sq
+    (observationLaw_response_fourth_integrable hθ) (by
+      simpa using observationLaw_localized_fourth_integral_le hθ MeasurableSet.univ)
   · intro c
-    rw [regularObservationLabel_mass C θ hθ k hk c,
-      regularObservationLabel_fiber k hk c]
-    have hm := observationLaw_localized_second_integral_le C θ hθ
-      ((regularGridCell k hk) ⁻¹' {c})
-      ((measurableSet_singleton _).preimage (regular_grid_cell_measurable k hk))
-    exact hm
+    rw [regularObservationLabel_mass hθ hk c,
+      regularObservationLabel_fiber hk c]
+    exact observationLaw_localized_second_integral_le hθ (A := ((regularGridCell k hk) ⁻¹' {c})) ((measurableSet_singleton _).preimage (regular_grid_cell_measurable k hk))
   · intro c
-    rw [regularObservationLabel_mass C θ hθ k hk c]
-    exact regularGridProbability_cap C θ hθ k hk c
+    rw [regularObservationLabel_mass hθ hk c]
+    exact regularGridProbability_cap hθ hk c
 
+include hθ in
 /-- The regression, evaluated at the observed covariate, is genuinely L². -/
-theorem observationLaw_regression_memLp_two {d : ℕ} (C : ModelConstants d)
-    (θ : RegressionParameter d) (hθ : Admissible C θ) :
-    MemLp (fun z : Observation d => θ.regression z.1) 2 (observationLaw θ) := by
+theorem observationLaw_regression_memLp_two :
+    MemLp (fun z => θ.regression z.1) 2 (observationLaw θ) := by
   let := observationLaw_isProbability C θ hθ
   apply MemLp.of_bound (hθ.2.1.comp measurable_fst).aestronglyMeasurable C.holderBound
-  filter_upwards [(observationLaw_fst_measurePreserving C θ hθ).quasiMeasurePreserving.ae
+  filter_upwards [(observationLaw_fst_measurePreserving hθ).quasiMeasurePreserving.ae
     (designLaw_cube_ae θ)] with z hz
-  simpa only [Real.norm_eq_abs, Function.comp_def] using
-    admissible_regression_value_bound C θ hθ z.1 hz
+  exact admissible_regression_value_bound hθ hz
 
-theorem designLaw_regression_memLp_two {d : ℕ} (C : ModelConstants d)
-    (θ : RegressionParameter d) (hθ : Admissible C θ) :
+include hθ in
+theorem designLaw_regression_memLp_two :
     MemLp θ.regression 2 (designLaw θ) := by
   let := designLaw_isProbability C θ hθ
   apply MemLp.of_bound hθ.2.1.aestronglyMeasurable C.holderBound
   filter_upwards [designLaw_cube_ae θ] with x hx
-  simpa only [Real.norm_eq_abs] using admissible_regression_value_bound C θ hθ x hx
+  exact admissible_regression_value_bound hθ hx
 
-theorem observationLaw_covariate_integral {d : ℕ} (C : ModelConstants d)
-    (θ : RegressionParameter d) (hθ : Admissible C θ)
-    (g : Covariate d → ℝ) (hg : Measurable g) :
+include hθ in
+theorem observationLaw_covariate_integral
+    {g : Covariate d → ℝ} (hg : Measurable g) :
     (∫ z, g z.1 ∂observationLaw θ) = ∫ x, g x ∂designLaw θ := by
   have hh := integral_map (μ := observationLaw θ) measurable_fst.aemeasurable
     hg.aestronglyMeasurable
-  rw [(observationLaw_fst_measurePreserving C θ hθ).map_eq] at hh
+  rw [(observationLaw_fst_measurePreserving hθ).map_eq] at hh
   exact hh.symm
 
-theorem observationLaw_localized_regression_first {d : ℕ} (C : ModelConstants d)
-    (θ : RegressionParameter d) (hθ : Admissible C θ)
-    (A : Set (Covariate d)) (hA : MeasurableSet A) :
-    (∫ z, (Prod.fst ⁻¹' A).indicator (Prod.snd : Observation d → ℝ) z
+include hθ in
+theorem observationLaw_localized_regression_second
+    {A : Set (Covariate d)} (hA : MeasurableSet A) :
+    (∫ z, (Prod.fst ⁻¹' A).indicator (fun z => z.2 ^ 2) z
       ∂observationLaw θ) =
-      ∫ z, (Prod.fst ⁻¹' A).indicator (fun z : Observation d => θ.regression z.1) z
-        ∂observationLaw θ := by
-  rw [observationLaw_localized_first_integral C θ hθ A hA]
-  have hh := observationLaw_covariate_integral C θ hθ (A.indicator θ.regression)
-    (hθ.2.1.indicator hA)
-  have heq : (fun z : Observation d => (Prod.fst ⁻¹' A).indicator
-      (fun z => θ.regression z.1) z) = (fun z => A.indicator θ.regression z.1) := by
-    funext z
-    by_cases hz : z.1 ∈ A <;> simp [Set.indicator, hz]
-  rw [heq]
-  exact hh.symm
-
-theorem observationLaw_localized_regression_second {d : ℕ} (C : ModelConstants d)
-    (θ : RegressionParameter d) (hθ : Admissible C θ)
-    (A : Set (Covariate d)) (hA : MeasurableSet A) :
-    (∫ z, (Prod.fst ⁻¹' A).indicator (fun z : Observation d => z.2 ^ 2) z
-      ∂observationLaw θ) =
-      (∫ z, (Prod.fst ⁻¹' A).indicator (fun z : Observation d => θ.regression z.1 ^ 2) z
+      (∫ z, (Prod.fst ⁻¹' A).indicator (fun z => θ.regression z.1 ^ 2) z
         ∂observationLaw θ) + θ.variance * (designLaw θ).real A := by
-  rw [observationLaw_localized_second_integral C θ hθ A hA]
-  have hh := observationLaw_covariate_integral C θ hθ
-    (A.indicator (fun x => θ.regression x ^ 2)) ((hθ.2.1.pow_const 2).indicator hA)
-  have hc : (∫ z : Observation d, (Prod.fst ⁻¹' A).indicator
+  rw [observationLaw_localized_second_integral hθ hA]
+  have hh := observationLaw_covariate_integral hθ ((hθ.2.1.pow_const 2).indicator hA)
+  have hc : (∫ z, (Prod.fst ⁻¹' A).indicator
       (fun z => θ.regression z.1 ^ 2) z ∂observationLaw θ) =
       ∫ x, A.indicator (fun x => θ.regression x ^ 2) x ∂designLaw θ := by
-    have heq : (fun z : Observation d => (Prod.fst ⁻¹' A).indicator
-        (fun z => θ.regression z.1 ^ 2) z) =
-        (fun z => A.indicator (fun x => θ.regression x ^ 2) z.1) := by
-      funext z
-      by_cases hz : z.1 ∈ A <;> simp [Set.indicator, hz]
-    rw [heq]
-    exact hh
+    assumption
   rw [hc, integral_indicator hA, integral_indicator hA]
   let := designLaw_isProbability C θ hθ
-  rw [integral_add (designLaw_regression_memLp_two C θ hθ).integrable_sq.restrict
+  rw [integral_add (designLaw_regression_memLp_two hθ).integrable_sq.restrict
       (integrable_const θ.variance), integral_const]
-  simp only [measureReal_restrict_apply MeasurableSet.univ, Set.univ_inter, smul_eq_mul]
-  ring
+  simp <;> ring
 
+include hθ in
 /-- Conditional centering makes the score's population mean exactly the
 same-cell squared regression increment. -/
-theorem regularPairScore_mean_eq_signal {d : ℕ} (C : ModelConstants d)
-    (θ : RegressionParameter d) (hθ : Admissible C θ) (k : ℕ) (hk : 0 < k) :
-    (∫ z, regularPairScore θ k hk z
+theorem regularPairScore_mean_eq_signal :
+    (∫ z, regularPairScore θ hk z
       ∂(observationLaw θ).prod (observationLaw θ)) =
-      ∫ z, pairWindowScore (regularObservationLabel k hk)
-        (fun z : Observation d => θ.regression z.1) 0 z
+      ∫ z, pairWindowScore (regularObservationLabel hk)
+        (fun z => θ.regression z.1) 0 z
         ∂(observationLaw θ).prod (observationLaw θ) := by
   let := observationLaw_isProbability C θ hθ
   rw [regularPairScore,
     pairWindowScore_integral (observationLaw θ) _
-      (regularObservationLabel_measurable k hk) Prod.snd measurable_snd θ.variance
-      (observationLaw_response_memLp_two C θ hθ),
+      (regularObservationLabel_measurable hk) measurable_snd θ.variance
+      (observationLaw_response_memLp_two hθ),
     pairWindowScore_integral (observationLaw θ) _
-      (regularObservationLabel_measurable k hk)
-      (fun z : Observation d => θ.regression z.1) (hθ.2.1.comp measurable_fst) 0
-      (observationLaw_regression_memLp_two C θ hθ)]
+      (regularObservationLabel_measurable hk)
+      (r := (fun z => θ.regression z.1)) (hθ.2.1.comp measurable_fst) 0
+      (observationLaw_regression_memLp_two hθ)]
   apply Finset.sum_congr rfl
   intro c hc
-  let A := (regularGridCell k hk) ⁻¹' {c}
-  have hA : MeasurableSet A :=
+  have hA : MeasurableSet ((regularGridCell k hk) ⁻¹' {c}) :=
     (measurableSet_singleton _).preimage (regular_grid_cell_measurable k hk)
-  have hfirst := observationLaw_localized_regression_first C θ hθ A hA
-  have hsecond := observationLaw_localized_regression_second C θ hθ A hA
-  rw [regularObservationLabel_mass C θ hθ k hk c,
-    regularObservationLabel_fiber k hk c, hfirst, hsecond]
-  dsimp [A, regularGridProbability]
-  ring
+  have hfirst := (by rw [observationLaw_localized_first_integral hθ hA]; have hh := observationLaw_covariate_integral hθ (hθ.2.1.indicator hA); exact hh.symm : ∫ (z : Observation d), (Prod.fst ⁻¹' regularGridCell k hk ⁻¹' {c}).indicator Prod.snd z ∂observationLaw θ = ∫ (z : Observation d), (Prod.fst ⁻¹' regularGridCell k hk ⁻¹' {c}).indicator (fun z => θ.regression z.1) z ∂observationLaw θ)
+  rw [regularObservationLabel_mass hθ hk c,
+    regularObservationLabel_fiber hk c, hfirst, (observationLaw_localized_regression_second hθ hA)]
+  simp [regularGridProbability] <;> ring
 
-def regularGridOscillation {d : ℕ} (C : ModelConstants d) (k : ℕ) : ℝ :=
-  (2 * ((d : ℝ) + 1) * C.holderBound) *
-    (Real.sqrt d * (1 / (k : ℝ))) ^ elementarySmoothness C
+def regularGridOscillation (C : ModelConstants d) (k : ℕ) : ℝ :=
+  (2 * (d + 1) * C.holderBound) *
+    (Real.sqrt d * (1 / k)) ^ elementarySmoothness C
 
-theorem regularPairScore_mean_nonneg {d : ℕ} (C : ModelConstants d)
-    (θ : RegressionParameter d) (hθ : Admissible C θ) (k : ℕ) (hk : 0 < k) :
-    0 ≤ ∫ z, regularPairScore θ k hk z
+include hθ in
+theorem regularPairScore_mean_nonneg :
+    0 ≤ ∫ z, regularPairScore θ hk z
       ∂(observationLaw θ).prod (observationLaw θ) := by
-  rw [regularPairScore_mean_eq_signal C θ hθ k hk]
-  apply integral_nonneg
-  intro z
-  unfold pairWindowScore
-  split_ifs <;> simp only [sub_zero] <;> positivity
+  rw [regularPairScore_mean_eq_signal hθ hk]
+  simp [pairWindowScore] <;> positivity
 
-theorem regularPairSignal_integrable {d : ℕ} (C : ModelConstants d)
-    (θ : RegressionParameter d) (hθ : Admissible C θ) (k : ℕ) (hk : 0 < k) :
-    Integrable (pairWindowScore (regularObservationLabel k hk)
-      (fun z : Observation d => θ.regression z.1) 0)
+include hθ in
+theorem regularPairSignal_integrable :
+    Integrable (pairWindowScore (regularObservationLabel hk)
+      (fun z => θ.regression z.1) 0)
       ((observationLaw θ).prod (observationLaw θ)) := by
   let := observationLaw_isProbability C θ hθ
   let R := fun z : Observation d => θ.regression z.1
-  have h2 := (observationLaw_regression_memLp_two C θ hθ).integrable_sq
-  have hd : Integrable (fun z : Observation d × Observation d =>
-      R z.1 ^ 2 + R z.2 ^ 2) ((observationLaw θ).prod (observationLaw θ)) :=
-    (h2.comp_fst _).add (h2.comp_snd _)
-  apply hd.mono'
-    (pairWindowScore_measurable _ (regularObservationLabel_measurable k hk)
-      R (hθ.2.1.comp measurable_fst) 0).aestronglyMeasurable
+  have h2 := (observationLaw_regression_memLp_two hθ).integrable_sq
+  apply ((h2.comp_fst _).add (h2.comp_snd _)).mono'
+    (pairWindowScore_measurable _ (regularObservationLabel_measurable hk)
+      (r := R) (hθ.2.1.comp measurable_fst) 0).aestronglyMeasurable
   filter_upwards [] with z
-  simpa only [abs_zero, add_zero, Real.norm_eq_abs] using
-    pairWindowScore_abs_le (regularObservationLabel k hk) R 0 z
+  simpa using pairWindowScore_abs_le (regularObservationLabel hk) R 0 z
 
-theorem regularPairScore_mean_le {d : ℕ} (C : ModelConstants d)
-    (θ : RegressionParameter d) (hθ : Admissible C θ) (k : ℕ) (hk : 0 < k) :
-    (∫ z, regularPairScore θ k hk z
-      ∂(observationLaw θ).prod (observationLaw θ)) ≤
-      (regularGridOscillation C k ^ 2 / 2) * regularGridCollisionMass θ k hk := by
+include hθ in
+theorem regularPairScore_mean_le :
+    let jointLaw := (observationLaw θ).prod (observationLaw θ)
+    (∫ z, regularPairScore θ hk z
+      ∂jointLaw) ≤
+      (regularGridOscillation C k ^ 2 / 2) * regularGridCollisionMass θ hk := by
+  intro jointLaw
   let := observationLaw_isProbability C θ hθ
-  have hcube := (observationLaw_fst_measurePreserving C θ hθ).quasiMeasurePreserving.ae
+  have hcube := (observationLaw_fst_measurePreserving hθ).quasiMeasurePreserving.ae
     (designLaw_cube_ae θ)
-  rw [regularPairScore_mean_eq_signal C θ hθ k hk]
+  rw [regularPairScore_mean_eq_signal hθ hk]
   have hD := (sameLabelKernel_memLp (observationLaw θ) _
-    (regularObservationLabel_measurable k hk)).integrable (by norm_num)
-  have hb : (∫ z, pairWindowScore (regularObservationLabel k hk)
-      (fun z : Observation d => θ.regression z.1) 0 z
-      ∂(observationLaw θ).prod (observationLaw θ)) ≤
+    (regularObservationLabel_measurable hk)).integrable (by norm_num)
+  have hb : (∫ z, pairWindowScore (regularObservationLabel hk)
+      (fun z => θ.regression z.1) 0 z
+      ∂jointLaw) ≤
       ∫ z, (regularGridOscillation C k ^ 2 / 2) *
-        sameLabelKernel (regularObservationLabel k hk) z
-        ∂(observationLaw θ).prod (observationLaw θ) := by
-    apply integral_mono_ae (regularPairSignal_integrable C θ hθ k hk)
+        sameLabelKernel (regularObservationLabel hk) z
+        ∂jointLaw := by
+    apply integral_mono_ae (regularPairSignal_integrable hθ hk)
       (hD.const_mul _)
     filter_upwards [Measure.quasiMeasurePreserving_fst.ae hcube,
       Measure.quasiMeasurePreserving_snd.ae hcube] with z hz1 hz2
-    by_cases he : regularObservationLabel k hk z.1 = regularObservationLabel k hk z.2
-    · have hm := regular_grid_same_cell_regression_difference C θ hθ k hk
-        z.1.1 z.2.1 hz1 hz2 he
-      have hs := pow_le_pow_left₀ (abs_nonneg _) hm 2
+    by_cases he : regularObservationLabel hk z.1 = regularObservationLabel hk z.2
+    · have hs := pow_le_pow_left₀ (abs_nonneg _) (regular_grid_same_cell_regression_difference hθ hk hz1 hz2 he) 2
       simp only [sq_abs] at hs
-      simp only [pairWindowScore, sameLabelKernel, ite_eq_left he, sub_zero, mul_one]
-      exact div_le_div_of_nonneg_right hs (by norm_num)
-    · simp [pairWindowScore, sameLabelKernel, he]
+      simp [pairWindowScore, sameLabelKernel]
+      bound
+    · simp_all [pairWindowScore, sameLabelKernel]
   rw [integral_const_mul, sameLabelKernel_integral (observationLaw θ) _
-    (regularObservationLabel_measurable k hk)] at hb
-  simpa only [regularObservationLabel_mass C θ hθ k hk, regularGridCollisionMass] using hb
+    (regularObservationLabel_measurable hk)] at hb
+  simpa only [regularObservationLabel_mass hθ hk, regularGridCollisionMass] using hb
 
 end NearlyMinimax

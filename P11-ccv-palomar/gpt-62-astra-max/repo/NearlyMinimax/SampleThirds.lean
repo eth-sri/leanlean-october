@@ -12,47 +12,54 @@ open scoped ENNReal
 namespace NearlyMinimax
 set_option backward.isDefEq.respectTransparency false
 
-def threeBlockSize (n : ℕ) : ℕ := n / 3
+section
+variable (n : ℕ)
 
-def threeBlockRemainder (n : ℕ) : ℕ := n - (threeBlockSize n + threeBlockSize n + threeBlockSize n)
+def threeBlockSize : ℕ := n / 3
 
-theorem threeBlockTotal (n : ℕ) :
+def threeBlockRemainder : ℕ := n - (threeBlockSize n + threeBlockSize n + threeBlockSize n)
+
+theorem threeBlockTotal :
     n = threeBlockSize n + threeBlockSize n + threeBlockSize n + threeBlockRemainder n := by
-  simp only [threeBlockSize, threeBlockRemainder]
-  omega
+  grind [threeBlockSize, threeBlockRemainder]
 
-theorem threeBlockSize_two_le {n : ℕ} (hn : 6 ≤ n) : 2 ≤ threeBlockSize n := by
-  unfold threeBlockSize
-  omega
+end
 
-theorem threeBlockSize_fraction {n : ℕ} (hn : 6 ≤ n) :
+section
+variable {n : ℕ} (hn : 6 ≤ n)
+include hn
+
+theorem threeBlockSize_fraction :
     (1 / 4 : ℝ) * n ≤ threeBlockSize n := by
-  have h : n ≤ 4 * threeBlockSize n := by unfold threeBlockSize; omega
-  have hR : (n : ℝ) ≤ 4 * (threeBlockSize n : ℝ) := by exact_mod_cast h
+  have hR : n ≤ 4 * (threeBlockSize n : ℝ) := by exact_mod_cast (by unfold threeBlockSize; omega)
   linarith
 
-def castEstimator {d n m : ℕ} (h : n = m) (T : Estimator d m) : Estimator d n := h.symm ▸ T
+end
 
-theorem castEstimator_risk_eq {d n m : ℕ} (h : n = m) (T : Estimator d m)
+variable {d n m : ℕ} (h : n = m) (T : Estimator d m)
+
+def castEstimator : Estimator d n := h.symm ▸ T
+
+theorem castEstimator_risk_eq
     (θ : RegressionParameter d) : meanSquaredRisk (castEstimator h T) θ = meanSquaredRisk T θ := by
   subst m
   rfl
 
-def threeBlockEstimator {d n : ℕ}
-    (T : (((Fin (threeBlockSize n) → Observation d) × (Fin (threeBlockSize n) → Observation d)) ×
-      (Fin (threeBlockSize n) → Observation d)) → ℝ) (hmT : Measurable T) : Estimator d n :=
+def threeBlockEstimator
+    {T : (((Fin (threeBlockSize n) → Observation d) × (Fin (threeBlockSize n) → Observation d)) ×
+      (Fin (threeBlockSize n) → Observation d)) → ℝ} (hmT : Measurable T) : Estimator d n :=
   castEstimator (threeBlockTotal n)
-    (blockEstimatorWithRemainder (r := threeBlockRemainder n) T hmT)
+    (blockEstimatorWithRemainder hmT)
 
-theorem threeBlockEstimator_risk_eq {d n : ℕ} (C : ModelConstants d)
-    (θ : RegressionParameter d) (hθ : Admissible C θ)
+theorem threeBlockEstimator_risk_eq {C : ModelConstants d}
+    {θ : RegressionParameter d} (hθ : Admissible C θ)
     (T : (((Fin (threeBlockSize n) → Observation d) × (Fin (threeBlockSize n) → Observation d)) ×
       (Fin (threeBlockSize n) → Observation d)) → ℝ) (hmT : Measurable T) :
-    meanSquaredRisk (threeBlockEstimator T hmT) θ =
+    meanSquaredRisk (threeBlockEstimator hmT) θ =
       ∫⁻ z, ENNReal.ofReal ((T z - θ.variance) ^ 2)
         ∂((sampleLaw θ (threeBlockSize n)).prod (sampleLaw θ (threeBlockSize n))).prod
           (sampleLaw θ (threeBlockSize n)) := by
   rw [threeBlockEstimator, castEstimator_risk_eq]
-  exact blockEstimatorWithRemainder_risk_eq C θ hθ T hmT
+  exact (sampleBlocksWithRemainder_measurePreserving hθ _ _ _ _).lintegral_comp (((hmT.sub measurable_const).pow_const 2).ennreal_ofReal)
 
 end NearlyMinimax

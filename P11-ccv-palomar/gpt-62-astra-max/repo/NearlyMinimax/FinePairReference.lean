@@ -28,95 +28,74 @@ section Packet
 variable {Z ι : Type*} [MeasurableSpace Z] [Fintype ι] [DecidableEq ι]
   [MeasurableSpace ι] [MeasurableSingletonClass ι]
 
-def finePairPacketMarkMass (σ : Measure Z) (a b : ℝ) (M q : ℕ) (C : ℝ) (A : Z → ι → ι → ℝ) : ℝ :=
+section
+variable (σ : Measure Z) (a b : ℝ) (M q : ℕ) (C : ℝ) (A : Z → ι → ι → ℝ) (ψ : Z → ℝ)
+    (e : Z × FinePairPacketIndex ι M q)
+
+def finePairPacketMarkMass : ℝ :=
   signedMarkMass (σ.prod Measure.count) (finePairPacketWeight a b M q C A)
 
-def finePairPacketAbsoluteLaw (σ : Measure Z) (a b : ℝ) (M q : ℕ) (C : ℝ)
-    (A : Z → ι → ι → ℝ) : Measure (Z × FinePairPacketIndex ι M q) :=
+def finePairPacketAbsoluteLaw : Measure (Z × FinePairPacketIndex ι M q) :=
   absoluteMarkLaw (σ.prod Measure.count) (finePairPacketWeight a b M q C A)
 
-def finePairPacketActivation (σ : Measure Z) (a b : ℝ) (M q : ℕ) (C : ℝ)
-    (A : Z → ι → ι → ℝ) : Z × FinePairPacketIndex ι M q → ℝ :=
+def finePairPacketActivation : Z × FinePairPacketIndex ι M q → ℝ :=
   absoluteActivation (σ.prod Measure.count) (finePairPacketWeight a b M q C A)
 
-def finePairPacketIntercept (a b : ℝ) (M q : ℕ) (e : Z × FinePairPacketIndex ι M q) : ℝ :=
-  (finePairDensityAtom a b M e.2.1).1
+def finePairPacketIntercept : ℝ :=
+  (finePairDensityAtom a b e.2.1).1
 
-def finePairPacketSlope (a b : ℝ) (M q : ℕ) (ψ : Z → ℝ) (e : Z × FinePairPacketIndex ι M q) : ℝ :=
+def finePairPacketSlope {M q : ℕ} (ψ : Z → ℝ) (e : Z × FinePairPacketIndex ι M q) : ℝ :=
   densityMargin a b (finePairPacketIntercept a b M q e) / b *
-    (finePairDensityAtom a b M e.2.1).2 * ψ e.1
+    (finePairDensityAtom a b e.2.1).2 * ψ e.1
 
-def finePairPacketResponseVector (M q : ℕ) (C : ℝ) (e : Z × FinePairPacketIndex ι M q) : ι → ℝ :=
-  (highResponseMarkAtom C q e.2.2).2
+def finePairPacketResponseVector : ι → ℝ :=
+  (highResponseMarkAtom C e.2.2).2
 
-def finePairPacketResponseTime (M q : ℕ) (e : Z × FinePairPacketIndex ι M q) : ℝ :=
-  (highResponseMarkAtom 0 q e.2.2).1
+def finePairPacketResponseTime : ℝ :=
+  (highResponseMarkAtom 0 e.2.2).1
 
-theorem finePairPacketIntercept_measurable (a b : ℝ) (M q : ℕ) :
+theorem finePairPacketIntercept_measurable :
     Measurable (finePairPacketIntercept (Z := Z) (ι := ι) a b M q) := by
   apply measurable_from_prod_countable_left
   intro h
-  change Measurable (fun _ : Z => (finePairDensityAtom a b M h.1).1)
+  change Measurable (fun _ : Z => (finePairDensityAtom a b h.1).1)
   exact measurable_const
 
-theorem finePairPacketSlope_measurable (a b : ℝ) (M q : ℕ) (ψ : Z → ℝ) (hψ : Measurable ψ) :
-    Measurable (finePairPacketSlope (ι := ι) a b M q ψ) := by
+theorem finePairPacketSlope_measurable {ψ : Z → ℝ} (hψ : Measurable ψ) :
+    Measurable (finePairPacketSlope (ι := ι) a b (M := M) (q := q) ψ) := by
   apply measurable_from_prod_countable_left
   intro h
   unfold finePairPacketSlope finePairPacketIntercept
-  dsimp only
-  exact hψ.const_mul _
+  dsimp
+  fun_prop
 
 theorem finePairPacketSlope_joint_measurable {U : Type*} [MeasurableSpace U]
-    (a b : ℝ) (M q : ℕ) (ψ : Z → U → ℝ)
+    (a b : ℝ) (M q : ℕ) {ψ : Z → U → ℝ}
     (hψ : Measurable (fun zu : Z × U => ψ zu.1 zu.2)) :
     Measurable (fun eu : (Z × FinePairPacketIndex ι M q) × U =>
-      finePairPacketSlope a b M q (fun ζ => ψ ζ eu.2) eu.1) := by
+      finePairPacketSlope a b (fun ζ => ψ ζ eu.2) eu.1) := by
   have hc : Measurable (fun eu : (Z × FinePairPacketIndex ι M q) × U =>
-      densityMargin a b (finePairDensityAtom a b M eu.1.2.1).1 / b *
-        (finePairDensityAtom a b M eu.1.2.1).2) :=
+      densityMargin a b (finePairDensityAtom a b eu.1.2.1).1 / b *
+        (finePairDensityAtom a b eu.1.2.1).2) :=
     (measurable_of_countable (fun h : FinePairPacketIndex ι M q =>
-      densityMargin a b (finePairDensityAtom a b M h.1).1 / b *
-        (finePairDensityAtom a b M h.1).2)).comp (measurable_snd.comp measurable_fst)
-  exact hc.mul (hψ.comp ((measurable_fst.comp measurable_fst).prodMk measurable_snd))
+      densityMargin a b (finePairDensityAtom a b h.1).1 / b *
+        (finePairDensityAtom a b h.1).2)).comp (measurable_snd.comp measurable_fst)
+  exact hc.mul (by fun_prop)
 
-theorem finePairPacketIntercept_mem (a b : ℝ) (hab : a ≤ b) (M q : ℕ)
-    (e : Z × FinePairPacketIndex ι M q) : finePairPacketIntercept a b M q e ∈ Icc a b :=
-  exteriorNode_mem a b hab (M + 2) e.2.1.1
-
-theorem finePairPacketSlope_bound (a b : ℝ) (ha : 0 < a) (hab : a < b) (M q : ℕ)
+theorem finePairPacketSlope_bound {a b : ℝ} (ha : 0 < a) (hab : a < b) {M q : ℕ}
     (ψ : Z → ℝ) (hψ : ∀ ζ, |ψ ζ| ≤ 1) (e : Z × FinePairPacketIndex ι M q) :
-    |finePairPacketSlope a b M q ψ e| ≤ (b - a) / (4 * b) :=
-  finePairDensityReset_slope_bound a b ha hab _ _
-    (exteriorNode_mem a b hab.le (M + 2) e.2.1.1) (fineModulationNode_bound e.2.1.2)
-    (fun _ : Unit => ψ e.1) () (hψ e.1)
+    |finePairPacketSlope a b ψ e| ≤ (b - a) / (4 * b) :=
+  finePairDensityReset_slope_bound ha hab
+    (exteriorNode_mem hab.le e.2.1.1) (fineModulationNode_bound e.2.1.2) (hψ e.1)
 
-theorem finePairPacketWeight_abs_reflection (a b : ℝ) (M q : ℕ) (C : ℝ)
-    (A : Z → ι → ι → ℝ) (ζ : Z) (h : FinePairPacketIndex ι M q) :
-    |finePairPacketWeight a b M q C A (ζ, finePairPacketReflection ι M q h)| =
-      |finePairPacketWeight a b M q C A (ζ, h)| := by
-  simp only [finePairPacketWeight, finePairDensityWeight, finePairPacketReflection,
-    Equiv.prodCongr_apply, Prod.map_apply, Prod.map_fst, Prod.map_snd,
-    Equiv.refl_apply, Fin.revPerm_apply, abs_mul,
-    fineModulationWeight_abs_reflection]
-
-theorem finePairPacketSlope_reflection (a b : ℝ) (M q : ℕ) (ψ : Z → ℝ) (ζ : Z)
-    (h : FinePairPacketIndex ι M q) :
-    finePairPacketSlope a b M q ψ (ζ, finePairPacketReflection ι M q h) =
-      -finePairPacketSlope a b M q ψ (ζ, h) := by
-  simp only [finePairPacketSlope, finePairPacketIntercept, finePairDensityAtom,
-    finePairPacketReflection, Equiv.prodCongr_apply, Prod.map_apply, Prod.map_fst, Prod.map_snd,
-    Equiv.refl_apply, Fin.revPerm_apply,
-    fineModulationNode_reflection]
-  ring
-
-theorem finePairPacketSlope_absolute_sum_zero (a b : ℝ) (M q : ℕ) (C : ℝ)
-    (A : Z → ι → ι → ℝ) (ψ : Z → ℝ) (ζ : Z) :
+theorem finePairPacketSlope_absolute_sum_zero (ζ : Z) :
     (∑ h : FinePairPacketIndex ι M q, |finePairPacketWeight a b M q C A (ζ, h)| *
-      finePairPacketSlope a b M q ψ (ζ, h)) = 0 :=
-  finite_even_odd_sum_zero (finePairPacketReflection ι M q) _ _
-    (finePairPacketWeight_abs_reflection a b M q C A ζ)
-    (finePairPacketSlope_reflection a b M q ψ ζ)
+      finePairPacketSlope a b ψ (ζ, h)) = 0 :=
+  finite_even_odd_sum_zero
+    (by simp [finePairPacketWeight, finePairDensityWeight, finePairPacketReflection, abs_mul, fineModulationWeight_abs_reflection])
+    ((by simp [finePairPacketSlope, finePairPacketIntercept, finePairDensityAtom, finePairPacketReflection, fineModulationNode_reflection] : ∀ (h : FinePairPacketIndex ι M q), finePairPacketSlope a b ψ (ζ, (finePairPacketReflection ι M q) h) = -finePairPacketSlope a b ψ (ζ, h)))
+
+end
 
 variable (σ : Measure Z) [IsFiniteMeasure σ] (a b : ℝ) (M q : ℕ) (C : ℝ)
   (A : Z → ι → ι → ℝ) (hA : ∀ i j, Measurable (fun ζ => A ζ i j))
@@ -126,29 +105,22 @@ include hA hcost hpos
 
 theorem finePairPacketAbsoluteLaw_probability :
     IsProbabilityMeasure (finePairPacketAbsoluteLaw σ a b M q C A) :=
-  absoluteMarkLaw_probability _ _ (finePairPacketWeight_integrable σ a b M q C A hA hcost) hpos
+  absoluteMarkLaw_probability (tensorWeight_integrable (finePairDensityWeight a b M) q C hA hcost) hpos
 
 theorem finePairPacketActivation_centered :
     (∫ e, finePairPacketActivation σ a b M q C A e ∂finePairPacketAbsoluteLaw σ a b M q C A) = 0 := by
-  apply absoluteActivation_centered _ _ (finePairPacketWeight_measurable a b M q C A hA) hpos
-  rw [integral_prod _ (finePairPacketWeight_integrable σ a b M q C A hA hcost)]
-  simp only [integral_count]
-  have hz (ζ : Z) : (∑ h : FinePairPacketIndex ι M q, finePairPacketWeight a b M q C A (ζ, h)) = 0 := by
-    have hh := finePairPacketObservable_finite_action a b M q C A (fun _ => 0)
-      (fun _ _ _ => 1) (fun _ => 1) ζ
-    simpa only [finePairPacketObservable, mul_one, responseMatrixAction_zero_mass, mul_zero] using hh
-  simp only [hz, integral_zero]
+  have h := tensorActivation_density_zero (finePairDensityWeight a b M) q C hA hcost hpos
+    (F := fun _ => 1) measurable_const (fun _ => le_rfl)
+  simp at h
+  exact h
 
 theorem finePairPacketAbsoluteLaw_slope_integral_zero (ha : 0 < a) (hab : a < b)
-    (ψ : Z → ℝ) (hmψ : Measurable ψ) (hψ : ∀ ζ, |ψ ζ| ≤ 1) :
-    (∫ e, finePairPacketSlope a b M q ψ e ∂finePairPacketAbsoluteLaw σ a b M q C A) = 0 := by
-  have hi := (finePairPacketWeight_integrable σ a b M q C A hA hcost).abs.mul_bdd
-    (finePairPacketSlope_measurable a b M q ψ hmψ).aestronglyMeasurable
-    (Filter.Eventually.of_forall (fun e => by
-      simpa only [Real.norm_eq_abs] using finePairPacketSlope_bound a b ha hab M q ψ hψ e))
-  rw [finePairPacketAbsoluteLaw, absoluteMarkLaw_integral _ _
-    (finePairPacketWeight_measurable a b M q C A hA) hpos, integral_prod _ hi]
-  simp only [integral_count, finePairPacketSlope_absolute_sum_zero, integral_zero, zero_div]
+    {ψ : Z → ℝ} (hmψ : Measurable ψ) (hψ : ∀ ζ, |ψ ζ| ≤ 1) :
+    (∫ e, finePairPacketSlope a b ψ e ∂finePairPacketAbsoluteLaw σ a b M q C A) = 0 :=
+  absoluteMarkLaw_fiber_zero (w := finePairPacketWeight a b M q C A)
+    (tensorWeight_measurable _ q C hA) (tensorWeight_integrable _ q C hA hcost) hpos
+    (finePairPacketSlope_measurable a b M q hmψ) (finePairPacketSlope_bound ha hab ψ hψ)
+    (finePairPacketSlope_absolute_sum_zero a b M q C A ψ)
 
 end Packet
 end NearlyMinimax

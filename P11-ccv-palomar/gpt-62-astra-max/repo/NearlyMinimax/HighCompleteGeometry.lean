@@ -16,8 +16,9 @@ set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1000000
 attribute [local instance] Classical.propDecidable
 
- def completeSourceGeometryEnvelope {d : ℕ} (D M R q : ℕ)
-    (aD bD c0 ell N mu C a rho eta Chi Bl : ℝ) : (n : ℕ) → (Fin n → Covariate d) → ℝ
+ variable {d : ℕ} (D M R q : ℕ) (aD bD c0 ell N mu C a rho eta Chi Bl : ℝ)
+
+def completeSourceGeometryEnvelope : (n : ℕ) → (DesignSample d n) → ℝ
   | 0, _ => 0
   | 1, _ => 0
   | 2, U => finePairCountTwoGeometryEnvelope (bD-(M : ℝ)⁻¹) a rho eta N U
@@ -25,19 +26,18 @@ attribute [local instance] Classical.propDecidable
       completeSourceHigherGeometryEnvelope (D := D) aD bD c0 ell N mu M R q C a rho eta U
     else (3*Chi^2)^(n+3)*eta^4*(Bl+1)^2
 
- theorem completeSourceGeometryEnvelope_nonneg {d : ℕ} (D M R q : ℕ)
-    (aD bD c0 ell N mu C a rho eta Chi Bl : ℝ) (n : ℕ) (U : Fin n → Covariate d) :
+ theorem completeSourceGeometryEnvelope_nonneg {n : ℕ} (U : DesignSample d n) :
     0 ≤ completeSourceGeometryEnvelope D M R q aD bD c0 ell N mu C a rho eta Chi Bl n U := by
   rcases n with _|_|_|n
   · norm_num [completeSourceGeometryEnvelope]
   · norm_num [completeSourceGeometryEnvelope]
   · exact finePairCountTwoGeometryEnvelope_nonneg _ _ _ _ _ U
-  · try simp only [completeSourceGeometryEnvelope]
+  · try simp [completeSourceGeometryEnvelope]
     split_ifs
-    · exact completeSourceHigherGeometryEnvelope_nonneg _ _ _ _ _ _ _ _ _ _ _ _ _ _
+    · apply completeSourceHigherGeometryEnvelope_nonneg
     · positivity
 
- theorem completeSourceGeometryEnvelope_integrable {d : ℕ} [NeZero d] (hd : 5 ≤ d)
+ theorem completeSourceGeometryEnvelope_integrable [NeZero d] (hd : 5 ≤ d)
     (D M R q : ℕ) (aD bD c0 ell N mu C a rho eta Chi Bl : ℝ)
     (hell : 1 ≤ ell) (hN : ell ≤ N) (n : ℕ) :
     Integrable (completeSourceGeometryEnvelope (d := d) D M R q aD bD c0 ell N mu C a rho eta Chi Bl n)
@@ -47,40 +47,28 @@ attribute [local instance] Classical.propDecidable
   · exact integrable_zero _ _ _
   · exact (finePairCountTwoGeometryEnvelope_integrable_and_le (by omega) _ _ _ _
       (lt_of_lt_of_le zero_lt_one (hell.trans hN))).1
-  · change Integrable (fun U : Fin (n+3) → Covariate d => if n+3 ≤ D then
+  · change Integrable (fun U : DesignSample d (n+3) => if n+3 ≤ D then
       completeSourceHigherGeometryEnvelope (D := D) aD bD c0 ell N mu M R q C a rho eta U
-      else (3*Chi^2)^(n+3)*eta^4*(Bl+1)^2) (fullSpatialPatchDesign d (n+3))
+      else (3*Chi^2)^(n+3)*eta^4*(Bl+1)^2) _
     split_ifs
-    · exact completeSourceHigherGeometryEnvelope_integrable hd (by omega) _ _ _ _ _ _ _ _ _ _ _ _ _ hell hN
+    · exact (completeSourceHigherGeometryEnvelope_integral hd (by omega) _ _ _ _ _ _ _ _ _ _ _ _ _ hell hN).1
     · exact integrable_const _
 
- theorem completeSourceGeometryEnvelope_pair_integral_le {d : ℕ} (D M R q : ℕ)
-    (aD bD c0 ell N mu C a rho eta Chi Bl : ℝ) (hd : 0 < d) (hN : 0 < N) :
-    (∫ U, completeSourceGeometryEnvelope (d := d) D M R q aD bD c0 ell N mu C a rho eta Chi Bl 2 U
-      ∂fullSpatialPatchDesign d 2) ≤ 9*finePairCountTwoSpatialBudget d (bD-(M : ℝ)⁻¹) a rho eta N :=
-    (finePairCountTwoGeometryEnvelope_integrable_and_le hd _ _ _ _ hN).2
-
- theorem completeSourceGeometryEnvelope_exterior_integral {d : ℕ} (D M R q n : ℕ)
+ theorem completeSourceGeometryEnvelope_exterior_integral (n : ℕ)
     (aD bD c0 ell N mu C a rho eta Chi Bl : ℝ) (hn : D < n+3) :
     (∫ U, completeSourceGeometryEnvelope (d := d) D M R q aD bD c0 ell N mu C a rho eta Chi Bl (n+3) U
       ∂fullSpatialPatchDesign d (n+3)) =
       (3*(2 : ℝ)^d*Chi^2)^(n+3)*eta^4*(Bl+1)^2 := by
   simp only [completeSourceGeometryEnvelope, if_neg (not_le.mpr hn), integral_const,
     fullSpatialPatchDesign_real_univ, smul_eq_mul]
-  rw [pow_mul, mul_pow]
   ring
 
- theorem fineFieldGeometryEnvelope_count_three {d : ℕ} (ad bd T0 N : ℝ)
+ theorem fineFieldGeometryEnvelope_count_three (ad bd T0 N : ℝ)
     (M q : ℕ) (C a rho eta : ℝ) (U : Fin 3 → Covariate d) :
     fineFieldGeometryEnvelope ad bd T0 N M q C a rho eta U = 0 := by
   have hs : ((Finset.univ : Finset (Fin 3)).powerset).filter
       (fun S => 4 ≤ S.card ∧ Even S.card) = ∅ := by
-    apply Finset.eq_empty_iff_forall_notMem.mpr
-    intro S hS
-    have hcard := Finset.card_le_card ((Finset.mem_powerset.mp (Finset.mem_filter.mp hS).1))
-    simp only [Finset.card_univ, Fintype.card_fin] at hcard
-    have h4 := (Finset.mem_filter.mp hS).2.1
-    omega
+    rfl
   unfold fineFieldGeometryEnvelope
   rw [hs]
   simp

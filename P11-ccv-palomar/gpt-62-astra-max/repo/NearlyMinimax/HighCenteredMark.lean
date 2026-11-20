@@ -19,26 +19,35 @@ set_option maxHeartbeats 1000000
 section AbsoluteMark
 variable {E : Type*} [MeasurableSpace E]
 
-def signedMarkMass (μ : Measure E) (w : E → ℝ) : ℝ := ∫ e, |w e| ∂μ
+section
+variable (μ : Measure E) (w : E → ℝ)
 
-def absoluteMarkLaw (μ : Measure E) (w : E → ℝ) : Measure E :=
+def signedMarkMass : ℝ := ∫ e, |w e| ∂μ
+
+def absoluteMarkLaw : Measure E :=
   μ.withDensity (fun e => ENNReal.ofReal (|w e| / signedMarkMass μ w))
 
-def absoluteActivation (μ : Measure E) (w : E → ℝ) (e : E) : ℝ :=
+def absoluteActivation (e : E) : ℝ :=
   signedMarkMass μ w * (w e / |w e|)
 
-theorem signedMarkMass_nonneg (μ : Measure E) (w : E → ℝ) :
+theorem signedMarkMass_nonneg :
     0 ≤ signedMarkMass μ w := integral_nonneg (fun _ => abs_nonneg _)
 
-theorem signedMarkMass_eq_variation (μ : Measure E) (w : E → ℝ) (hw : Integrable w μ) :
+end
+
+variable {μ : Measure E} {w : E → ℝ} (hw : Integrable w μ) (hmw : Measurable w)
+    (hpos : 0 < signedMarkMass μ w)
+
+include hw in
+theorem signedMarkMass_eq_variation :
     signedMarkMass μ w = ((μ.withDensityᵥ w).variation univ).toReal := by
   rw [Measure.variation_withDensityᵥ hw, withDensity_apply _ MeasurableSet.univ]
-  simp only [Measure.restrict_univ]
+  simp
   rw [← integral_norm_eq_lintegral_enorm hw.aestronglyMeasurable]
-  simp only [signedMarkMass, Real.norm_eq_abs]
+  simp [signedMarkMass]
 
-theorem absoluteMarkLaw_probability (μ : Measure E) (w : E → ℝ)
-    (hw : Integrable w μ) (hpos : 0 < signedMarkMass μ w) :
+include hw hpos in
+theorem absoluteMarkLaw_probability :
     IsProbabilityMeasure (absoluteMarkLaw μ w) := by
   constructor
   rw [absoluteMarkLaw, withDensity_apply _ MeasurableSet.univ, Measure.restrict_univ,
@@ -46,9 +55,9 @@ theorem absoluteMarkLaw_probability (μ : Measure E) (w : E → ℝ)
       (Filter.Eventually.of_forall (fun e => div_nonneg (abs_nonneg (w e)) hpos.le)),
     integral_div]
   change ENNReal.ofReal (signedMarkMass μ w / signedMarkMass μ w) = 1
-  simp only [div_self hpos.ne', ENNReal.ofReal_one]
+  simp [div_self hpos.ne', ENNReal.ofReal_one]
 
-theorem absoluteActivation_measurable (μ : Measure E) (w : E → ℝ) (hw : Measurable w) :
+theorem absoluteActivation_measurable (μ : Measure E) {w : E → ℝ} (hw : Measurable w) :
     Measurable (absoluteActivation μ w) :=
   (hw.div hw.abs).const_mul _
 
@@ -61,8 +70,8 @@ theorem absoluteActivation_bound (μ : Measure E) (w : E → ℝ) (e : E) :
     · rw [abs_div, abs_abs, div_self (abs_ne_zero.mpr he)]
   exact (mul_le_mul_of_nonneg_left hb (signedMarkMass_nonneg μ w)).trans_eq (mul_one _)
 
-theorem absoluteMarkLaw_activation_integral (μ : Measure E) (w : E → ℝ)
-    (hmw : Measurable w) (hpos : 0 < signedMarkMass μ w) (F : E → ℝ) :
+include hmw hpos in
+theorem absoluteMarkLaw_activation_integral (F : E → ℝ) :
     (∫ e, absoluteActivation μ w e * F e ∂absoluteMarkLaw μ w) =
       ∫ e, w e * F e ∂μ := by
   rw [absoluteMarkLaw, integral_withDensity_eq_integral_toReal_smul
@@ -78,82 +87,86 @@ theorem absoluteMarkLaw_activation_integral (μ : Measure E) (w : E → ℝ)
   · simp [he]
   · field_simp
 
-theorem absoluteActivation_centered (μ : Measure E) (w : E → ℝ)
-    (hmw : Measurable w) (hpos : 0 < signedMarkMass μ w)
-    (hzero : ∫ e, w e ∂μ = 0) :
-    (∫ e, absoluteActivation μ w e ∂absoluteMarkLaw μ w) = 0 := by
-  have h := absoluteMarkLaw_activation_integral μ w hmw hpos (fun _ => 1)
-  simp only [mul_one] at h
-  exact h.trans hzero
-
-theorem absoluteMarkLaw_signed_action (μ : Measure E) (w : E → ℝ)
-    (hw : Integrable w μ) (hmw : Measurable w) (hpos : 0 < signedMarkMass μ w)
-    (F : E → ℝ) (hF : Measurable F) (M : ℝ) (hbound : ∀ e, ‖F e‖ ≤ M) :
+include hw hmw hpos in
+theorem absoluteMarkLaw_signed_action
+    {F : E → ℝ} (hF : Measurable F) {M : ℝ} (hbound : ∀ e, ‖F e‖ ≤ M) :
     (∫ e, absoluteActivation μ w e * F e ∂absoluteMarkLaw μ w) =
       ∫ᵛ e, F e ∂<•(μ.withDensityᵥ w) := by
-  rw [absoluteMarkLaw_activation_integral μ w hmw hpos F,
-    signedDensity_integral μ w hw hmw F hF M hbound]
+  rw [absoluteMarkLaw_activation_integral hmw hpos F,
+    signedDensity_integral μ hw hmw hF M hbound]
 
 end AbsoluteMark
-
-section History
-variable {E J : Type*} [MeasurableSpace E] [Fintype J] [LinearOrder J]
-
-end History
 
 section Packet
 variable {Z ι : Type*} [MeasurableSpace Z] [Fintype ι] [DecidableEq ι]
   [MeasurableSpace ι] [MeasurableSingletonClass ι]
 
-def highPacketMarkMass (σ : Measure Z) (a b : ℝ) (m r D q : ℕ) (C : ℝ)
-    (A : Z → ι → ι → ℝ) : ℝ :=
+section
+variable {I : Type*} [Fintype I] [MeasurableSpace I] [MeasurableSingletonClass I]
+    {σ : Measure Z} [IsFiniteMeasure σ] (w : I → ℝ) (q : ℕ) (C : ℝ) {A : Z → ι → ι → ℝ}
+    (hA : ∀ i j, Measurable (fun ζ => A ζ i j)) (hcost : Integrable (separatedMatrixCost A) σ)
+include hA hcost
+
+theorem tensorActivation_density_zero (hpos : 0 < signedMarkMass (σ.prod Measure.count) (responseTensorWeight w q C A))
+    {F : Z × I → ℝ} (hF : Measurable F) {K : ℝ} (hb : ∀ e, ‖F e‖ ≤ K) :
+    (∫ e, absoluteActivation (σ.prod Measure.count) (responseTensorWeight w q C A) e * F (e.1,e.2.1)
+      ∂absoluteMarkLaw (σ.prod Measure.count) (responseTensorWeight w q C A)) = 0 := by
+  have hm : Measurable (fun e : Z × (I × HighResponseMarkIndex ι q) => F (e.1,e.2.1)) := by fun_prop
+  have hi := (tensorWeight_integrable w q C hA hcost).mul_bdd hm.aestronglyMeasurable
+    (Filter.Eventually.of_forall (fun e => hb (e.1,e.2.1)))
+  have hz (ζ : Z) : (∑ h : HighResponseMarkIndex ι q, highResponseMarkWeight C (A ζ) h) = 0 := by
+    simpa only [mul_one, responseMatrixAction_zero_mass] using highResponseMark_action q C (A ζ) (fun _ => 0) (fun _ => 1)
+  rw [absoluteMarkLaw_activation_integral (tensorWeight_measurable w q C hA) hpos, integral_prod _ hi]
+  simp only [integral_count, Fintype.sum_prod_type (f := fun h : I × HighResponseMarkIndex ι q => _), responseTensorWeight]
+  simp only [mul_assoc, ← Finset.mul_sum, ← Finset.sum_mul, hz, zero_mul, mul_zero, Finset.sum_const_zero, integral_zero]
+
+end
+
+section
+variable (σ : Measure Z) (a b : ℝ) (m r D q : ℕ) (C : ℝ) (A : Z → ι → ι → ℝ)
+
+def highPacketMarkMass : ℝ :=
   signedMarkMass (σ.prod Measure.count) (highPacketMarkWeight a b m r D q C A)
 
-def highPacketAbsoluteLaw (σ : Measure Z) (a b : ℝ) (m r D q : ℕ) (C : ℝ)
-    (A : Z → ι → ι → ℝ) : Measure (Z × HighPacketMarkIndex ι m r D q) :=
+def highPacketAbsoluteLaw : Measure (Z × HighPacketMarkIndex ι m r D q) :=
   absoluteMarkLaw (σ.prod Measure.count) (highPacketMarkWeight a b m r D q C A)
 
-def highPacketActivation (σ : Measure Z) (a b : ℝ) (m r D q : ℕ) (C : ℝ)
-    (A : Z → ι → ι → ℝ) : Z × HighPacketMarkIndex ι m r D q → ℝ :=
+def highPacketActivation : Z × HighPacketMarkIndex ι m r D q → ℝ :=
   absoluteActivation (σ.prod Measure.count) (highPacketMarkWeight a b m r D q C A)
 
-theorem highPacketMarkMass_eq_variation (σ : Measure Z) [IsFiniteMeasure σ]
-    (a b : ℝ) (m r D q : ℕ) (C : ℝ) (A : Z → ι → ι → ℝ)
-    (hA : ∀ i j, Measurable (fun ζ => A ζ i j)) (hcost : Integrable (separatedMatrixCost A) σ) :
+end
+
+section
+variable {σ : Measure Z} [IsFiniteMeasure σ] (a b : ℝ) (m r D q : ℕ) (C : ℝ) {A : Z → ι → ι → ℝ}
+    (hA : ∀ i j, Measurable (fun ζ => A ζ i j)) (hcost : Integrable (separatedMatrixCost A) σ)
+include hA hcost
+
+theorem highPacketMarkMass_eq_variation :
     highPacketMarkMass σ a b m r D q C A =
       ((highPacketSignedMeasure σ a b m r D q C A).variation univ).toReal :=
-  signedMarkMass_eq_variation _ _ (highPacketMarkWeight_integrable σ a b m r D q C A hA hcost)
+  signedMarkMass_eq_variation (tensorWeight_integrable (densityPacketWeight a b m r D) q C hA hcost)
 
-theorem highPacketMarkWeight_integral_zero (σ : Measure Z) [IsFiniteMeasure σ]
-    (a b : ℝ) (m r D q : ℕ) (C : ℝ) (A : Z → ι → ι → ℝ)
-    (hA : ∀ i j, Measurable (fun ζ => A ζ i j)) (hcost : Integrable (separatedMatrixCost A) σ) :
-    (∫ e, highPacketMarkWeight a b m r D q C A e ∂σ.prod Measure.count) = 0 := by
-  have h := highPacketSignedMeasure_zero_mass σ a b m r D q C A hA hcost
-  rw [highPacketSignedMeasure, withDensityᵥ_apply
-    (highPacketMarkWeight_integrable σ a b m r D q C A hA hcost) MeasurableSet.univ,
-    Measure.restrict_univ] at h
+end
+
+section
+variable {σ : Measure Z} [IsFiniteMeasure σ] {a b : ℝ} {m r D q : ℕ} {C : ℝ} {A : Z → ι → ι → ℝ}
+    (hA : ∀ i j, Measurable (fun ζ => A ζ i j)) (hcost : Integrable (separatedMatrixCost A) σ)
+    (hpos : 0 < highPacketMarkMass σ a b m r D q C A)
+include hA hcost hpos
+
+theorem highPacketAbsoluteLaw_probability :
+    IsProbabilityMeasure (highPacketAbsoluteLaw σ a b m r D q C A) :=
+  absoluteMarkLaw_probability (tensorWeight_integrable (densityPacketWeight a b m r D) q C hA hcost) hpos
+
+theorem highPacketActivation_centered :
+    (∫ e, highPacketActivation σ a b m r D q C A e
+      ∂highPacketAbsoluteLaw σ a b m r D q C A) = 0 := by
+  have h := tensorActivation_density_zero (densityPacketWeight a b m r D) q C hA hcost hpos
+    (F := fun _ => 1) measurable_const (fun _ => le_rfl)
+  simp at h
   exact h
 
-theorem highPacketAbsoluteLaw_probability (σ : Measure Z) [IsFiniteMeasure σ]
-    (a b : ℝ) (m r D q : ℕ) (C : ℝ) (A : Z → ι → ι → ℝ)
-    (hA : ∀ i j, Measurable (fun ζ => A ζ i j)) (hcost : Integrable (separatedMatrixCost A) σ)
-    (hpos : 0 < highPacketMarkMass σ a b m r D q C A) :
-    IsProbabilityMeasure (highPacketAbsoluteLaw σ a b m r D q C A) :=
-  absoluteMarkLaw_probability _ _ (highPacketMarkWeight_integrable σ a b m r D q C A hA hcost) hpos
-
-theorem highPacketActivation_centered (σ : Measure Z) [IsFiniteMeasure σ]
-    (a b : ℝ) (m r D q : ℕ) (C : ℝ) (A : Z → ι → ι → ℝ)
-    (hA : ∀ i j, Measurable (fun ζ => A ζ i j)) (hcost : Integrable (separatedMatrixCost A) σ)
-    (hpos : 0 < highPacketMarkMass σ a b m r D q C A) :
-    (∫ e, highPacketActivation σ a b m r D q C A e
-      ∂highPacketAbsoluteLaw σ a b m r D q C A) = 0 :=
-  absoluteActivation_centered _ _ (highPacketMarkWeight_measurable a b m r D q C A hA)
-    hpos (highPacketMarkWeight_integral_zero σ a b m r D q C A hA hcost)
-
-theorem highPacketActivation_bound (σ : Measure Z) (a b : ℝ) (m r D q : ℕ) (C : ℝ)
-    (A : Z → ι → ι → ℝ) (e : Z × HighPacketMarkIndex ι m r D q) :
-    |highPacketActivation σ a b m r D q C A e| ≤ highPacketMarkMass σ a b m r D q C A :=
-  absoluteActivation_bound _ _ _
+end
 
 end Packet
 end NearlyMinimax

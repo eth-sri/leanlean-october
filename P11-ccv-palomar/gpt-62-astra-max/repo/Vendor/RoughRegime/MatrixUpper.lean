@@ -15,19 +15,18 @@ namespace RoughRegime.MatrixUpper
 
 /-- The `k`th normalized Chebyshev polynomial on the positive interval. -/
 def normalizedChebyshev (lo hi : ℝ) (k : ℕ) : ℝ[X] :=
-  (Polynomial.Chebyshev.T ℝ (k : ℤ)).comp
+  (Polynomial.Chebyshev.T ℝ k).comp
     (C (intervalHalfWidth lo hi)⁻¹ * (X - C (intervalCenter lo hi)))
 
 lemma normalizedChebyshev_natDegree (lo hi : ℝ) (k : ℕ) :
     (normalizedChebyshev lo hi k).natDegree ≤ k := by
-  unfold normalizedChebyshev
   calc
-    _ ≤ (Polynomial.Chebyshev.T ℝ (k : ℤ)).natDegree *
+    _ ≤ (Polynomial.Chebyshev.T ℝ k).natDegree *
       (C (intervalHalfWidth lo hi)⁻¹ * (X - C (intervalCenter lo hi))).natDegree :=
       natDegree_comp_le
     _ ≤ k * 1 := by
       apply Nat.mul_le_mul
-      · simp [Polynomial.Chebyshev.natDegree_T]
+      · simp
       · exact (natDegree_C_mul_le _ _).trans (by simp)
     _ = k := by simp
 
@@ -35,21 +34,20 @@ lemma normalizedChebyshev_eval (lo hi x : ℝ) (k : ℕ) :
     (normalizedChebyshev lo hi k).eval x =
       (Polynomial.Chebyshev.T ℝ (k : ℤ)).eval
         ((x - intervalCenter lo hi) / intervalHalfWidth lo hi) := by
-  simp [normalizedChebyshev, div_eq_mul_inv, mul_comm]
+  simp [normalizedChebyshev] <;> ring
 
 /-- The Chebyshev coefficient has ℓ² operator norm at most one whenever the matrix spectrum
 lies in the interval, exactly the spectral bound used before Lemma 5. -/
 theorem matrix_chebyshev_norm_le_one {n : Type*} [Fintype n] [DecidableEq n]
-    (lo hi : ℝ) (hlo : 0 < lo) (hlt : lo < hi)
-    (M : Matrix n n ℝ) (hM : M.IsHermitian)
+    {lo hi : ℝ} (hlo : 0 < lo) (hlt : lo < hi)
+    {M : Matrix n n ℝ} (hM : M.IsHermitian)
     (hSpec : spectrum ℝ M ⊆ Set.Icc lo hi) (k : ℕ) :
     ‖Polynomial.aeval M (normalizedChebyshev lo hi k)‖ ≤ 1 := by
-  have hs : IsSelfAdjoint M := Matrix.isHermitian_iff_isSelfAdjoint.mp hM
-  rw [← cfc_polynomial _ M hs]
+  rw [← cfc_polynomial _ M (Matrix.isHermitian_iff_isSelfAdjoint.mp hM)]
   apply norm_cfc_le (by norm_num)
   intro x hx
   rw [normalizedChebyshev_eval, Real.norm_eq_abs]
-  exact chebyshev_abs_le_one _ (interval_argument_mem lo hi x hlo hlt (hSpec hx)) k
+  grind [chebyshev_abs_le_one, interval_argument_mem]
 
 /-- Matrix whose entries are independent multivariate polynomial variables. -/
 def variableMatrix (n : Type*) : Matrix n n (MvPolynomial (n × n) ℝ) :=
@@ -63,7 +61,6 @@ lemma variableMatrix_power_degree {n : Type*} [Fintype n] [DecidableEq n]
     simp only [pow_zero, Matrix.one_apply]
     split_ifs <;> simp
   | succ k ih =>
-    rw [pow_succ, Matrix.mul_apply]
     apply MvPolynomial.totalDegree_finsetSum_le
     intro a _
     exact (MvPolynomial.totalDegree_mul _ _).trans
@@ -90,14 +87,13 @@ def matrixEntryPolynomial {n : Type*} [Fintype n] [DecidableEq n]
 lemma matrixEntryPolynomial_degree {n : Type*} [Fintype n] [DecidableEq n]
     (q : ℝ[X]) (i j : n) :
     (matrixEntryPolynomial q i j).totalDegree ≤ q.natDegree := by
-  unfold matrixEntryPolynomial
   apply MvPolynomial.totalDegree_finsetSum_le
   intro k hk
   calc
-    _ ≤ (MvPolynomial.C (q.coeff k) : MvPolynomial (n × n) ℝ).totalDegree +
+    _ ≤ (MvPolynomial.C (q.coeff k)).totalDegree +
       ((variableMatrix n ^ k) i j).totalDegree := MvPolynomial.totalDegree_mul _ _
     _ ≤ 0 + k := Nat.add_le_add (by simp) (variableMatrix_power_degree k i j)
-    _ ≤ q.natDegree := by simpa using Nat.le_of_lt_succ (Finset.mem_range.mp hk)
+    _ ≤ q.natDegree := by simp_all
 
 lemma matrixEntryPolynomial_eval {n : Type*} [Fintype n] [DecidableEq n]
     (q : ℝ[X]) (M : Matrix n n ℝ) (i j : n) :

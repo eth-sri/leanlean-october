@@ -17,139 +17,127 @@ namespace NearlyMinimax
 
 variable {J : Type*} [Fintype J] [LinearOrder J]
 
+section
+variable {dependent : J → J → Prop}
+
 /-- The actual generator before folding the history into raw fields: append a fresh local mark. -/
-def historyMarkedGeneratorExpectation (dependent : J → J → Prop)
-    (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i) (ρ t : ℝ)
+def historyMarkedGeneratorExpectation
+    [Std.Symm dependent] (ρ t : ℝ)
     {E : Type*} [MeasurableSpace E] (μ : Measure (HistoryMarked dependent E)) (π : Measure E)
     (a : E → ℝ) (F : HistoryMarked dependent E → ℝ) : ℝ :=
-  ∑ j, ∫ p : HistoryMarked dependent E × E,
-    F (historyMarkedAppend dependent hsymm j p) * a p.2 *
-      historyMarkedDensity dependent ρ t a p.1 ∂μ.prod π
+  ∑ j, ∫ p,
+    F (historyMarkedAppend j p) * a p.2 *
+      historyMarkedDensity ρ t a p.1 ∂μ.prod π
 
 /-- Exact signed integral change of variables, proved for the actual normalized reference law. -/
-theorem historyMarkedLabelTerm_integral (dependent : J → J → Prop)
-    (hrefl : ∀ j, dependent j j) (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
+theorem historyMarkedLabelTerm_integral
+    [Std.Refl dependent] [Std.Symm dependent]
     (Δ : ℕ) (t : ℝ) {E : Type*} [MeasurableSpace E] [StandardBorelSpace E]
-    (π : Measure E) [IsProbabilityMeasure π] (a : E → ℝ) (ha : Measurable a)
-    (F : HistoryMarked dependent E → ℝ) (hF : Measurable F) (j : J) :
-    (∫ h, F h * historyMarkedLabelTerm dependent (historyReferenceRho Δ) t a j h
+    (π : Measure E) [IsProbabilityMeasure π] {a : E → ℝ} (ha : Measurable a)
+    {F : HistoryMarked dependent E → ℝ} (hF : Measurable F) (j : J) :
+    (∫ h, F h * historyMarkedLabelTerm (historyReferenceRho Δ) t a j h
       ∂historyMarkedReference dependent Δ π) =
-    historyReferenceRho Δ * ∫ p : HistoryMarked dependent E × E,
-      F (historyMarkedAppend dependent hsymm j p) * a p.2 *
-        historyMarkedDensity dependent (historyReferenceRho Δ) t a p.1
+    historyReferenceRho Δ * ∫ p,
+      F (historyMarkedAppend j p) * a p.2 *
+        historyMarkedDensity (historyReferenceRho Δ) t a p.1
         ∂(historyMarkedReference dependent Δ π).prod π := by
-  let μ := historyMarkedReference dependent Δ π
-  let G := fun h : HistoryMarked dependent E =>
-    F h * historyMarkedLabelTerm dependent (historyReferenceRho Δ) t a j h
-  have hG : Measurable G := hF.mul (historyMarkedLabelTerm_measurable dependent _ t a ha j)
-  have hm := historyMarkedReference_append_restrict dependent hrefl hsymm Δ j π
-  have he := congrArg (fun ν : Measure (HistoryMarked dependent E) => ∫ h, G h ∂ν) hm
-  rw [integral_smul_measure, integral_map (historyMarkedAppend_measurable dependent hsymm j).aemeasurable
+  let G := fun h =>
+    F h * historyMarkedLabelTerm (historyReferenceRho Δ) t a j h
+  have hG : Measurable G := hF.mul (historyMarkedLabelTerm_measurable dependent _ t ha j)
+  have he := congrArg (fun ν => ∫ h, G h ∂ν) (historyMarkedReference_append_restrict (dependent := dependent) Δ j π)
+  rw [integral_smul_measure, integral_map (historyMarkedAppend_measurable j).aemeasurable
     hG.aestronglyMeasurable] at he
   have hi : (historyMarkedTerminalSet dependent j).indicator G = G := by
     funext h
     by_cases ht : h ∈ historyMarkedTerminalSet dependent j
     · simp [ht]
-    · simp [ht, G, historyMarkedLabelTerm_eq_zero dependent hsymm _ t a j h ht]
+    · simp [ht, G, historyMarkedLabelTerm_eq_zero _ t a h ht]
   rw [← integral_indicator (historyMarkedTerminalSet_measurable dependent j), hi] at he
   rw [ENNReal.toReal_ofReal (historyReferenceRho_pos Δ).le] at he
-  change historyReferenceRho Δ *
-      (∫ p : HistoryMarked dependent E × E, G (historyMarkedAppend dependent hsymm j p) ∂μ.prod π) =
-        ∫ h, G h ∂μ at he
-  have hp : ∀ p : HistoryMarked dependent E × E,
-      G (historyMarkedAppend dependent hsymm j p) =
-        F (historyMarkedAppend dependent hsymm j p) * a p.2 *
-          historyMarkedDensity dependent (historyReferenceRho Δ) t a p.1 := by
+  have hp : ∀ p,
+      G (historyMarkedAppend j p) =
+        F (historyMarkedAppend j p) * a p.2 *
+          historyMarkedDensity (historyReferenceRho Δ) t a p.1 := by
     intro p
-    dsimp only [G]
-    rw [historyMarkedLabelTerm_append dependent hrefl hsymm]
+    dsimp [G]
+    rw [historyMarkedLabelTerm_append]
     ring
   simp_rw [hp] at he
   exact he.symm
 
+end
+
+variable {dependent : J → J → Prop} [Std.Refl dependent] [Std.Symm dependent] {Δ : ℕ} (hΔ : 1 ≤ Δ)
+    (hlabels : DegreeAtMost dependent Δ) {ρ T t B : ℝ} (hρ : 0 < ρ) (ht : 0 ≤ t) (hB : 0 ≤ B) {E : Type*}
+    [MeasurableSpace E]
+include hlabels
+
+include hρ ht hB in
 /-- Bounded observables times true maximal-label terms are integrable over every finite law. -/
-theorem historyMarkedLabelTerm_integrable (dependent : J → J → Prop)
-    (hrefl : ∀ j, dependent j j) (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
-    (Δ : ℕ) (hlabels : ∀ j, (dependentLabelFinset dependent j).card ≤ Δ)
-    (ρ t B : ℝ) (hρ : 0 < ρ) (ht : 0 ≤ t) (hB : 0 ≤ B)
-    {E : Type*} [MeasurableSpace E] (μ : Measure (HistoryMarked dependent E)) [IsFiniteMeasure μ]
-    (a : E → ℝ) (ha : Measurable a) (habound : ∀ e, |a e| ≤ B)
-    (hsmall : t * B / ρ ≤ 1 / (2 + 8 * (Δ : ℝ) ^ 2))
-    (F : HistoryMarked dependent E → ℝ) (hF : Measurable F)
-    (M : ℝ) (hM : 0 ≤ M) (hFbound : ∀ h, |F h| ≤ M) (j : J) :
-    Integrable (fun h => F h * historyMarkedLabelTerm dependent ρ t a j h) μ := by
-  apply Integrable.of_bound (hF.mul (historyMarkedLabelTerm_measurable dependent ρ t a ha j)).aestronglyMeasurable
-    (M * (B * (3 / 2 : ℝ) ^ Fintype.card J))
+theorem historyMarkedLabelTerm_integrable (μ : Measure (HistoryMarked dependent E)) [IsFiniteMeasure μ]
+    {a : E → ℝ} (ha : Measurable a) (habound : ∀ e, |a e| ≤ B)
+    (hsmall : t * B / ρ ≤ historyActivityRadius Δ)
+    {F : HistoryMarked dependent E → ℝ} (hF : Measurable F)
+    {M : ℝ} (hM : 0 ≤ M) (hFbound : ∀ h, |F h| ≤ M) (j : J) :
+    Integrable (fun h => F h * historyMarkedLabelTerm ρ t a j h) μ := by
+  apply Integrable.of_bound (hF.mul (historyMarkedLabelTerm_measurable dependent ρ t ha j)).aestronglyMeasurable
+    (M * (B * (3 / 2) ^ Fintype.card J))
   apply Eventually.of_forall
   intro h
-  change ‖F h * historyMarkedLabelTerm dependent ρ t a j h‖ ≤ _
+  change ‖F h * historyMarkedLabelTerm ρ t a j h‖ ≤ _
   rw [Real.norm_eq_abs, abs_mul]
-  exact mul_le_mul (hFbound h)
-    (historyMarkedLabelTerm_bound dependent hrefl hsymm Δ hlabels ρ t B hρ ht hB a habound hsmall j h)
-    (abs_nonneg _) hM
+  bound [historyMarkedLabelTerm_bound hlabels hρ ht hB habound hsmall j h]
 
+include hΔ ht hB in
 /-- The integral of the actual density derivative is exactly the source signed append generator. -/
-theorem historyMarkedDensityDerivative_integral_eq_generator (dependent : J → J → Prop)
-    (hrefl : ∀ j, dependent j j) (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
-    (Δ : ℕ) (hΔ : 1 ≤ Δ) (hlabels : ∀ j, (dependentLabelFinset dependent j).card ≤ Δ)
-    (t B : ℝ) (ht : 0 ≤ t) (hB : 0 ≤ B) {E : Type*} [MeasurableSpace E] [StandardBorelSpace E]
-    (π : Measure E) [IsProbabilityMeasure π] (a : E → ℝ) (ha : Measurable a)
+theorem historyMarkedDensityDerivative_integral_eq_generator [StandardBorelSpace E]
+    (π : Measure E) [IsProbabilityMeasure π] {a : E → ℝ} (ha : Measurable a)
     (habound : ∀ e, |a e| ≤ B)
-    (hsmall : t * B / historyReferenceRho Δ ≤ 1 / (2 + 8 * (Δ : ℝ) ^ 2))
-    (F : HistoryMarked dependent E → ℝ) (hF : Measurable F)
-    (M : ℝ) (hM : 0 ≤ M) (hFbound : ∀ h, |F h| ≤ M) :
-    (∫ h, F h * historyMarkedDensityDerivative dependent (historyReferenceRho Δ) t a h
+    (hsmall : t * B / historyReferenceRho Δ ≤ historyActivityRadius Δ)
+    {F : HistoryMarked dependent E → ℝ} (hF : Measurable F)
+    {M : ℝ} (hM : 0 ≤ M) (hFbound : ∀ h, |F h| ≤ M) :
+    (∫ h, F h * historyMarkedDensityDerivative (historyReferenceRho Δ) t a h
       ∂historyMarkedReference dependent Δ π) =
-      historyMarkedGeneratorExpectation dependent hsymm (historyReferenceRho Δ) t
+      historyMarkedGeneratorExpectation (historyReferenceRho Δ) t
         (historyMarkedReference dependent Δ π) π a F := by
-  let μ := historyMarkedReference dependent Δ π
-  let : IsProbabilityMeasure μ := historyMarkedReference_probability dependent hrefl hsymm Δ hΔ hlabels π
-  have hi : ∀ j, Integrable (fun h => F h * historyMarkedLabelTerm dependent (historyReferenceRho Δ) t a j h) μ :=
-    fun j => historyMarkedLabelTerm_integrable dependent hrefl hsymm Δ hlabels _ t B
-      (historyReferenceRho_pos Δ) ht hB μ a ha habound hsmall F hF M hM hFbound j
-  have hp : ∀ h : HistoryMarked dependent E,
-      F h * historyMarkedDensityDerivative dependent (historyReferenceRho Δ) t a h =
-        (historyReferenceRho Δ)⁻¹ * ∑ j, F h * historyMarkedLabelTerm dependent (historyReferenceRho Δ) t a j h := by
+  let  := historyMarkedReference_probability hΔ hlabels π
+  have hi  :=
+    fun j => historyMarkedLabelTerm_integrable hlabels
+      (historyReferenceRho_pos Δ) ht hB (historyMarkedReference dependent Δ π) ha habound hsmall hF hM hFbound j
+  have hp : ∀ h,
+      F h * historyMarkedDensityDerivative (historyReferenceRho Δ) t a h =
+        (historyReferenceRho Δ)⁻¹ * ∑ j, F h * historyMarkedLabelTerm (historyReferenceRho Δ) t a j h := by
     intro h
     rw [historyMarkedDensityDerivative_eq_labelSum]
     calc
       _ = (historyReferenceRho Δ)⁻¹ *
-          (F h * ∑ j, historyMarkedLabelTerm dependent (historyReferenceRho Δ) t a j h) := by ring
+          (F h * ∑ j, historyMarkedLabelTerm (historyReferenceRho Δ) t a j h) := by ring
       _ = _ := by rw [Finset.mul_sum]
   simp_rw [hp]
   rw [integral_const_mul, integral_finsetSum Finset.univ (fun j _ => hi j)]
-  change (historyReferenceRho Δ)⁻¹ *
-    (∑ j, ∫ h, F h * historyMarkedLabelTerm dependent (historyReferenceRho Δ) t a j h
-      ∂historyMarkedReference dependent Δ π) = _
-  simp_rw [historyMarkedLabelTerm_integral dependent hrefl hsymm Δ t π a ha F hF]
+  simp_rw [historyMarkedLabelTerm_integral Δ t π ha hF]
   unfold historyMarkedGeneratorExpectation
   rw [← Finset.mul_sum]
-  have hn := ne_of_gt (historyReferenceRho_pos Δ)
-  rw [← mul_assoc, inv_mul_cancel₀ hn, one_mul]
+  grind [ne_of_gt (historyReferenceRho_pos Δ)]
 
+include hΔ in
 /-- Genuine interior weak evolution of the positive marked-history density law. -/
-theorem historyMarkedExpectation_weak_transport (dependent : J → J → Prop)
-    (hrefl : ∀ j, dependent j j) (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
-    (Δ : ℕ) (hΔ : 1 ≤ Δ) (hlabels : ∀ j, (dependentLabelFinset dependent j).card ≤ Δ)
-    (T B t : ℝ) (ht : 0 < t) (htT : t < T) (hB : 0 ≤ B)
+theorem historyMarkedExpectation_weak_transport {t : ℝ} (ht : 0 < t) (htT : t < T) (hB : 0 ≤ B)
     {E : Type*} [MeasurableSpace E] [StandardBorelSpace E]
-    (π : Measure E) [IsProbabilityMeasure π] (a : E → ℝ) (ha : Measurable a)
+    (π : Measure E) [IsProbabilityMeasure π] {a : E → ℝ} (ha : Measurable a)
     (habound : ∀ e, |a e| ≤ B)
-    (hsmall : T * B / historyReferenceRho Δ ≤ 1 / (2 + 8 * (Δ : ℝ) ^ 2))
-    (F : HistoryMarked dependent E → ℝ) (hF : Measurable F)
-    (M : ℝ) (hM : 0 ≤ M) (hFbound : ∀ h, |F h| ≤ M) :
-    HasDerivAt (historyMarkedExpectation dependent (historyReferenceRho Δ)
+    (hsmall : T * B / historyReferenceRho Δ ≤ historyActivityRadius Δ)
+    {F : HistoryMarked dependent E → ℝ} (hF : Measurable F)
+    {M : ℝ} (hM : 0 ≤ M) (hFbound : ∀ h, |F h| ≤ M) :
+    HasDerivAt (historyMarkedExpectation (historyReferenceRho Δ)
       (historyMarkedReference dependent Δ π) a F)
-      (historyMarkedGeneratorExpectation dependent hsymm (historyReferenceRho Δ) t
+      (historyMarkedGeneratorExpectation (historyReferenceRho Δ) t
         (historyMarkedReference dependent Δ π) π a F) t := by
-  let := historyMarkedReference_probability dependent hrefl hsymm Δ hΔ hlabels π
-  have hs : t * B / historyReferenceRho Δ ≤ 1 / (2 + 8 * (Δ : ℝ) ^ 2) :=
+  let := historyMarkedReference_probability hΔ hlabels π
+  have hs  :=
     (div_le_div_of_nonneg_right (mul_le_mul_of_nonneg_right htT.le hB) (historyReferenceRho_pos Δ).le).trans hsmall
-  have hd := (historyMarkedExpectation_hasDerivAt dependent hrefl hsymm Δ hlabels
-    (historyReferenceRho Δ) T B t (historyReferenceRho_pos Δ) ht htT hB
-    (historyMarkedReference dependent Δ π) a ha habound hsmall F hF M hM hFbound).2
-  rw [historyMarkedDensityDerivative_integral_eq_generator dependent hrefl hsymm Δ hΔ hlabels
-    t B ht.le hB π a ha habound hs F hF M hM hFbound] at hd
+  have hd := (((historyDensityPath hlabels (historyReferenceRho_pos Δ) hB ha habound hsmall Subset.rfl).weight hF hFbound).integral_deriv (historyMarkedReference dependent Δ π) (Icc_mem_nhds ht htT)).2
+  rw [historyMarkedDensityDerivative_integral_eq_generator hΔ hlabels ht.le hB π ha habound hs hF hM hFbound] at hd
   exact hd
 
 end NearlyMinimax

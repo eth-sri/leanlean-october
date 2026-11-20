@@ -15,7 +15,7 @@ theorem minimaxRMS_lower_of_squared_lower {d n : ℕ} (C : ModelConstants d)
   rw [ENNReal.ofReal_pow hr] at h
   have hh := ENNReal.rpow_le_rpow h (by norm_num : (0 : ℝ) ≤ 1/2)
   rw [← ENNReal.rpow_natCast_mul] at hh
-  norm_num only [Nat.cast_ofNat, mul_one_div_cancel, ENNReal.rpow_one] at hh
+  norm_num only [ mul_one_div_cancel, ENNReal.rpow_one] at hh
   exact hh
 
 end NearlyMinimax

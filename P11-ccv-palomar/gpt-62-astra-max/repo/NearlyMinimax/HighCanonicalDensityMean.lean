@@ -1,7 +1,7 @@
 module
 
 public import NearlyMinimax.HighHistoryDensityMean
-public import NearlyMinimax.HistoryReferenceMean
+public import NearlyMinimax.HistoryReferenceMeasure
 
 @[expose] public section
 
@@ -20,17 +20,13 @@ theorem packetSum_borelSpace {A B : Type*} [TopologicalSpace A] [TopologicalSpac
   apply le_antisymm
   · intro s hs
     have hsec := measurableSet_sum_iff.mp hs
-    let : MeasurableSpace (A ⊕ B) := borel (A ⊕ B)
+    let  := borel (A ⊕ B)
     let : BorelSpace (A ⊕ B) := ⟨rfl⟩
-    have hleft : MeasurableSet (Sum.inl '' (Sum.inl ⁻¹' s) : Set (A ⊕ B)) :=
-      Topology.IsClosedEmbedding.inl.measurableEmbedding.measurableSet_image' hsec.1
-    have hright : MeasurableSet (Sum.inr '' (Sum.inr ⁻¹' s) : Set (A ⊕ B)) :=
-      Topology.IsClosedEmbedding.inr.measurableEmbedding.measurableSet_image' hsec.2
     have he : s = Sum.inl '' (Sum.inl ⁻¹' s) ∪ Sum.inr '' (Sum.inr ⁻¹' s) := by
       ext x
       cases x <;> simp
     rw [he]
-    exact hleft.union hright
+    exact (Topology.IsClosedEmbedding.inl.measurableEmbedding.measurableSet_image' hsec.1).union (Topology.IsClosedEmbedding.inr.measurableEmbedding.measurableSet_image' hsec.2)
   · apply MeasurableSpace.generateFrom_le
     intro s hs
     exact measurableSet_sum_iff.mpr ⟨(hs.preimage continuous_inl).measurableSet,
@@ -42,7 +38,7 @@ variable {Z : Type*} [MeasurableSpace Z] (d k F m r D q : ℕ) [NeZero k]
   (dependent : HighWindowLabels d k → HighWindowLabels d k → Prop)
 
 variable (σ : Measure Z) [IsFiniteMeasure σ] (a b C δ : ℝ)
-  (A : Z → HighFrameIndex d F → HighFrameIndex d F → ℝ)
+  (A : Z → HighFrameIndex d F → HighFrameVector d F)
   (hA : ∀ i j, Measurable (fun ζ => A ζ i j)) (hcost : Integrable (separatedMatrixCost A) σ)
   (hpos : 0 < highPacketMarkMass σ a b m r D q C A)
   (ha : 0 < a) (hab : a < b) (hr : 1 ≤ r) (hδ0 : 0 ≤ δ) (hδ1 : δ < 1)

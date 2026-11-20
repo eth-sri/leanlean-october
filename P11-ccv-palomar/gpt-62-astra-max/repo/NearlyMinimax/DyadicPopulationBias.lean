@@ -16,48 +16,42 @@ namespace NearlyMinimax
 set_option maxHeartbeats 1000000
 set_option backward.isDefEq.respectTransparency false
 
-theorem anchoredFinVector_dotProduct {d ℓ : ℕ} (u v : AnchoredIndex d ℓ → ℝ) :
-    anchoredFinVector u ⬝ᵥ anchoredFinVector v = u ⬝ᵥ v := by
-  simp only [dotProduct, anchoredFinVector, anchoredFinIndex]
-  exact (Fintype.equivFin (AnchoredIndex d ℓ)).symm.sum_comp
-    (fun γ : AnchoredIndex d ℓ => u γ * v γ)
+variable {d : ℕ} (C : ModelConstants d) {ℓ : ℕ} (θ : RegressionParameter d) (J : ℕ) (m : ℕ → ℕ)
 
-theorem dyadicPilotRow_dot_coefficients {d ℓ : ℕ} (j : ℕ)
+theorem dyadicPilotRow_dot_coefficients (j : ℕ)
     (x y : Covariate d) (v : AnchoredIndex d ℓ → ℝ) :
     dyadicPilotRow j x y ⬝ᵥ anchoredFinVector v = dyadicAnchoredFeature j x y ⬝ᵥ v :=
-  anchoredFinVector_dotProduct _ _
+  (Fintype.equivFin (AnchoredIndex d ℓ)).symm.sum_comp (fun γ : AnchoredIndex d ℓ => (dyadicAnchoredFeature j x y) γ * v γ)
 
 theorem finite_row_abs_dot_le_euclidean_norm {ι : Type*} [Fintype ι]
     (row v : ι → ℝ) :
     |row ⬝ᵥ v| ≤ (∑ i, |row i|) * ‖(EuclideanSpace.equiv ι ℝ).symm v‖ := by
   apply (Finset.abs_sum_le_sum_abs _ _).trans
   calc
-    (∑ i, |row i * v i|) ≤ ∑ i, |row i| * ‖(EuclideanSpace.equiv ι ℝ).symm v‖ := by
+    _ ≤ ∑ i, |row i| * ‖(EuclideanSpace.equiv ι ℝ).symm v‖ := by
       apply Finset.sum_le_sum
       intro i _
       rw [abs_mul]
       apply mul_le_mul_of_nonneg_left _ (abs_nonneg _)
-      simpa [EuclideanSpace.equiv, Real.norm_eq_abs] using
-        PiLp.norm_apply_le ((EuclideanSpace.equiv ι ℝ).symm v) i
+      exact PiLp.norm_apply_le ((EuclideanSpace.equiv ι ℝ).symm v) i
     _ = _ := by rw [Finset.sum_mul]
 
 theorem dyadic_scale_rpow_cancel (j : ℕ) (s : ℝ) :
-    (2 : ℝ) ^ j * (((2 : ℝ) ^ j)⁻¹) ^ s = (((2 : ℝ) ^ j)⁻¹) ^ (s - 1) := by
-  have h := positive_rpow_times_distance (((2 : ℝ) ^ j)⁻¹) s ((2 : ℝ) ^ j) (by positivity)
+    2 ^ j * ((2 ^ j)⁻¹) ^ s = (((2 : ℝ) ^ j)⁻¹) ^ (s - 1) := by
+  have h := positive_rpow_times_distance ((2 ^ j)⁻¹) s (2 ^ j) (by positivity)
   simpa only [inv_mul_cancel₀ (by positivity : (2 : ℝ) ^ j ≠ 0), one_mul, mul_comm] using h
 
-def dyadicPopulationPolynomial {d : ℕ} (C : ModelConstants d) (θ : RegressionParameter d)
+def dyadicPopulationPolynomial
     (j : ℕ) (x : Covariate d) (y : ℝ) (m : ℕ) : Fin (anchoredDimension d C.order) → ℝ :=
   incrementFinVector (anchoredDimension d C.order) C.densityLower C.densityUpper
     (anchoredFinTransport d C.order) y m (dyadicIncrementRawMean θ j x)
 
-def dyadicPopulationBiasBudget {d : ℕ} (C : ModelConstants d) (J : ℕ) (m : ℕ → ℕ) : ℝ :=
-  (((2 : ℝ) ^ J)⁻¹) ^ (C.smoothness - 1) +
-    ∑ j ∈ Finset.range (J + 1), (((2 : ℝ) ^ j)⁻¹) ^ (C.smoothness - 1) *
-      ((m j + 1 : ℕ) : ℝ) ^ anchoredDimension d C.order * Real.exp (-(m j : ℝ) * paperTau C)
+def dyadicPopulationBiasBudget : ℝ :=
+  ((2 ^ J)⁻¹) ^ (C.smoothness - 1) +
+    ∑ j ∈ Finset.range (J + 1), ((2 ^ j)⁻¹) ^ (C.smoothness - 1) *
+      (m j + 1 : ℕ) ^ anchoredDimension d C.order * Real.exp (-(m j) * paperTau C)
 
-def dyadicPopulationResidual {d : ℕ} (C : ModelConstants d) (θ : RegressionParameter d)
-    (J : ℕ) (m : ℕ → ℕ) (x y : Covariate d) : ℝ :=
+def dyadicPopulationResidual (x y : Covariate d) : ℝ :=
   θ.regression y - θ.regression x - ∑ j ∈ Finset.range (J + 1),
     dyadicPilotRow j x y ⬝ᵥ dyadicPopulationPolynomial C θ j x (θ.regression x) (m j)
 

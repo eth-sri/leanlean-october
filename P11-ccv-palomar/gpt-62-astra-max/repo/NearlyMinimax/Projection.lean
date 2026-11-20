@@ -21,61 +21,63 @@ namespace NearlyMinimax
 
 set_option backward.isDefEq.respectTransparency false
 
+section
+variable {ι Ω : Type*} [Fintype ι] {A : Matrix ι ι ℝ} (hsym : Aᵀ = A) (hidem : A * A = A) (f q : ι → ℝ)
+    (hq : A *ᵥ q = 0) (ε x : ι → ℝ)
+
 /-- Squared Euclidean length, independent of the sup norm on function spaces. -/
-def projectionEnergy {ι : Type*} [Fintype ι] (x : ι → ℝ) : ℝ := x ⬝ᵥ x
+def projectionEnergy : ℝ := x ⬝ᵥ x
 
 /-- The residual quadratic numerator. -/
-def projectionQuadratic {ι : Type*} [Fintype ι] (A : Matrix ι ι ℝ) (x : ι → ℝ) : ℝ :=
+def projectionQuadratic (A : Matrix ι ι ℝ) (x : ι → ℝ) : ℝ :=
   x ⬝ᵥ (A *ᵥ x)
 
 /-- The residual variance estimator before clipping. -/
-def projectionEstimator {ι : Type*} [Fintype ι] (A : Matrix ι ι ℝ) (x : ι → ℝ) : ℝ :=
+def projectionEstimator (A : Matrix ι ι ℝ) (x : ι → ℝ) : ℝ :=
   projectionQuadratic A x / A.trace
 
-theorem projectionEnergy_nonneg {ι : Type*} [Fintype ι] (x : ι → ℝ) :
-    0 ≤ projectionEnergy x := by
-  unfold projectionEnergy dotProduct
-  exact Finset.sum_nonneg (fun i _ => mul_self_nonneg (x i))
+theorem projectionEnergy_nonneg :
+    0 ≤ projectionEnergy x := Finset.sum_nonneg (fun i _ => mul_self_nonneg (x i))
 
+include hsym hidem in
 /-- The Frobenius square of a symmetric projection equals its trace. -/
-theorem projection_sum_squares_eq_trace {ι : Type*} [Fintype ι]
-    (A : Matrix ι ι ℝ) (hsym : Aᵀ = A) (hidem : A * A = A) :
+theorem projection_sum_squares_eq_trace :
     (∑ i, ∑ j, A i j ^ 2) = A.trace := by
   calc
-    (∑ i, ∑ j, A i j ^ 2) = (A * A).trace := by
+    _ = (A * A).trace := by
       unfold trace diag
       apply Finset.sum_congr rfl
       intro i hi
       rw [mul_apply]
       apply Finset.sum_congr rfl
       intro j hj
-      have hs : A j i = A i j := congrArg (fun M : Matrix ι ι ℝ => M i j) hsym
+      have hs : A j i = A i j := congrArg (fun M => M i j) hsym
       rw [hs, pow_two]
     _ = A.trace := by rw [hidem]
 
+include hsym hidem in
 /-- For a symmetric idempotent matrix, the quadratic form is precisely
 the residual's squared Euclidean length. -/
-theorem projection_quadratic_eq_energy {ι : Type*} [Fintype ι]
-    (A : Matrix ι ι ℝ) (hsym : Aᵀ = A) (hidem : A * A = A) (f : ι → ℝ) :
+theorem projection_quadratic_eq_energy :
     projectionQuadratic A f = projectionEnergy (A *ᵥ f) := by
   unfold projectionQuadratic projectionEnergy
   symm
   rw [dotProduct_mulVec, ← mulVec_transpose, hsym, mulVec_mulVec, hidem, dotProduct_comm]
 
+include hsym hidem in
 /-- The residual and fitted components are orthogonal. -/
-theorem projection_orthogonal {ι : Type*} [Fintype ι]
-    (A : Matrix ι ι ℝ) (hsym : Aᵀ = A) (hidem : A * A = A) (f : ι → ℝ) :
+theorem projection_orthogonal :
     (A *ᵥ f) ⬝ᵥ (f - A *ᵥ f) = 0 := by
   rw [dotProduct_sub]
-  have h := projection_quadratic_eq_energy A hsym hidem f
+  have h := projection_quadratic_eq_energy hsym hidem f
   unfold projectionQuadratic projectionEnergy at h
   rw [dotProduct_comm (A *ᵥ f) f, h, sub_self]
 
+include hsym hidem in
 /-- A symmetric projection cannot increase Euclidean length. -/
-theorem projection_energy_le {ι : Type*} [Fintype ι]
-    (A : Matrix ι ι ℝ) (hsym : Aᵀ = A) (hidem : A * A = A) (f : ι → ℝ) :
+theorem projection_energy_le :
     projectionEnergy (A *ᵥ f) ≤ projectionEnergy f := by
-  have horth := projection_orthogonal A hsym hidem f
+  have horth := projection_orthogonal hsym hidem f
   have hpos := projectionEnergy_nonneg (f - A *ᵥ f)
   have hdecomp : projectionEnergy f = projectionEnergy (A *ᵥ f) +
       projectionEnergy (f - A *ᵥ f) := by
@@ -87,27 +89,25 @@ theorem projection_energy_le {ι : Type*} [Fintype ι]
     ring
   linarith
 
+include hsym hidem hq in
 /-- Any candidate fitted vector killed by the residual projection gives
 an upper bound for the residual approximation error. -/
-theorem projection_residual_minimality {ι : Type*} [Fintype ι]
-    (A : Matrix ι ι ℝ) (hsym : Aᵀ = A) (hidem : A * A = A)
-    (f q : ι → ℝ) (hq : A *ᵥ q = 0) :
+theorem projection_residual_minimality :
     projectionEnergy (A *ᵥ f) ≤ projectionEnergy (f - q) := by
   have hAq : A *ᵥ (f - q) = A *ᵥ f := by rw [mulVec_sub, hq, sub_zero]
   rw [← hAq]
-  exact projection_energy_le A hsym hidem (f - q)
+  solve_by_elim [projection_energy_le]
 
+include hsym hidem in
 /-- A pointwise polynomial approximation of size `b` bounds the total
 residual squared error by the sample size multiplied by `b²`. -/
-theorem projection_approximation_bound {ι : Type*} [Fintype ι]
-    (A : Matrix ι ι ℝ) (hsym : Aᵀ = A) (hidem : A * A = A)
-    (f q : ι → ℝ) (hq : A *ᵥ q = 0) (b : ℝ) (hb : 0 ≤ b)
+theorem projection_approximation_bound
+    {f q : ι → ℝ} (hq : A *ᵥ q = 0) {b : ℝ} (hb : 0 ≤ b)
     (happrox : ∀ i, |f i - q i| ≤ b) :
     projectionEnergy (A *ᵥ f) ≤ Fintype.card ι * b ^ 2 := by
-  apply (projection_residual_minimality A hsym hidem f q hq).trans
-  unfold projectionEnergy dotProduct
+  apply (projection_residual_minimality hsym hidem f q hq).trans
   calc
-    (∑ i, (f - q) i * (f - q) i) ≤ ∑ _i : ι, b ^ 2 := by
+    _ ≤ ∑ _i, b ^ 2 := by
       apply Finset.sum_le_sum
       intro i hi
       have hs := (sq_le_sq₀ (abs_nonneg _) hb).mpr (happrox i)
@@ -115,10 +115,10 @@ theorem projection_approximation_bound {ι : Type*} [Fintype ι]
       simpa only [Pi.sub_apply, pow_two] using hs
     _ = _ := by simp
 
+include hsym in
 /-- Quadratic expansion separates approximation bias, the linear noise
 term, and the centered noise quadratic form. -/
-theorem projection_quadratic_add {ι : Type*} [Fintype ι]
-    (A : Matrix ι ι ℝ) (hsym : Aᵀ = A) (f ε : ι → ℝ) :
+theorem projection_quadratic_add :
     projectionQuadratic A (f + ε) = projectionQuadratic A f +
       2 * ((A *ᵥ f) ⬝ᵥ ε) + projectionQuadratic A ε := by
   unfold projectionQuadratic
@@ -129,20 +129,18 @@ theorem projection_quadratic_add {ι : Type*} [Fintype ι]
   ring
 
 /-- Entrywise expansion of the actual quadratic form. -/
-theorem projection_quadratic_sum {ι : Type*} [Fintype ι]
+theorem projection_quadratic_sum
     (A : Matrix ι ι ℝ) (x : ι → ℝ) :
     projectionQuadratic A x = ∑ i, ∑ j, A i j * x i * x j := by
   unfold projectionQuadratic mulVec dotProduct
   simp_rw [Finset.mul_sum]
   apply Finset.sum_congr rfl
   intro i hi
-  apply Finset.sum_congr rfl
-  intro j hj
   ring
 
 /-- Finite quadratic noise forms are integrable under coordinate `L²` bounds. -/
-theorem projection_quadratic_integrable {ι Ω : Type*} [Fintype ι]
-    [MeasurableSpace Ω] (μ : Measure Ω) (A : Matrix ι ι ℝ) (ε : Ω → ι → ℝ)
+theorem projection_quadratic_integrable
+    [MeasurableSpace Ω] {μ : Measure Ω} (A : Matrix ι ι ℝ) {ε : Ω → ι → ℝ}
     (hε : ∀ i, MemLp (fun ω => ε ω i) 2 μ) :
     Integrable (fun ω => projectionQuadratic A (ε ω)) μ := by
   simp_rw [projection_quadratic_sum]
@@ -151,26 +149,24 @@ theorem projection_quadratic_integrable {ι Ω : Type*} [Fintype ι]
   apply integrable_finset_sum
   intro j hj
   convert ((hε i).integrable_mul (hε j)).const_mul (A i j) using 1
-  funext ω
   simp [mul_assoc]
 
 /-- The expected noise quadratic form is variance times trace.  The
 hypothesis gives ordinary coordinate second moments, not a conclusion
 about the quadratic form. -/
-theorem projection_noise_expectation {ι Ω : Type*} [Fintype ι] [DecidableEq ι]
-    [MeasurableSpace Ω] (μ : Measure Ω) (A : Matrix ι ι ℝ) (ε : Ω → ι → ℝ)
-    (V : ℝ) (hε : ∀ i, MemLp (fun ω => ε ω i) 2 μ)
+theorem projection_noise_expectation [DecidableEq ι]
+    [MeasurableSpace Ω] {μ : Measure Ω} (A : Matrix ι ι ℝ) {ε : Ω → ι → ℝ}
+    {V : ℝ} (hε : ∀ i, MemLp (fun ω => ε ω i) 2 μ)
     (hcov : ∀ i j, (∫ ω, ε ω i * ε ω j ∂μ) = if i = j then V else 0) :
     (∫ ω, projectionQuadratic A (ε ω) ∂μ) = V * A.trace := by
-  have hij (i j : ι) : Integrable (fun ω => A i j * ε ω i * ε ω j) μ := by
+  have hij i j : Integrable (fun ω => A i j * ε ω i * ε ω j) μ := by
     convert ((hε i).integrable_mul (hε j)).const_mul (A i j) using 1
-    funext ω
     simp [mul_assoc]
   simp_rw [projection_quadratic_sum]
   rw [integral_finset_sum Finset.univ (fun i _ => integrable_finset_sum _ (fun j _ => hij i j))]
   simp_rw [integral_finset_sum Finset.univ (fun j _ => hij _ j), mul_assoc,
     integral_const_mul, hcov, mul_ite, mul_zero]
-  simp only [Finset.sum_ite_eq, Finset.mem_univ, if_true]
+  simp
   unfold trace diag
   rw [Finset.mul_sum]
   apply Finset.sum_congr rfl
@@ -178,66 +174,67 @@ theorem projection_noise_expectation {ι Ω : Type*} [Fintype ι] [DecidableEq �
   ring
 
 /-- Centered coordinate noise has zero expectation in every linear form. -/
-theorem projection_linear_noise_expectation {ι Ω : Type*} [Fintype ι]
-    [MeasurableSpace Ω] (μ : Measure Ω) [IsProbabilityMeasure μ]
-    (x : ι → ℝ) (ε : Ω → ι → ℝ)
+theorem projection_linear_noise_expectation
+    [MeasurableSpace Ω] {μ : Measure Ω} [IsProbabilityMeasure μ]
+    (x : ι → ℝ) {ε : Ω → ι → ℝ}
     (hε : ∀ i, MemLp (fun ω => ε ω i) 2 μ)
     (hmean : ∀ i, (∫ ω, ε ω i ∂μ) = 0) :
     (∫ ω, x ⬝ᵥ ε ω ∂μ) = 0 := by
   unfold dotProduct
   rw [integral_finset_sum Finset.univ (fun i _ =>
     ((hε i).integrable (by norm_num)).const_mul (x i))]
-  simp_rw [integral_const_mul, hmean, mul_zero]
+  simp_rw [integral_const_mul, hmean]
   simp
 
+end
+
+section
+variable {ι Ω : Type*} [Fintype ι] [DecidableEq ι] [MeasurableSpace Ω] {μ : Measure Ω}
+    [IsProbabilityMeasure μ] {A : Matrix ι ι ℝ} (hsym : Aᵀ = A) (hidem : A * A = A) (hd : A.trace ≠ 0)
+    (f : ι → ℝ) {ε : Ω → ι → ℝ} {V : ℝ} (hε : ∀ i, MemLp (fun ω => ε ω i) 2 μ)
+    (hind : iIndepFun (fun i ω => ε ω i) μ) (hmean : ∀ i, (∫ ω, ε ω i ∂μ) = 0)
+include hε hmean
+
+include hsym hidem hd in
 /-- The residual estimator's conditional expectation is variance plus
 squared approximation residual divided by the degrees of freedom. -/
-theorem projection_estimator_expectation {ι Ω : Type*} [Fintype ι] [DecidableEq ι]
-    [MeasurableSpace Ω] (μ : Measure Ω) [IsProbabilityMeasure μ]
-    (A : Matrix ι ι ℝ) (hsym : Aᵀ = A) (hidem : A * A = A)
-    (hd : A.trace ≠ 0) (f : ι → ℝ) (ε : Ω → ι → ℝ) (V : ℝ)
-    (hε : ∀ i, MemLp (fun ω => ε ω i) 2 μ)
-    (hmean : ∀ i, (∫ ω, ε ω i ∂μ) = 0)
+theorem projection_estimator_expectation
     (hcov : ∀ i j, (∫ ω, ε ω i * ε ω j ∂μ) = if i = j then V else 0) :
     (∫ ω, projectionEstimator A (f + ε ω) ∂μ) =
       V + projectionEnergy (A *ᵥ f) / A.trace := by
   have hlin : Integrable (fun ω => (A *ᵥ f) ⬝ᵥ ε ω) μ := by
-    unfold dotProduct
     apply integrable_finset_sum
     intro i hi
     exact ((hε i).integrable (by norm_num)).const_mul ((A *ᵥ f) i)
-  have hquad := projection_quadratic_integrable μ A ε hε
+  have hquad := projection_quadratic_integrable A hε
   have hsum : Integrable (fun ω => projectionQuadratic A f + 2 * ((A *ᵥ f) ⬝ᵥ ε ω)) μ :=
     (integrable_const (projectionQuadratic A f)).add (hlin.const_mul 2)
-  simp_rw [projectionEstimator, projection_quadratic_add A hsym f]
+  simp_rw [projectionEstimator, projection_quadratic_add hsym f]
   rw [integral_div, integral_add hsum hquad,
     integral_add (integrable_const (projectionQuadratic A f)) (hlin.const_mul 2), integral_const,
-    probReal_univ, one_smul, integral_const_mul,
-    projection_linear_noise_expectation μ (A *ᵥ f) ε hε hmean,
-    mul_zero, add_zero, projection_noise_expectation μ A ε V hε hcov,
-    projection_quadratic_eq_energy A hsym hidem f]
+    probReal_univ,  integral_const_mul,
+    projection_linear_noise_expectation (A *ᵥ f) hε hmean,
+    mul_zero,  projection_noise_expectation A hε hcov,
+    projection_quadratic_eq_energy hsym hidem f]
   field_simp
   ring
 
+include hind in
 /-- Independence and centered errors imply the coordinate covariance
 identities used by the quadratic expectation theorem. -/
-theorem projection_coordinate_covariance {ι Ω : Type*} [Fintype ι] [DecidableEq ι]
-    [MeasurableSpace Ω] (μ : Measure Ω) [IsProbabilityMeasure μ]
-    (ε : Ω → ι → ℝ) (V : ℝ)
-    (hε : ∀ i, MemLp (fun ω => ε ω i) 2 μ)
-    (hind : iIndepFun (fun i ω => ε ω i) μ)
-    (hmean : ∀ i, (∫ ω, ε ω i ∂μ) = 0)
+theorem projection_coordinate_covariance
     (hsecond : ∀ i, (∫ ω, (ε ω i) ^ 2 ∂μ) = V) :
     ∀ i j, (∫ ω, ε ω i * ε ω j ∂μ) = if i = j then V else 0 := by
   intro i j
   by_cases hij : i = j
   · subst j
-    simp only [← pow_two]
+    simp [← pow_two]
     exact hsecond i
-  · simp only [if_neg hij]
-    have hi := (hind.indepFun hij).integral_mul_eq_mul_integral
+  · have hi := (hind.indepFun hij).integral_mul_eq_mul_integral
       (hε i).aestronglyMeasurable (hε j).aestronglyMeasurable
-    simpa only [Pi.mul_apply, hmean, mul_zero] using hi
+    simp_all
+
+end
 
 /-- A linear noise form has second moment variance multiplied by the
 squared Euclidean length of its coefficient vector. -/
@@ -246,17 +243,17 @@ theorem projection_linear_noise_second_moment {ι Ω : Type*} [Fintype ι] [Deci
     (V : ℝ) (hε : ∀ i, MemLp (fun ω => ε ω i) 2 μ)
     (hcov : ∀ i j, (∫ ω, ε ω i * ε ω j ∂μ) = if i = j then V else 0) :
     (∫ ω, (x ⬝ᵥ ε ω) ^ 2 ∂μ) = V * projectionEnergy x := by
-  have hid (v : ι → ℝ) : projectionQuadratic (vecMulVec x x) v = (x ⬝ᵥ v) ^ 2 := by
+  have hid v : projectionQuadratic (vecMulVec x x) v = (x ⬝ᵥ v) ^ 2 := by
     unfold projectionQuadratic
     rw [vecMulVec_mulVec, op_smul_eq_smul, dotProduct_smul, dotProduct_comm v x]
-    simp only [smul_eq_mul, pow_two]
-  have he := projection_noise_expectation μ (vecMulVec x x) ε V hε hcov
+    simp [smul_eq_mul, pow_two]
+  have he := projection_noise_expectation (vecMulVec x x) hε hcov
   simp_rw [hid] at he
-  simpa only [trace_vecMulVec, projectionEnergy] using he
+  assumption
 
 /-- Bias–variance decomposition for an estimator under a probability law. -/
 theorem projection_mse_decomposition {Ω : Type*} [MeasurableSpace Ω]
-    (μ : Measure Ω) [IsProbabilityMeasure μ] (X : Ω → ℝ) (V : ℝ)
+    {μ : Measure Ω} [IsProbabilityMeasure μ] {X : Ω → ℝ} (V : ℝ)
     (hX : MemLp X 2 μ) :
     (∫ ω, (X ω - V) ^ 2 ∂μ) = variance X μ + ((∫ ω, X ω ∂μ) - V) ^ 2 := by
   have hvar := variance_eq_sub (hX.sub (memLp_const V))
@@ -268,63 +265,65 @@ theorem projection_mse_decomposition {Ω : Type*} [MeasurableSpace Ω]
   rw [variance_sub_const hX.aestronglyMeasurable V, hmean] at hvar
   linarith
 
+section
+variable {ι κ : Type*} [Fintype ι] [DecidableEq ι]
+
 /-- An idempotent real matrix has trace equal to the dimension of its
 range, including all rank deficient cases. -/
-theorem projection_trace_eq_rank {ι : Type*} [Fintype ι] [DecidableEq ι]
-    (A : Matrix ι ι ℝ) (hidem : A * A = A) : A.trace = A.rank := by
+theorem projection_trace_eq_rank
+    {A : Matrix ι ι ℝ} (hidem : A * A = A) : A.trace = A.rank := by
   have hi : IsIdempotentElem A.mulVecLin := by
     change A.mulVecLin ∘ₗ A.mulVecLin = A.mulVecLin
     rw [← mulVecLin_mul, hidem]
-  have hp := (LinearMap.isProj_range_iff_isIdempotentElem A.mulVecLin).mpr hi
-  have ht := hp.trace
-  change LinearMap.trace ℝ (ι → ℝ) A.mulVecLin = (A.rank : ℝ) at ht
+  have ht := ((LinearMap.isProj_range_iff_isIdempotentElem A.mulVecLin).mpr hi).trace
   rw [← Matrix.toLin'_apply', Matrix.trace_toLin'_eq] at ht
   exact ht
 
 /-- A fit whose range is contained in the design-column range consumes
 at most one degree of freedom per design column. -/
-theorem projection_degrees_of_freedom_bound {ι κ : Type*} [Fintype ι]
-    [DecidableEq ι] [Fintype κ] (P : Matrix ι ι ℝ) (B : Matrix ι κ ℝ)
+theorem projection_degrees_of_freedom_bound [Fintype κ] {P : Matrix ι ι ℝ} {B : Matrix ι κ ℝ}
     (hidem : P * P = P)
     (hrange : LinearMap.range P.mulVecLin ≤ LinearMap.range B.mulVecLin) :
-    (Fintype.card ι : ℝ) - Fintype.card κ ≤ (1 - P).trace := by
-  have hr : P.rank ≤ Fintype.card κ :=
+    (Fintype.card ι) - Fintype.card κ ≤ (1 - P).trace := by
+  have hr  :=
     (Submodule.finrank_mono hrange).trans B.rank_le_card_width
   have hrreal : (P.rank : ℝ) ≤ Fintype.card κ := by exact_mod_cast hr
-  rw [trace_sub, trace_one, projection_trace_eq_rank P hidem]
+  rw [trace_sub, trace_one, projection_trace_eq_rank hidem]
   linarith
 
 /-- The complementary residual of a symmetric idempotent fit is itself
 symmetric and idempotent. -/
-theorem projection_complement {ι : Type*} [Fintype ι] [DecidableEq ι]
-    (P : Matrix ι ι ℝ) (hsym : Pᵀ = P) (hidem : P * P = P) :
+theorem projection_complement
+    {P : Matrix ι ι ℝ} (hsym : Pᵀ = P) (hidem : P * P = P) :
     (1 - P)ᵀ = 1 - P ∧ (1 - P) * (1 - P) = 1 - P := by
   constructor
-  · rw [transpose_sub, transpose_one, hsym]
+  · simpa
   · rw [Matrix.sub_mul, Matrix.mul_sub, Matrix.mul_sub,
       Matrix.one_mul, Matrix.one_mul, Matrix.mul_one, hidem]
     abel
+
+end
+
+section
+variable {ι Ω : Type*} [Fintype ι] [DecidableEq ι] [MeasurableSpace Ω] {μ : Measure Ω}
+    [IsProbabilityMeasure μ] {A : Matrix ι ι ℝ} (hsym : Aᵀ = A) (hidem : A * A = A) {ε : Ω → ι → ℝ}
+    {V C : ℝ} {c : ι → ℝ} (hproducts : ∀ i j, MemLp (fun ω => ε ω i * ε ω j) 2 μ)
+    (hcov : ∀ i j k l, covariance (fun ω => ε ω i * ε ω j) (fun ω => ε ω k * ε ω l) μ = (if i = k ∧ j = l then (if i = j then c i else V ^ 2) else 0) + (if i = l ∧ j = k ∧ i ≠ j then V ^ 2 else 0))
+include hsym hproducts hcov
 
 /-- Expanding a quadratic-form variance against the coordinate product
 covariances gives the usual diagonal-plus-off-diagonal formula.  The
 covariance hypotheses are the primitive four-coordinate moment rules
 that independent centered errors satisfy. -/
 theorem projection_quadratic_variance_from_product_covariances
-    {ι Ω : Type*} [Fintype ι] [DecidableEq ι] [MeasurableSpace Ω]
-    (μ : Measure Ω) [IsProbabilityMeasure μ] (A : Matrix ι ι ℝ)
-    (hsym : Aᵀ = A) (ε : Ω → ι → ℝ) (V : ℝ) (c : ι → ℝ)
-    (hproducts : ∀ i j, MemLp (fun ω => ε ω i * ε ω j) 2 μ)
-    (hcov : ∀ i j k l,
-      covariance (fun ω => ε ω i * ε ω j) (fun ω => ε ω k * ε ω l) μ =
-        (if i = k ∧ j = l then (if i = j then c i else V ^ 2) else 0) +
-        (if i = l ∧ j = k ∧ i ≠ j then V ^ 2 else 0)) :
+    :
     variance (fun ω => projectionQuadratic A (ε ω)) μ =
       ∑ i, ∑ j, A i j ^ 2 * (if i = j then c i else 2 * V ^ 2) := by
   have hexp : (fun ω => projectionQuadratic A (ε ω)) =
       (fun ω => ∑ p : ι × ι, A p.1 p.2 * (ε ω p.1 * ε ω p.2)) := by
     funext ω
     rw [Fintype.sum_prod_type, projection_quadratic_sum]
-    simp only [mul_assoc]
+    simp [mul_assoc]
   rw [hexp, variance_fun_sum (fun (p : ι × ι) => (hproducts p.1 p.2).const_mul (A p.1 p.2))]
   simp_rw [covariance_const_mul_left, covariance_const_mul_right, hcov]
   rw [Fintype.sum_prod_type]
@@ -333,8 +332,8 @@ theorem projection_quadratic_variance_from_product_covariances
   apply Finset.sum_congr rfl
   intro j hj
   rw [Fintype.sum_prod_type]
-  have hs : A j i = A i j := congrArg (fun M : Matrix ι ι ℝ => M i j) hsym
-  simp only [ite_and, mul_add, mul_ite, mul_zero, Finset.sum_add_distrib,
+  have hs : A j i = A i j := congrArg (fun M => M i j) hsym
+  simp [ite_and, mul_add, mul_ite, mul_zero, Finset.sum_add_distrib,
     Finset.sum_ite_eq, Finset.mem_univ, if_true]
   rw [hs]
   by_cases hij : i = j
@@ -343,38 +342,31 @@ theorem projection_quadratic_variance_from_product_covariances
   · simp [hij, Finset.sum_ite_irrel, Finset.sum_ite_eq, pow_two]
     ring
 
+include hidem in
 /-- The diagonal-plus-off-diagonal variance is bounded by a constant
 multiplied by the trace of a residual projection. -/
 theorem projection_quadratic_variance_bound
-    {ι Ω : Type*} [Fintype ι] [DecidableEq ι] [MeasurableSpace Ω]
-    (μ : Measure Ω) [IsProbabilityMeasure μ] (A : Matrix ι ι ℝ)
-    (hsym : Aᵀ = A) (hidem : A * A = A) (ε : Ω → ι → ℝ)
-    (V C : ℝ) (c : ι → ℝ)
-    (hproducts : ∀ i j, MemLp (fun ω => ε ω i * ε ω j) 2 μ)
-    (hcov : ∀ i j k l,
-      covariance (fun ω => ε ω i * ε ω j) (fun ω => ε ω k * ε ω l) μ =
-        (if i = k ∧ j = l then (if i = j then c i else V ^ 2) else 0) +
-        (if i = l ∧ j = k ∧ i ≠ j then V ^ 2 else 0))
+
     (hc : ∀ i, c i ≤ C) (hV : 2 * V ^ 2 ≤ C) :
     variance (fun ω => projectionQuadratic A (ε ω)) μ ≤ C * A.trace := by
-  rw [projection_quadratic_variance_from_product_covariances μ A hsym ε V c hproducts hcov,
-    ← projection_sum_squares_eq_trace A hsym hidem, Finset.mul_sum]
+  rw [projection_quadratic_variance_from_product_covariances hsym hproducts hcov,
+    ← projection_sum_squares_eq_trace hsym hidem, Finset.mul_sum]
   apply Finset.sum_le_sum
   intro i hi
   rw [Finset.mul_sum]
   apply Finset.sum_le_sum
   intro j hj
   have hb : (if i = j then c i else 2 * V ^ 2) ≤ C := by
-    split_ifs
-    · exact hc i
-    · exact hV
-  nlinarith [sq_nonneg (A i j)]
+    bound
+  nlinarith
+
+end
 
 /-- The elementary variance-of-a-sum estimate follows from nonnegativity
 of the variance of the difference; no independence between the two
 quadratic-estimator terms is needed. -/
 theorem projection_variance_add_le {Ω : Type*} [MeasurableSpace Ω]
-    (μ : Measure Ω) [IsProbabilityMeasure μ] (X Y : Ω → ℝ)
+    {μ : Measure Ω} [IsProbabilityMeasure μ] {X Y : Ω → ℝ}
     (hX : MemLp X 2 μ) (hY : MemLp Y 2 μ) :
     variance (fun ω => X ω + Y ω) μ ≤ 2 * variance X μ + 2 * variance Y μ := by
   have hn := variance_nonneg (fun ω => X ω - Y ω) μ
@@ -382,10 +374,13 @@ theorem projection_variance_add_le {Ω : Type*} [MeasurableSpace Ω]
   rw [variance_fun_add hX hY]
   linarith
 
+section
+variable {ι Ω : Type*} [Fintype ι]
+
 /-- Square integrability of every coordinate product suffices for
 square integrability of the noise quadratic form. -/
-theorem projection_quadratic_memLp_two_of_products {ι Ω : Type*} [Fintype ι]
-    [MeasurableSpace Ω] (μ : Measure Ω) (A : Matrix ι ι ℝ) (ε : Ω → ι → ℝ)
+theorem projection_quadratic_memLp_two_of_products
+    [MeasurableSpace Ω] {μ : Measure Ω} (A : Matrix ι ι ℝ) {ε : Ω → ι → ℝ}
     (hproducts : ∀ i j, MemLp (fun ω => ε ω i * ε ω j) 2 μ) :
     MemLp (fun ω => projectionQuadratic A (ε ω)) 2 μ := by
   simp_rw [projection_quadratic_sum]
@@ -399,10 +394,10 @@ theorem projection_quadratic_memLp_two_of_products {ι Ω : Type*} [Fintype ι]
 bound for the actual residual estimator from coordinate second moments
 and product covariance identities. -/
 theorem projection_estimator_variance_bound
-    {ι Ω : Type*} [Fintype ι] [DecidableEq ι] [MeasurableSpace Ω]
-    (μ : Measure Ω) [IsProbabilityMeasure μ] (A : Matrix ι ι ℝ)
+    [DecidableEq ι] [MeasurableSpace Ω]
+    {μ : Measure Ω} [IsProbabilityMeasure μ] {A : Matrix ι ι ℝ}
     (hsym : Aᵀ = A) (hidem : A * A = A) (hd : 0 < A.trace)
-    (f : ι → ℝ) (ε : Ω → ι → ℝ) (V C : ℝ) (c : ι → ℝ)
+    (f : ι → ℝ) {ε : Ω → ι → ℝ} {V C : ℝ} {c : ι → ℝ}
     (hε : ∀ i, MemLp (fun ω => ε ω i) 2 μ)
     (hmean : ∀ i, (∫ ω, ε ω i ∂μ) = 0)
     (hsecond : ∀ i j, (∫ ω, ε ω i * ε ω j ∂μ) = if i = j then V else 0)
@@ -414,54 +409,51 @@ theorem projection_estimator_variance_bound
     (hc : ∀ i, c i ≤ C) (hV : 2 * V ^ 2 ≤ C) :
     variance (fun ω => projectionEstimator A (f + ε ω)) μ ≤
       (2 * C * A.trace + 8 * V * projectionEnergy (A *ᵥ f)) / A.trace ^ 2 := by
-  have hlin : MemLp (fun ω => (A *ᵥ f) ⬝ᵥ ε ω) 2 μ := by
-    unfold dotProduct
-    exact memLp_finset_sum Finset.univ (fun i _ => (hε i).const_mul ((A *ᵥ f) i))
-  have hquad := projection_quadratic_memLp_two_of_products μ A ε hproducts
+  have hlin : MemLp (fun ω => (A *ᵥ f) ⬝ᵥ ε ω) 2 μ := memLp_finset_sum Finset.univ (fun i _ => (hε i).const_mul ((A *ᵥ f) i))
+  have hquad := projection_quadratic_memLp_two_of_products A hproducts
   have hlinvar : variance (fun ω => (A *ᵥ f) ⬝ᵥ ε ω) μ =
       V * projectionEnergy (A *ᵥ f) := by
     rw [variance_of_integral_eq_zero hlin.aemeasurable
-      (projection_linear_noise_expectation μ (A *ᵥ f) ε hε hmean)]
-    exact projection_linear_noise_second_moment μ (A *ᵥ f) ε V hε hsecond
-  have hnum := projection_variance_add_le μ
-    (fun ω => 2 * ((A *ᵥ f) ⬝ᵥ ε ω)) (fun ω => projectionQuadratic A (ε ω))
+      (projection_linear_noise_expectation (A *ᵥ f) hε hmean)]
+    solve_by_elim [projection_linear_noise_second_moment]
+  have hnum := projection_variance_add_le
     (hlin.const_mul 2) hquad
   rw [variance_const_mul, hlinvar] at hnum
-  have hqbound := projection_quadratic_variance_bound μ A hsym hidem ε V C c
+  have hqbound := projection_quadratic_variance_bound hsym hidem
     hproducts hcov hc hV
   have hsum : MemLp (fun ω => 2 * ((A *ᵥ f) ⬝ᵥ ε ω) + projectionQuadratic A (ε ω)) 2 μ :=
     (hlin.const_mul 2).add hquad
   have hvar : variance (fun ω => projectionEstimator A (f + ε ω)) μ =
       A.trace⁻¹ ^ 2 * variance
         (fun ω => 2 * ((A *ᵥ f) ⬝ᵥ ε ω) + projectionQuadratic A (ε ω)) μ := by
-    simp_rw [projectionEstimator, projection_quadratic_add A hsym f, add_assoc,
+    simp_rw [projectionEstimator, projection_quadratic_add hsym f, add_assoc,
       div_eq_mul_inv, mul_comm _ A.trace⁻¹]
     rw [variance_const_mul, variance_const_add hsum.aestronglyMeasurable]
   rw [hvar]
-  have hcomb : variance (fun ω => 2 * ((A *ᵥ f) ⬝ᵥ ε ω) + projectionQuadratic A (ε ω)) μ ≤
-      2 * C * A.trace + 8 * V * projectionEnergy (A *ᵥ f) := by
-    nlinarith [hnum, hqbound]
   calc
     _ ≤ A.trace⁻¹ ^ 2 * (2 * C * A.trace + 8 * V * projectionEnergy (A *ᵥ f)) :=
-      mul_le_mul_of_nonneg_left hcomb (sq_pos_of_pos (inv_pos.mpr hd)).le
-    _ = _ := by rw [inv_pow, div_eq_mul_inv]; ring
+      by bound
+    _ = _ := by ring
+
+end
+
+section
+variable {ι Ω : Type*} [Fintype ι]
 
 /-- The response residual quadratic estimator is square integrable under
 coordinate and coordinate-product `L²` assumptions. -/
-theorem projection_estimator_memLp_two {ι Ω : Type*} [Fintype ι]
-    [MeasurableSpace Ω] (μ : Measure Ω) [IsProbabilityMeasure μ]
-    (A : Matrix ι ι ℝ) (hsym : Aᵀ = A) (f : ι → ℝ) (ε : Ω → ι → ℝ)
+theorem projection_estimator_memLp_two
+    [MeasurableSpace Ω] {μ : Measure Ω} [IsProbabilityMeasure μ]
+    {A : Matrix ι ι ℝ} (hsym : Aᵀ = A) (f : ι → ℝ) {ε : Ω → ι → ℝ}
     (hε : ∀ i, MemLp (fun ω => ε ω i) 2 μ)
     (hproducts : ∀ i j, MemLp (fun ω => ε ω i * ε ω j) 2 μ) :
     MemLp (fun ω => projectionEstimator A (f + ε ω)) 2 μ := by
-  have hlin : MemLp (fun ω => (A *ᵥ f) ⬝ᵥ ε ω) 2 μ := by
-    unfold dotProduct
-    exact memLp_finset_sum Finset.univ (fun i _ => (hε i).const_mul ((A *ᵥ f) i))
-  have hquad := projection_quadratic_memLp_two_of_products μ A ε hproducts
+  have hlin  := memLp_finset_sum Finset.univ (fun i _ => (hε i).const_mul ((A *ᵥ f) i))
+  have hquad := projection_quadratic_memLp_two_of_products A hproducts
   have hsum : MemLp (fun ω => projectionQuadratic A f +
       2 * ((A *ᵥ f) ⬝ᵥ ε ω) + projectionQuadratic A (ε ω)) 2 μ :=
     ((memLp_const (projectionQuadratic A f)).add (hlin.const_mul 2)).add hquad
-  simpa only [projectionEstimator, projection_quadratic_add A hsym f,
+  simpa only [projectionEstimator, projection_quadratic_add hsym f,
     div_eq_mul_inv, mul_comm] using hsum.const_mul A.trace⁻¹
 
 /-- The conditional residual-projection risk bound, proved from
@@ -469,10 +461,10 @@ coordinate moments, product covariance rules, and the actual estimator.
 The deterministic approximation theorem can now bound the displayed
 residual energy uniformly over irregular designs. -/
 theorem projection_estimator_mse_bound
-    {ι Ω : Type*} [Fintype ι] [DecidableEq ι] [MeasurableSpace Ω]
-    (μ : Measure Ω) [IsProbabilityMeasure μ] (A : Matrix ι ι ℝ)
+    [DecidableEq ι] [MeasurableSpace Ω]
+    {μ : Measure Ω} [IsProbabilityMeasure μ] {A : Matrix ι ι ℝ}
     (hsym : Aᵀ = A) (hidem : A * A = A) (hd : 0 < A.trace)
-    (f : ι → ℝ) (ε : Ω → ι → ℝ) (V C : ℝ) (c : ι → ℝ)
+    (f : ι → ℝ) {ε : Ω → ι → ℝ} (V C : ℝ) {c : ι → ℝ}
     (hε : ∀ i, MemLp (fun ω => ε ω i) 2 μ)
     (hmean : ∀ i, (∫ ω, ε ω i ∂μ) = 0)
     (hsecond : ∀ i j, (∫ ω, ε ω i * ε ω j ∂μ) = if i = j then V else 0)
@@ -485,12 +477,12 @@ theorem projection_estimator_mse_bound
     (∫ ω, (projectionEstimator A (f + ε ω) - V) ^ 2 ∂μ) ≤
       (2 * C * A.trace + 8 * V * projectionEnergy (A *ᵥ f)) / A.trace ^ 2 +
         (projectionEnergy (A *ᵥ f) / A.trace) ^ 2 := by
-  rw [projection_mse_decomposition μ _ V
-    (projection_estimator_memLp_two μ A hsym f ε hε hproducts),
-    projection_estimator_expectation μ A hsym hidem hd.ne' f ε V hε hmean hsecond,
+  rw [projection_mse_decomposition V
+    (projection_estimator_memLp_two hsym f hε hproducts),
+    projection_estimator_expectation hsym hidem hd.ne' f hε hmean hsecond,
     add_sub_cancel_left]
-  exact add_le_add
-    (projection_estimator_variance_bound μ A hsym hidem hd f ε V C c hε hmean hsecond
-      hproducts hcov hc hV) le_rfl
+  bound [projection_estimator_variance_bound hsym hidem hd f hε hmean hsecond hproducts hcov hc hV]
+
+end
 
 end NearlyMinimax

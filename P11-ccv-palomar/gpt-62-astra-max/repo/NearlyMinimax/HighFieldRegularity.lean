@@ -17,8 +17,12 @@ set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1000000
 attribute [local instance] Classical.propDecidable
 
-theorem finite_sum_norm_le_active_count {J E : Type*} [Fintype J]
-    [NormedAddCommGroup E] (g : J → E) (N : ℕ) (B : ℝ) (hB : 0 ≤ B)
+section
+variable {d : ℕ} {F : Covariate d → ℝ} (hF : ContDiff ℝ ∞ F) (γ : Fin d → ℕ) (x : Covariate d)
+    {J E : Type*}
+
+theorem finite_sum_norm_le_active_count [Fintype J]
+    [NormedAddCommGroup E] {g : J → E} {N : ℕ} {B : ℝ} (hB : 0 ≤ B)
     (hbound : ∀ j, ‖g j‖ ≤ B)
     (hcount : (Finset.univ.filter (fun j => g j ≠ 0)).card ≤ N) :
     ‖∑ j, g j‖ ≤ (N : ℝ) * B := by
@@ -27,18 +31,17 @@ theorem finite_sum_norm_le_active_count {J E : Type*} [Fintype J]
     symm
     rw [Finset.sum_filter]
     apply Finset.sum_congr rfl
-    intro j hj
-    by_cases hg : g j = 0 <;> simp [hg]
+    aesop
   calc
-    _ ≤ ∑ j, ‖g j‖ := norm_sum_le _ _
+    _ ≤ _ := norm_sum_le _ _
     _ = _ := hsum
-    _ ≤ ∑ _j ∈ A, B := Finset.sum_le_sum (fun j _ => hbound j)
-    _ = (A.card : ℝ) * B := by simp
+    _ ≤ ∑ _j ∈ A, B := by bound
+    _ = A.card * B := by simp
     _ ≤ _ := mul_le_mul_of_nonneg_right (by exact_mod_cast hcount) hB
 
 /-- Combining the uniform derivative bound and the next-derivative
 Lipschitz bound preserves the fractional exponent, uniformly in resolution. -/
-theorem holder_of_scaled_sup_and_lipschitz (k r A α q : ℝ)
+theorem holder_of_scaled_sup_and_lipschitz {k r A α q : ℝ}
     (hk : 0 < k) (hr : 0 ≤ r) (hA : 0 ≤ A) (hα0 : 0 < α) (hα1 : α ≤ 1)
     (hsup : q ≤ 2 * A * k ^ (-α))
     (hlip : q ≤ A * k ^ (1 - α) * r) :
@@ -46,83 +49,83 @@ theorem holder_of_scaled_sup_and_lipschitz (k r A α q : ℝ)
   by_cases hr0 : r = 0
   · subst r
     simpa only [mul_zero, Real.zero_rpow hα0.ne'] using hlip
-  have hrpos : 0 < r := lt_of_le_of_ne hr (Ne.symm hr0)
+  have hrpos  := lt_of_le_of_ne hr (Ne.symm hr0)
   by_cases hkr : k * r ≤ 1
-  · have hp : (k * r) ^ (1 - α) ≤ 1 :=
+  · have hp  :=
       Real.rpow_le_one (mul_nonneg hk.le hr) hkr (sub_nonneg.mpr hα1)
     have hid : k ^ (1 - α) * r = (k * r) ^ (1 - α) * r ^ α := by
       rw [Real.mul_rpow hk.le hr]
       rw [mul_assoc, ← Real.rpow_add hrpos]
-      simp only [sub_add_cancel, Real.rpow_one]
+      simp
     have hsmall : A * k ^ (1 - α) * r ≤ A * r ^ α := by
       calc
         _ = A * ((k * r) ^ (1 - α) * r ^ α) := by rw [← hid]; ring
         _ ≤ A * (1 * r ^ α) := by gcongr
         _ = _ := by ring
-    have hpositive : 0 ≤ A * r ^ α := mul_nonneg hA (Real.rpow_nonneg hr _)
-    exact (hlip.trans hsmall).trans (by nlinarith)
-  · have hp : 1 ≤ (k * r) ^ α := Real.one_le_rpow (le_of_not_ge hkr) hα0.le
+    have hpositive : 0 ≤ A * r ^ α := by positivity
+    bound
+  · have hp  := Real.one_le_rpow (le_of_not_ge hkr) hα0.le
     have hkinv : k ^ (-α) ≤ r ^ α := by
       rw [Real.rpow_neg hk.le, ← one_div]
       apply (div_le_iff₀ (Real.rpow_pos_of_pos hk α)).mpr
       simpa only [Real.mul_rpow hk.le hr, one_mul, mul_comm] using hp
     exact hsup.trans (mul_le_mul_of_nonneg_left hkinv (by positivity))
 
-theorem multiIndexBasis_norm {d : ℕ} (γ : Fin d → ℕ) (j : Fin (∑ r, γ r)) :
+theorem multiIndexBasis_norm (j : Fin (∑ r, γ r)) :
     ‖multiIndexBasis γ j‖ = 1 := by
   simp [multiIndexBasis, wordBasis, Pi.norm_single]
 
-theorem multiPartial_norm_le_iterated {d : ℕ} (F : Covariate d → ℝ)
-    (hF : ContDiff ℝ ∞ F) (γ : Fin d → ℕ) (x : Covariate d) :
+include hF in
+theorem multiPartial_norm_le_iterated :
     |multiPartial F γ x| ≤ ‖iteratedFDeriv ℝ (∑ r, γ r) F x‖ := by
-  rw [multiPartial_eq_iteratedFDeriv univ isOpen_univ F (∑ r, γ r)
-    (hF.of_le (by simp)).contDiffOn γ le_rfl x (mem_univ x)]
+  rw [multiPartial_eq_iteratedFDeriv isOpen_univ
+    (hF.of_le (by simp)).contDiffOn le_rfl (mem_univ x)]
   have hh := (iteratedFDeriv ℝ (∑ r, γ r) F x).le_opNorm (multiIndexBasis γ)
   simpa only [Real.norm_eq_abs, multiIndexBasis_norm, Finset.prod_const_one, mul_one] using hh
 
-theorem multiPartial_diff_norm_le_iterated {d : ℕ} (F : Covariate d → ℝ)
-    (hF : ContDiff ℝ ∞ F) (γ : Fin d → ℕ) (x y : Covariate d) :
+include hF in
+theorem multiPartial_diff_norm_le_iterated (y : Covariate d) :
+    let eriv := iteratedFDeriv ℝ (∑ r, γ r) F
     |multiPartial F γ x - multiPartial F γ y| ≤
-      ‖iteratedFDeriv ℝ (∑ r, γ r) F x - iteratedFDeriv ℝ (∑ r, γ r) F y‖ := by
-  rw [multiPartial_eq_iteratedFDeriv univ isOpen_univ F (∑ r, γ r)
-    (hF.of_le (by simp)).contDiffOn γ le_rfl x (mem_univ x),
-    multiPartial_eq_iteratedFDeriv univ isOpen_univ F (∑ r, γ r)
-    (hF.of_le (by simp)).contDiffOn γ le_rfl y (mem_univ y)]
-  have hh := (iteratedFDeriv ℝ (∑ r, γ r) F x -
-    iteratedFDeriv ℝ (∑ r, γ r) F y).le_opNorm (multiIndexBasis γ)
+      ‖eriv x - eriv y‖ := by
+  intro eriv
+  rw [multiPartial_eq_iteratedFDeriv isOpen_univ
+    (hF.of_le (by simp)).contDiffOn le_rfl (mem_univ x),
+    multiPartial_eq_iteratedFDeriv isOpen_univ
+    (hF.of_le (by simp)).contDiffOn le_rfl (mem_univ y)]
+  have hh := (eriv x -
+    eriv y).le_opNorm (multiIndexBasis γ)
   simpa only [ContinuousMultilinearMap.sub_apply, Real.norm_eq_abs, multiIndexBasis_norm,
     Finset.prod_const_one, mul_one] using hh
 
-theorem covariate_norm_le_euclidean {d : ℕ} (x : Covariate d) : ‖x‖ ≤ euclideanNorm x := by
-  apply (pi_norm_le_iff_of_nonneg (Real.sqrt_nonneg _)).mpr
-  intro r
-  simpa only [Real.norm_eq_abs, euclideanNorm] using abs_coordinate_le_euclideanNorm x r
+end
+
+variable {d : ℕ} {C : ModelConstants d} (U : Set (Covariate d)) {F : Covariate d → ℝ}
+    (hF : ContDiff ℝ ∞ F) {k A : ℝ} (hk : 1 ≤ k) (hA : 0 ≤ A)
+    (hbound : ∀ q ≤ C.order + 1, ∀ x, ‖iteratedFDeriv ℝ q F x‖ ≤ A * k ^ ((q : ℝ) - C.smoothness))
+include hF hk hA hbound
 
 /-- The actual scaled Fréchet bounds imply the manuscript's sorted mixed
 partial bounds and top-order Euclidean Hölder modulus. -/
-theorem mixed_bounds_of_scaled_derivatives {d : ℕ} (C : ModelConstants d)
-    (F : Covariate d → ℝ) (hF : ContDiff ℝ ∞ F) (k A : ℝ)
-    (hk : 1 ≤ k) (hA : 0 ≤ A)
-    (hbound : ∀ q ≤ C.order + 1, ∀ x,
-      ‖iteratedFDeriv ℝ q F x‖ ≤ A * k ^ ((q : ℝ) - C.smoothness)) :
+theorem mixed_bounds_of_scaled_derivatives :
     (∀ γ : Fin d → Fin (C.order + 1), (∑ r, (γ r).val) ≤ C.order → ∀ x,
       |multiPartial F (fun r => (γ r).val) x| ≤ A) ∧
     (∀ γ : Fin d → Fin (C.order + 1), (∑ r, (γ r).val) = C.order → ∀ x y,
       |multiPartial F (fun r => (γ r).val) x - multiPartial F (fun r => (γ r).val) y| ≤
         (2 * A) * euclideanNorm (x - y) ^ C.alpha) := by
-  have hkpos : 0 < k := lt_of_lt_of_le (by norm_num) hk
+  have hkpos : 0 < k := by positivity
   constructor
   · intro γ hγ x
-    apply (multiPartial_norm_le_iterated F hF _ x).trans
+    apply (multiPartial_norm_le_iterated hF _ x).trans
     apply (hbound _ (by omega) x).trans
     have hcast : ((∑ r, (γ r).val : ℕ) : ℝ) ≤ C.order := by exact_mod_cast hγ
     have hp : k ^ (((∑ r, (γ r).val : ℕ) : ℝ) - C.smoothness) ≤ 1 :=
       Real.rpow_le_one_of_one_le_of_nonpos hk (by linarith [C.order_lt])
-    simpa only [mul_one] using mul_le_mul_of_nonneg_left hp hA
+    bound
   · intro γ hγ x y
     have hsup (z : Covariate d) : ‖iteratedFDeriv ℝ C.order F z‖ ≤ A * k ^ (-C.alpha) := by
-      have he : (C.order : ℝ) - C.smoothness = -C.alpha := by unfold ModelConstants.alpha; ring
-      simpa only [he] using hbound C.order (by omega) z
+      have he : C.order - C.smoothness = -C.alpha := by unfold ModelConstants.alpha; ring
+      grind
     have hnext (z : Covariate d) : ‖fderiv ℝ (iteratedFDeriv ℝ C.order F) z‖ ≤
         A * k ^ (1 - C.alpha) := by
       rw [norm_fderiv_iteratedFDeriv]
@@ -130,39 +133,32 @@ theorem mixed_bounds_of_scaled_derivatives {d : ℕ} (C : ModelConstants d)
         unfold ModelConstants.alpha
         push_cast
         ring
-      simpa only [he] using hbound (C.order + 1) le_rfl z
+      grind
     have hlarge : ‖iteratedFDeriv ℝ C.order F x - iteratedFDeriv ℝ C.order F y‖ ≤
-        2 * A * k ^ (-C.alpha) := by
-      exact (norm_sub_le _ _).trans (by nlinarith [hsup x, hsup y])
+        2 * A * k ^ (-C.alpha) := (norm_sub_le _ _).trans (by nlinarith [hsup x, hsup y])
     have hsmall : ‖iteratedFDeriv ℝ C.order F x - iteratedFDeriv ℝ C.order F y‖ ≤
         A * k ^ (1 - C.alpha) * ‖x - y‖ := by
       have hfFinite : ContDiff ℝ (C.order + 1) F := hF.of_le (by simp)
       exact Convex.norm_image_sub_le_of_norm_fderiv_le
-        (fun z (_hz : z ∈ (univ : Set (Covariate d))) =>
+        (fun z _hz =>
           hfFinite.contDiffAt.differentiableAt_iteratedFDeriv
             (by exact_mod_cast Nat.lt_succ_self C.order))
         (fun z _ => hnext z) convex_univ (mem_univ y) (mem_univ x)
-    have hh := holder_of_scaled_sup_and_lipschitz k ‖x - y‖ A C.alpha
-      ‖iteratedFDeriv ℝ C.order F x - iteratedFDeriv ℝ C.order F y‖
+    have hh := holder_of_scaled_sup_and_lipschitz
       hkpos (norm_nonneg _) hA C.alpha_pos C.alpha_le_one hlarge hsmall
-    have heval := multiPartial_diff_norm_le_iterated F hF (fun r => (γ r).val) x y
+    have heval := multiPartial_diff_norm_le_iterated hF (fun r => (γ r).val) x y
     rw [hγ] at heval
     exact (heval.trans hh).trans (mul_le_mul_of_nonneg_left
-      (Real.rpow_le_rpow (norm_nonneg _) (covariate_norm_le_euclidean (x - y)) C.alpha_pos.le)
+      (Real.rpow_le_rpow (norm_nonneg _) (by apply (pi_norm_le_iff_of_nonneg (Real.sqrt_nonneg _)).mpr; intro r; exact abs_coordinate_le_euclideanNorm (x - y) r) C.alpha_pos.le)
       (by positivity))
 
-theorem holderNorm_of_scaled_derivatives {d : ℕ} (C : ModelConstants d)
-    (U : Set (Covariate d)) (F : Covariate d → ℝ) (hF : ContDiff ℝ ∞ F)
-    (k A : ℝ) (hk : 1 ≤ k) (hA : 0 ≤ A)
-    (hbound : ∀ q ≤ C.order + 1, ∀ x,
-      ‖iteratedFDeriv ℝ q F x‖ ≤ A * k ^ ((q : ℝ) - C.smoothness)) :
+theorem holderNorm_of_scaled_derivatives :
     holderNorm U F C.order C.alpha ≤
       ENNReal.ofReal ((((C.order + 1 : ℕ) : ℝ) ^ d + 2) * A) := by
-  obtain ⟨hs, hm⟩ := mixed_bounds_of_scaled_derivatives C F hF k A hk hA hbound
-  have hh := holderNorm_of_global_mixed_bounds U F C.order C.alpha A (2 * A)
-    hA (by positivity) hs hm
-  convert hh using 1
-  congr 1
-  ring
+  obtain ⟨hs, hm⟩ := mixed_bounds_of_scaled_derivatives hF hk hA hbound
+  have hh := holderNorm_of_global_mixed_bounds U
+    hA (by positivity) (K := (C.order+1)^d) (by
+      simpa using Finset.card_filter_le (Finset.univ : Finset (Fin d → Fin (C.order+1))) _) hs hm
+  simpa only [Nat.cast_pow, add_mul, mul_add] using hh
 
 end NearlyMinimax

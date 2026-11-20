@@ -17,6 +17,6 @@ set_option maxHeartbeats 1000000
 attribute [local instance] Classical.propDecidable
 
 abbrev HighRawState (d k D : ℕ) :=
-  (Covariate d → ℝ) × (HighWindowLabels d k → (HighFrameIndex d D → ℝ))
+  (Covariate d → ℝ) × (HighWindowLabels d k → (HighFrameVector d D))
 
 end NearlyMinimax

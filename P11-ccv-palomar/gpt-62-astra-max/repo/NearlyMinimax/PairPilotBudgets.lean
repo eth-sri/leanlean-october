@@ -22,22 +22,19 @@ variable (hp : PairPilotAssumptions θ k hk μ bar η Cp W lam)
 include hθ hp
 
 theorem pairPilotVarianceBase_le :
-    pairPilotVarianceBase θ k hk μ bar η ≤ C.densityUpper * (2 * Cp ^ 2 + Cp * W) := by
-  let := regularPairDesignMeasure_isFinite C θ hθ k hk
-  have hb := regularPairDesignMeasure_ae_of_supported θ k hk hp.barBound
-  have hs := regularPairDesignMeasure_ae_of_supported θ k hk hp.noiseSection
-  have he := regularPairDesignMeasure_ae_of_supported θ k hk hp.noiseEnergy
-  have hbar : MemLp bar 2 (regularPairDesignMeasure θ k hk) :=
-    MemLp.of_bound hp.barMeasurable.aestronglyMeasurable Cp hb
+    pairPilotVarianceBase θ hk μ bar η ≤ C.densityUpper * (2 * Cp ^ 2 + Cp * W) := by
+  let := regularPairDesignMeasure_isFinite hθ k hk
+  have hb := regularPairDesignMeasure_ae_of_supported hk hp.barBound
+  have hs := regularPairDesignMeasure_ae_of_supported hk hp.noiseSection
+  have he := regularPairDesignMeasure_ae_of_supported hk hp.noiseEnergy
   have hbarE : (∫ w, ‖bar w‖ ^ 2 ∂regularPairDesignMeasure θ k hk) ≤
       Cp ^ 2 * (regularPairDesignMeasure θ k hk).real univ := by
-    have h := integral_mono_ae hbar.norm.integrable_sq (integrable_const (Cp ^ 2))
+    have h := integral_mono_ae (MemLp.of_bound hp.barMeasurable.aestronglyMeasurable Cp hb).norm.integrable_sq (integrable_const (Cp ^ 2))
       (hb.mono (fun w hw => pow_le_pow_left₀ (norm_nonneg _) hw 2))
     simpa only [integral_const, smul_eq_mul, mul_comm] using h
   have hnoiseE := PilotFields.joint_energy_le_of_uniform_sections hp.noiseMeasurable hs
     (mul_nonneg hp.constantNonnegative hp.budgetNonnegative) he
-  have hmass := (regularPairDesignMeasure_mass_bounds C θ hθ k hk).2
-  have hbarU := mul_le_mul_of_nonneg_left hmass (sq_nonneg Cp)
+  have hmass := (regularPairDesignMeasure_mass_bounds hθ hk).2
   have hnoiseU := mul_le_mul_of_nonneg_left hmass
     (mul_nonneg hp.constantNonnegative hp.budgetNonnegative)
   unfold pairPilotVarianceBase

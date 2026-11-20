@@ -12,22 +12,22 @@ namespace NearlyMinimax
 set_option backward.isDefEq.respectTransparency true
 variable {Ω : Type*} [MeasurableSpace Ω] {d : ℕ}
 
-def highNormalizedParameterPath (T : ℝ) (hT : 0 ≤ T) (a v η : ℝ) (ha : a ≠ 0)
-    (p F : Ω → Covariate d → ℝ) (hF : Measurable (Function.uncurry F))
+variable {T : ℝ} (hT : 0 ≤ T) {a v η : ℝ} (ha : a ≠ 0) (p F : Ω → Covariate d → ℝ)
+    (hF : Measurable (Function.uncurry F))
     (hq : ∀ t ∈ Icc 0 T, ∀ ω x y, 0 ≤ ternaryMass a (F ω x) (v-η^2*t) y)
+
+def highNormalizedParameterPath
     (t : ℝ) (ω : Ω) : RegressionParameter d :=
   if ht : t ∈ Icc 0 T then
-    normalizedDensityTernaryParameter (p ω) (F ω) a (v-η^2*t) hF.of_uncurry_left ha (hq t ht ω)
+    normalizedDensityTernaryParameter (p ω) hF.of_uncurry_left ha (hq t ht ω)
   else
-    normalizedDensityTernaryParameter (p ω) (F ω) a v hF.of_uncurry_left ha
+    normalizedDensityTernaryParameter (p ω) (F := (F ω)) (V := v) hF.of_uncurry_left ha
       (fun x y => by simpa using hq 0 ⟨le_rfl,hT⟩ ω x y)
 
-theorem highNormalizedParameterPath_apply (T : ℝ) (hT : 0 ≤ T) (a v η : ℝ) (ha : a ≠ 0)
-    (p F : Ω → Covariate d → ℝ) (hF : Measurable (Function.uncurry F))
-    (hq : ∀ t ∈ Icc 0 T, ∀ ω x y, 0 ≤ ternaryMass a (F ω x) (v-η^2*t) y)
-    (t : ℝ) (ht : t ∈ Icc 0 T) (ω : Ω) :
-    highNormalizedParameterPath T hT a v η ha p F hF hq t ω =
-      normalizedDensityTernaryParameter (p ω) (F ω) a (v-η^2*t) hF.of_uncurry_left ha (hq t ht ω) := by
+theorem highNormalizedParameterPath_apply
+    {t : ℝ} (ht : t ∈ Icc 0 T) (ω : Ω) :
+    highNormalizedParameterPath hT ha p F hF hq t ω =
+      normalizedDensityTernaryParameter (p ω) hF.of_uncurry_left ha (hq t ht ω) := by
   unfold highNormalizedParameterPath
   rw [dif_pos ht]
 

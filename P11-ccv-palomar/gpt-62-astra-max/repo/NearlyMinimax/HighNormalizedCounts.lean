@@ -20,18 +20,13 @@ attribute [local instance] Classical.propDecidable
 def highNormalizedDesignLaw {d : ℕ} (p : Covariate d → ℝ) : Measure (Covariate d) :=
   (cubeVolume d).withDensity (fun x => ENNReal.ofReal (highNormalizedDensity p x))
 
-theorem high_normalized_design_probability {d : ℕ} (p : Covariate d → ℝ)
-    (hp : Measurable p) (a b : ℝ) (ha : 0 < a)
+theorem high_normalized_design_probability {d : ℕ} {p : Covariate d → ℝ}
+    (hp : Measurable p) {a b : ℝ} (ha : 0 < a)
     (hb : ∀ᵐ x ∂cubeVolume d, a ≤ p x ∧ p x ≤ b) : IsProbabilityMeasure (highNormalizedDesignLaw p) :=
-  normalizedDensityTernaryParameter_design_probability p hp a b ha hb
+  normalizedDensityTernaryParameter_design_probability hp ha hb
 
 /-- The exact source C_sharp, obtained from one raw density floor and one
 normalizing mass floor in the selected likelihood. -/
 def highFixedScoreDenominator (pMinus cMass : ℝ) : ℝ := (pMinus ^ 2 * cMass)⁻¹
-
-theorem high_fixed_score_denominator_pos {pMinus cMass : ℝ} (hp : 0 < pMinus) (hc : 0 < cMass) :
-    0 < highFixedScoreDenominator pMinus cMass := by
-  unfold highFixedScoreDenominator
-  positivity
 
 end NearlyMinimax

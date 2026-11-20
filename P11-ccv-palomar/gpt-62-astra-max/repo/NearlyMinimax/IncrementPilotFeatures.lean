@@ -40,70 +40,51 @@ def dyadicIncrementRawVector {d ℓ : ℕ} (j : ℕ) (x : Covariate d) (z : Obse
   fun a => dyadicIncrementFeature j x
     ((Fintype.equivFin (incrementVariables (anchoredDimension d ℓ))).symm a) z
 
-def dyadicIncrementRawMean {d ℓ : ℕ} (θ : RegressionParameter d) (j : ℕ) (x : Covariate d) :
+section
+variable {d ℓ : ℕ} (θ : RegressionParameter d) (j : ℕ) (x : Covariate d)
+
+def dyadicIncrementRawMean :
     Fin (Fintype.card (incrementVariables (anchoredDimension d ℓ))) → ℝ :=
   fun a => ∫ z, dyadicIncrementRawVector j x z a ∂observationLaw θ
 
-theorem dyadicPilotScale_parent_le (d j : ℕ) : dyadicPilotScale d (j - 1) ≤ dyadicPilotScale d j := by
-  unfold dyadicPilotScale
-  exact pow_le_pow_left₀ (by positivity) (pow_le_pow_right₀ (by norm_num) (Nat.sub_le j 1)) d
+/-- Each increment coordinate is constant zero or one, or a preconditioned
+pilot coordinate at a level no finer than `j`. This eliminates the parent
+and current cases simultaneously for pointwise and joint properties. -/
+theorem dyadicIncrementFeature_induction (v : incrementVariables (anchoredDimension d ℓ))
+    (P : (Covariate d → Observation d → ℝ) → Prop) (h0 : P (fun _ _ => 0)) (h1 : P (fun _ _ => 1))
+    (h : ∀ k ≤ j, ∀ a : LocalPilotIndex d ℓ, P (fun x z => preconditionedPilotFeature k x a z)) :
+    P (fun x z => dyadicIncrementFeature j x v z) := by
+  rcases v with (it | it) | ⟨parent, response, i⟩
+  · exact h j le_rfl _
+  · simp [dyadicIncrementFeature]; split_ifs <;> first | assumption | exact h _ (Nat.sub_le ..) _
+  · cases parent <;> simp [dyadicIncrementFeature] <;> split_ifs <;>
+      first | assumption | exact h _ le_rfl _ | exact h _ (Nat.sub_le ..) _
 
-theorem dyadicIncrementFeature_measurable {d ℓ : ℕ} (j : ℕ) (x : Covariate d)
-    (v : incrementVariables (anchoredDimension d ℓ)) : Measurable (dyadicIncrementFeature j x v) := by
-  cases v with
-  | inl v =>
-    cases v with
-    | inl v =>
-      rcases v with ⟨i, t⟩
-      exact preconditionedPilotFeature_measurable j x _
-    | inr v =>
-      change Measurable (fun z : Observation d => if j = 0 then
-        (if v.2.1 = v.2.2 then (1 : ℝ) else 0) else
-        preconditionedPilotFeature (j - 1) x
-          (Sum.inl (anchoredFinIndex v.2.1, anchoredFinIndex v.2.2)) z)
-      split_ifs <;> first | exact measurable_const | exact preconditionedPilotFeature_measurable _ x _
-  | inr v =>
-    rcases v with ⟨parent, response, i⟩
-    change Measurable (fun z : Observation d => if parent && (j == 0) then (0 : ℝ) else
-      preconditionedPilotFeature (if parent then j - 1 else j) x
-        (if response then Sum.inr (Sum.inr (anchoredFinIndex i))
-          else Sum.inr (Sum.inl (anchoredFinIndex i))) z)
-    split_ifs <;> first | exact measurable_const | exact preconditionedPilotFeature_measurable _ x _
+theorem dyadicIncrementFeature_measurable (v : incrementVariables (anchoredDimension d ℓ)) :
+    Measurable (dyadicIncrementFeature j x v) :=
+  dyadicIncrementFeature_induction j v (fun f => Measurable (f x)) measurable_const measurable_const
+    (fun k _ => preconditionedPilotFeature_measurable k x)
 
-theorem dyadicIncrementRawVector_measurable {d ℓ : ℕ} (j : ℕ) (x : Covariate d) :
+theorem dyadicIncrementRawVector_measurable :
     Measurable (dyadicIncrementRawVector (ℓ := ℓ) j x) :=
   measurable_pi_iff.mpr (fun _ => dyadicIncrementFeature_measurable j x _)
 
-theorem dyadicIncrementFeature_memLp_two {d ℓ : ℕ} (C : ModelConstants d)
-    (θ : RegressionParameter d) (hθ : Admissible C θ) (j : ℕ) (x : Covariate d)
-    (hx : x ∈ unitCube d) (v : incrementVariables (anchoredDimension d ℓ)) :
+end
+
+section
+variable {d ℓ : ℕ} {C : ModelConstants d} {θ : RegressionParameter d} (hθ : Admissible C θ) (j : ℕ)
+    {x : Covariate d} (hx : x ∈ unitCube d) (v : incrementVariables (anchoredDimension d ℓ))
+include hx hθ
+
+theorem dyadicIncrementFeature_memLp_two :
     MemLp (dyadicIncrementFeature j x v) 2 (observationLaw θ) := by
   let := observationLaw_isProbability C θ hθ
-  cases v with
-  | inl v =>
-    cases v with
-    | inl v =>
-      rcases v with ⟨i, t⟩
-      exact preconditionedPilotFeature_memLp_two C θ hθ j x hx _
-    | inr v =>
-      change MemLp (fun z : Observation d => if j = 0 then
-        (if v.2.1 = v.2.2 then (1 : ℝ) else 0) else
-        preconditionedPilotFeature (j - 1) x
-          (Sum.inl (anchoredFinIndex v.2.1, anchoredFinIndex v.2.2)) z) 2 (observationLaw θ)
-      split_ifs <;> first | exact memLp_const _ | exact preconditionedPilotFeature_memLp_two C θ hθ _ x hx _
-  | inr v =>
-    rcases v with ⟨parent, response, i⟩
-    change MemLp (fun z : Observation d => if parent && (j == 0) then (0 : ℝ) else
-      preconditionedPilotFeature (if parent then j - 1 else j) x
-        (if response then Sum.inr (Sum.inr (anchoredFinIndex i))
-          else Sum.inr (Sum.inl (anchoredFinIndex i))) z) 2 (observationLaw θ)
-    split_ifs <;> first | exact memLp_const _ | exact preconditionedPilotFeature_memLp_two C θ hθ _ x hx _
+  exact dyadicIncrementFeature_induction j v (fun f => MemLp (f x) 2 (observationLaw θ))
+    (memLp_const _) (memLp_const _) (fun k _ => preconditionedPilotFeature_memLp_two hθ k hx)
 
 /-- Original-law moment bound for every current/parent free coordinate;
 the level-zero identity parent is covered by the same fixed constant. -/
-theorem dyadicIncrementFeature_second_le {d ℓ : ℕ} (C : ModelConstants d)
-    (θ : RegressionParameter d) (hθ : Admissible C θ) (j : ℕ) (x : Covariate d)
-    (hx : x ∈ unitCube d) (v : incrementVariables (anchoredDimension d ℓ)) :
+theorem dyadicIncrementFeature_second_le :
     (∫ z, dyadicIncrementFeature j x v z ^ 2 ∂observationLaw θ) ≤
       preconditionedPilotMomentConstant C ℓ * dyadicPilotScale d j := by
   let := observationLaw_isProbability C θ hθ
@@ -114,75 +95,58 @@ theorem dyadicIncrementFeature_second_le {d ℓ : ℕ} (C : ModelConstants d)
     exact one_le_pow₀ (one_le_pow₀ (by norm_num))
   have hnon : 0 ≤ preconditionedPilotMomentConstant C ℓ * dyadicPilotScale d j :=
     mul_nonneg hC.le (dyadicPilotScale_pos d j).le
-  have hparent (a : LocalPilotIndex d ℓ) :=
-    (preconditionedPilotFeature_uniform_second_le C θ hθ (j - 1) x hx a).trans
-      (mul_le_mul_of_nonneg_left (dyadicPilotScale_parent_le d j) hC.le)
-  cases v with
-  | inl v =>
-    cases v with
-    | inl v =>
-      rcases v with ⟨i, t⟩
-      exact preconditionedPilotFeature_uniform_second_le C θ hθ j x hx _
-    | inr v =>
-      dsimp only [dyadicIncrementFeature]
-      split_ifs <;> first
-        | simpa using (mul_le_mul hroot hK (by norm_num : (0 : ℝ) ≤ 1) hC.le)
-        | simpa using hnon
-        | exact hparent _
-  | inr v =>
-    rcases v with ⟨parent, response, i⟩
-    cases parent with
-    | false =>
-      cases response
-      all_goals first
-        | simpa [dyadicIncrementFeature] using preconditionedPilotFeature_uniform_second_le C θ hθ j x hx
-            (Sum.inr (Sum.inl (anchoredFinIndex i)))
-        | simpa [dyadicIncrementFeature] using preconditionedPilotFeature_uniform_second_le C θ hθ j x hx
-            (Sum.inr (Sum.inr (anchoredFinIndex i)))
-    | true =>
-      cases response <;> by_cases hj : j = 0
-      all_goals first
-        | simpa [dyadicIncrementFeature, hj] using hnon
-        | simpa [dyadicIncrementFeature, hj] using hparent
-            (Sum.inr (Sum.inl (anchoredFinIndex i)))
-        | simpa [dyadicIncrementFeature, hj] using hparent
-            (Sum.inr (Sum.inr (anchoredFinIndex i)))
+  apply dyadicIncrementFeature_induction j v
+    (fun f => (∫ z, f x z ^ 2 ∂observationLaw θ) ≤ preconditionedPilotMomentConstant C ℓ * dyadicPilotScale d j)
+  · simpa using hnon
+  · simpa using mul_le_mul hroot hK (by norm_num) hC.le
+  · intro k hk a
+    exact (preconditionedPilotFeature_uniform_second_le hθ k hx a).trans
+      (mul_le_mul_of_nonneg_left (pow_le_pow_left₀ (by positivity) (pow_le_pow_right₀ (by norm_num) hk) d) hC.le)
 
-theorem dyadicIncrementRawVector_second_le {d ℓ : ℕ} (C : ModelConstants d)
-    (θ : RegressionParameter d) (hθ : Admissible C θ) (j : ℕ) (x : Covariate d)
-    (hx : x ∈ unitCube d) :
+
+theorem dyadicIncrementRawVector_second_le :
     (∫ z, ‖dyadicIncrementRawVector (ℓ := ℓ) j x z‖ ^ 2 ∂observationLaw θ) ≤
       Fintype.card (incrementVariables (anchoredDimension d ℓ)) *
         preconditionedPilotMomentConstant C ℓ * dyadicPilotScale d j := by
   let := observationLaw_isProbability C θ hθ
-  apply (KernelMomentBounds.vector_second_le_sum_coordinates (dyadicIncrementRawVector j x)
-    (dyadicIncrementRawVector_measurable j x) (fun _ => dyadicIncrementFeature_memLp_two C θ hθ j x hx _)).trans
-  exact (Finset.sum_le_sum (fun a _ => dyadicIncrementFeature_second_le C θ hθ j x hx _)).trans_eq
+  apply (KernelMomentBounds.vector_second_le_sum_coordinates
+    (dyadicIncrementRawVector_measurable j x) (fun _ => dyadicIncrementFeature_memLp_two hθ j hx _)).trans
+  exact (Finset.sum_le_sum (fun a _ => dyadicIncrementFeature_second_le hθ j hx _)).trans_eq
     (by simp [mul_assoc])
 
+end
+
+section
+variable {d ℓ : ℕ} (θ : RegressionParameter d) (j : ℕ) (x : Covariate d)
+
 /-- The finite-coordinate current Gram and the two true vector moment families. -/
-def dyadicFinPilotGram {d ℓ : ℕ} (θ : RegressionParameter d) (j : ℕ) (x : Covariate d) :
+def dyadicFinPilotGram :
     Matrix (Fin (anchoredDimension d ℓ)) (Fin (anchoredDimension d ℓ)) ℝ :=
   anchoredFinReindex d ℓ (dyadicPreconditionedGram θ j x)
 
-def dyadicFinPilotMoments {d ℓ : ℕ} (θ : RegressionParameter d) (j : ℕ) (x : Covariate d) :
+def dyadicFinPilotMoments :
     Bool → Fin (anchoredDimension d ℓ) → ℝ :=
   fun response i => preconditionedPilotPopulation θ j x
     (if response then Sum.inr (Sum.inr (anchoredFinIndex i))
       else Sum.inr (Sum.inl (anchoredFinIndex i)))
 
-def dyadicIncrementPopulation {d ℓ : ℕ} (θ : RegressionParameter d) (j : ℕ) (x : Covariate d) :
+def dyadicIncrementPopulation :
     incrementVariables (anchoredDimension d ℓ) → ℝ :=
   incrementValuation (dyadicFinPilotGram θ j x)
     (if j = 0 then 1 else dyadicFinPilotGram θ (j - 1) x)
     (dyadicFinPilotMoments θ j x)
     (if j = 0 then 0 else dyadicFinPilotMoments θ (j - 1) x)
 
+end
+
+variable {d ℓ n : ℕ} {C : ModelConstants d} {θ : RegressionParameter d} (hθ : Admissible C θ) (j : ℕ)
+    {x : Covariate d} (hx : x ∈ unitCube d)
+include hθ
+
+include hx in
 /-- Original observation-law integration produces precisely the free-moment
 population point, including the deterministic identity/zero root parent. -/
-theorem dyadicIncrementFeature_integral {d ℓ : ℕ} (C : ModelConstants d)
-    (θ : RegressionParameter d) (hθ : Admissible C θ) (j : ℕ) (x : Covariate d)
-    (hx : x ∈ unitCube d) (v : incrementVariables (anchoredDimension d ℓ)) :
+theorem dyadicIncrementFeature_integral (v : incrementVariables (anchoredDimension d ℓ)) :
     (∫ z, dyadicIncrementFeature j x v z ∂observationLaw θ) =
       dyadicIncrementPopulation θ j x v := by
   let := observationLaw_isProbability C θ hθ
@@ -195,7 +159,7 @@ theorem dyadicIncrementFeature_integral {d ℓ : ℕ} (C : ModelConstants d)
         RoughRegime.CombinedPolynomial.entryValuation, dyadicFinPilotGram,
         anchoredFinReindex, Matrix.reindexAlgEquiv, Matrix.reindex, anchoredFinIndex,
         preconditionedPilotPopulation] using
-        preconditionedPilotPopulation_gram C θ hθ j x hx (anchoredFinIndex i) (anchoredFinIndex t)
+        preconditionedPilotPopulation_gram hθ j hx (anchoredFinIndex i) (anchoredFinIndex t)
     | inr v =>
       by_cases hj : j = 0
       · simp [dyadicIncrementFeature, dyadicIncrementPopulation, incrementValuation,
@@ -204,7 +168,7 @@ theorem dyadicIncrementFeature_integral {d ℓ : ℕ} (C : ModelConstants d)
           RoughRegime.CombinedPolynomial.entryValuation, dyadicFinPilotGram,
           anchoredFinReindex, Matrix.reindexAlgEquiv, Matrix.reindex, anchoredFinIndex, hj,
           preconditionedPilotPopulation] using
-          preconditionedPilotPopulation_gram C θ hθ (j - 1) x hx
+          preconditionedPilotPopulation_gram hθ (j - 1) hx
             (anchoredFinIndex v.2.1) (anchoredFinIndex v.2.2)
   | inr v =>
     rcases v with ⟨parent, response, i⟩
@@ -212,72 +176,67 @@ theorem dyadicIncrementFeature_integral {d ℓ : ℕ} (C : ModelConstants d)
     all_goals simp [dyadicIncrementFeature, dyadicIncrementPopulation, incrementValuation,
       dyadicFinPilotMoments, hj, preconditionedPilotPopulation]
 
-theorem dyadicIncrementRawMean_eq_population {d ℓ : ℕ} (C : ModelConstants d)
-    (θ : RegressionParameter d) (hθ : Admissible C θ) (j : ℕ) (x : Covariate d)
-    (hx : x ∈ unitCube d) :
-    dyadicIncrementRawMean (ℓ := ℓ) θ j x = fun a =>
+include hx in
+theorem dyadicIncrementRawMean_eq_population :
+    dyadicIncrementRawMean θ j x = fun a =>
       dyadicIncrementPopulation θ j x
         ((Fintype.equivFin (incrementVariables (anchoredDimension d ℓ))).symm a) := by
   funext a
-  exact dyadicIncrementFeature_integral C θ hθ j x hx _
+  exact dyadicIncrementFeature_integral hθ j hx _
 
-theorem dyadicFinPilotGram_eq_normalized {d ℓ : ℕ} (C : ModelConstants d)
-    (θ : RegressionParameter d) (hθ : Admissible C θ) (j : ℕ) (x : Covariate d) :
+theorem dyadicFinPilotGram_eq_normalized (x : Covariate d) :
     dyadicFinPilotGram (ℓ := ℓ) θ j x =
       anchoredFinNormalizedGram (dyadicNormalizedAnchor j x) (dyadicNormalizedDensity θ j x) := by
   unfold dyadicFinPilotGram dyadicPreconditionedGram anchoredFinNormalizedGram
-  rw [dyadicKnownGram_eq_normalized, dyadicPopulationGram_eq_normalized C θ hθ]
+  rw [dyadicKnownGram_eq_normalized, dyadicPopulationGram_eq_normalized hθ]
 
-theorem dyadicFinPilotMoments_eq_normalized {d ℓ : ℕ} (C : ModelConstants d)
-    (θ : RegressionParameter d) (hθ : Admissible C θ) (j : ℕ) (x : Covariate d)
-    (hx : x ∈ unitCube d) (t : Bool) (i : Fin (anchoredDimension d ℓ)) :
+include hx in
+theorem dyadicFinPilotMoments_eq_normalized (t : Bool) (i : Fin (anchoredDimension d ℓ)) :
     dyadicFinPilotMoments θ j x t i =
       anchoredPreconditionedMoment (dyadicNormalizedAnchor j x) (dyadicNormalizedDensity θ j x)
         (if t then fun _ => 1 else θ.regression ∘ dyadicCellAffine j x) (anchoredFinIndex i) := by
   cases t
-  · exact preconditionedPilotPopulation_response C θ hθ j x hx _
-  · exact preconditionedPilotPopulation_constant C θ hθ j x hx _
+  · exact (by rw [preconditionedPilotPopulation_eq_sum hθ j hx]; simp only [localPilotRow, localPilotReplaceRow, dyadicPilotPopulation_response hθ j hx, dyadicKnownGram_eq_normalized, anchoredPreconditionedMoment, Matrix.mulVec, dotProduct, dyadicResponseMoment_eq_normalized hθ] : preconditionedPilotPopulation θ j x (Sum.inr (Sum.inl (anchoredFinIndex i))) = anchoredPreconditionedMoment (dyadicNormalizedAnchor j x) (dyadicNormalizedDensity θ j x) (θ.regression ∘ dyadicCellAffine j x) (anchoredFinIndex i))
+  · exact (by rw [preconditionedPilotPopulation_eq_sum hθ j hx]; simp only [localPilotRow, localPilotReplaceRow, dyadicPilotPopulation_constant hθ, dyadicKnownGram_eq_normalized, anchoredPreconditionedMoment, Matrix.mulVec, dotProduct, dyadicConstantMoment_eq_normalized hθ] : preconditionedPilotPopulation θ j x (Sum.inr (Sum.inr (anchoredFinIndex i))) = anchoredPreconditionedMoment (dyadicNormalizedAnchor j x) (dyadicNormalizedDensity θ j x) (fun x => 1) (anchoredFinIndex i))
 
-theorem dyadicIncrementRawVector_sample_facts {d ℓ n : ℕ} (C : ModelConstants d)
-    (θ : RegressionParameter d) (hθ : Admissible C θ) (j : ℕ) (x : Covariate d)
-    (hx : x ∈ unitCube d) :
-    iIndepFun (fun i (z : Fin n → Observation d) => dyadicIncrementRawVector (ℓ := ℓ) j x (z i)) (sampleLaw θ n) ∧
-    (∀ i : Fin n, Measurable (fun z : Fin n → Observation d => dyadicIncrementRawVector (ℓ := ℓ) j x (z i))) ∧
-    (∀ i t : Fin n, IdentDistrib
-      (fun z : Fin n → Observation d => dyadicIncrementRawVector (ℓ := ℓ) j x (z i))
-      (fun z : Fin n → Observation d => dyadicIncrementRawVector (ℓ := ℓ) j x (z t)) (sampleLaw θ n) (sampleLaw θ n)) ∧
-    (∀ (i : Fin n) a, MemLp (fun z : Fin n → Observation d => dyadicIncrementRawVector (ℓ := ℓ) j x (z i) a)
+include hx in
+theorem dyadicIncrementRawVector_sample_facts :
+    iIndepFun (fun i z => dyadicIncrementRawVector (ℓ := ℓ) j x (z i)) (sampleLaw θ n) ∧
+    (∀ i, Measurable (fun z : Fin n → Observation d => dyadicIncrementRawVector (ℓ := ℓ) j x (z i))) ∧
+    (∀ i t, IdentDistrib
+      (fun z => dyadicIncrementRawVector j x (z i))
+      (fun z => dyadicIncrementRawVector (ℓ := ℓ) j x (z t)) (sampleLaw θ n) (sampleLaw θ n)) ∧
+    (∀ i a, MemLp (fun z => dyadicIncrementRawVector (ℓ := ℓ) j x (z i) a)
       2 (sampleLaw θ n)) ∧
-    (∀ (i : Fin n) a, (∫ z : Fin n → Observation d, dyadicIncrementRawVector (ℓ := ℓ) j x (z i) a ∂sampleLaw θ n) =
+    (∀ i a, (∫ z, dyadicIncrementRawVector (ℓ := ℓ) j x (z i) a ∂sampleLaw θ n) =
       dyadicIncrementRawMean θ j x a) := by
   let := observationLaw_isProbability C θ hθ
   have hm := dyadicIncrementRawVector_measurable (ℓ := ℓ) j x
-  have hp (i : Fin n) : MeasurePreserving (fun z : Fin n → Observation d => z i)
+  have hp (i : Fin n) : MeasurePreserving (fun z => z i)
       (sampleLaw θ n) (observationLaw θ) := measurePreserving_eval _ i
-  refine ⟨iIndepFun_pi (fun _ : Fin n => hm.aemeasurable),
+  refine ⟨iIndepFun_pi (fun _ => hm.aemeasurable),
     fun i => hm.comp (measurable_pi_apply i), ?_, ?_, ?_⟩
   · intro i t
-    have ht : IdentDistrib (fun z : Fin n → Observation d => z i)
-        (fun z : Fin n → Observation d => z t) (sampleLaw θ n) (sampleLaw θ n) :=
+    have ht : IdentDistrib (fun z => z i)
+        (fun z => z t) (sampleLaw θ n) (sampleLaw θ n) :=
       ⟨(hp i).aemeasurable, (hp t).aemeasurable, (hp i).map_eq.trans (hp t).map_eq.symm⟩
     exact ht.comp hm
   · intro i a
-    exact (dyadicIncrementFeature_memLp_two C θ hθ j x hx _).comp_measurePreserving (hp i)
+    exact (dyadicIncrementFeature_memLp_two hθ j hx _).comp_measurePreserving (hp i)
   · intro i a
-    exact integral_comp_eval (μ := fun _ : Fin n => observationLaw θ) (i := i)
+    exact integral_comp_eval
       ((dyadicIncrementFeature_measurable j x
         ((Fintype.equivFin (incrementVariables (anchoredDimension d ℓ))).symm a)).aestronglyMeasurable)
 
-theorem dyadicIncrementRawVector_sample_second_le {d ℓ n : ℕ} (C : ModelConstants d)
-    (θ : RegressionParameter d) (hθ : Admissible C θ) (j : ℕ) (x : Covariate d)
-    (hx : x ∈ unitCube d) (i : Fin n) :
-    (∫ z : Fin n → Observation d, ‖dyadicIncrementRawVector (ℓ := ℓ) j x (z i)‖ ^ 2 ∂sampleLaw θ n) ≤
+include hx in
+theorem dyadicIncrementRawVector_sample_second_le (i : Fin n) :
+    (∫ z, ‖dyadicIncrementRawVector (ℓ := ℓ) j x (z i)‖ ^ 2 ∂sampleLaw θ n) ≤
       Fintype.card (incrementVariables (anchoredDimension d ℓ)) *
         preconditionedPilotMomentConstant C ℓ * dyadicPilotScale d j := by
   let := observationLaw_isProbability C θ hθ
   unfold sampleLaw
-  rw [integral_comp_eval (μ := fun _ : Fin n => observationLaw θ) (i := i)
-    (((dyadicIncrementRawVector_measurable (ℓ := ℓ) j x).norm.pow_const 2).aestronglyMeasurable)]
-  exact dyadicIncrementRawVector_second_le C θ hθ j x hx
+  rw [integral_comp_eval (μ := fun _ => observationLaw θ)
+    (((dyadicIncrementRawVector_measurable j x).norm.pow_const 2).aestronglyMeasurable)]
+  exact dyadicIncrementRawVector_second_le hθ j hx
 
 end NearlyMinimax

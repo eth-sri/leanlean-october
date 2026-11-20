@@ -14,21 +14,26 @@ set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1000000
 attribute [local instance] Classical.propDecidable
 
-def ordinaryFineAliasTargetSet (d D : ℕ) (L N mu : ℝ) : Finset ℕ :=
+section
+variable (d q R : ℕ) (ad bd c0 C a rho : ℝ)
+
+def ordinaryFineAliasTargetSet (D : ℕ) (L N mu : ℝ) : Finset ℕ :=
   (Finset.range (D+1)).filter (fun r => 3 ≤ r ∧ L < higherBandTargetScale d r N mu)
 
 def ordinaryFineAliasFamilyRawAction {d n F : ℕ} (I : Finset ℕ)
     (ad bd lam L : ℝ) (T : ℕ → ℝ) (M q : ℕ) (C a V eta : ℝ)
-    (U : Fin n → Covariate d) (p g w : Fin n → ℝ)
-    (c : HighFrameIndex d F → ℝ) (y : Fin n → Fin 3) : ℝ :=
+    (U : DesignSample d n) (p g w : Fin n → ℝ)
+    (c : HighFrameVector d F) (y : TernaryVector n) : ℝ :=
   ∑ r ∈ I, ordinaryFineAliasRawAction ad bd lam L (T r) M r q C a V eta U p g w c y
 
-def ordinaryAliasFamilySpatialPrefactor (d q R : ℕ) (ad bd c0 C a rho : ℝ) : ℝ :=
-  ((R+1 : ℕ) : ℝ)^2 * ordinaryAliasSpatialPrefactor d q R ad bd c0 C a rho
+def ordinaryAliasFamilySpatialPrefactor : ℝ :=
+  (R+1 : ℕ)^2 * ordinaryAliasSpatialPrefactor d q R ad bd c0 C a rho
 
-theorem ordinaryAliasFamilySpatialPrefactor_nonneg (d q R : ℕ) (ad bd c0 C a rho : ℝ) :
+theorem ordinaryAliasFamilySpatialPrefactor_nonneg :
     0 ≤ ordinaryAliasFamilySpatialPrefactor d q R ad bd c0 C a rho :=
-  mul_nonneg (sq_nonneg _) (ordinaryAliasSpatialPrefactor_nonneg _ _ _ _ _ _ _ _ _)
+  mul_nonneg (sq_nonneg _) (ordinaryAliasSpatialPrefactor_nonneg ..)
+
+end
 
 /-- Numerical guards for the actual canonical fine-alias scale. -/
 structure OrdinaryFineAliasSaddleGuards (s : ℝ) (d : ℕ) (ad bd Cw x : ℝ) : Prop where
@@ -60,28 +65,23 @@ structure OrdinaryFineAliasSaddleGuards (s : ℝ) (d : ℕ) (ad bd Cw x : ℝ) :
 /-- All guards come from the canonical rounded saddle and actual shrunk
 endpoints, with a fixed number of fine targets before count/spatial tuples. -/
 theorem eventually_ordinaryFineAlias_saddle_guards {s ad bd : ℝ} {d : ℕ}
-    (hs : 1 < s) (hd : 4*s < (d : ℝ)) (haD : 0 < ad) (hab : ad < bd) (Cw : ℝ) :
+    (hs : 1 < s) (hd : 4*s < d) (haD : 0 < ad) (hab : ad < bd) (Cw : ℝ) :
     ∀ᶠ x in atTop, OrdinaryFineAliasSaddleGuards s d ad bd Cw x := by
   let tau := densityIntervalExponent ad bd
-  let m := lowerSaddleCoefficient s d tau
-  let theta := lowerSaddleTheta s d tau
-  have htau : 0 < tau := densityIntervalExponent_pos haD hab
-  have hm : 0 < m := lowerSaddleCoefficient_pos hs hd htau
-  have htheta : 0 < theta := lowerSaddleTheta_pos hs hd htau
-  have hM := lowerSaddleM_tendsto_atTop hm
-  have hsmall := hM.inv_tendsto_atTop.eventually (gt_mem_nhds (by linarith : (0 : ℝ)<(bd-ad)/2))
+  have htau  := densityIntervalExponent_pos haD hab
+  have hM := lowerSaddleM_tendsto_atTop (lowerSaddleCoefficient_pos hs hd htau)
+  have hsmall := hM.inv_tendsto_atTop.eventually (gt_mem_nhds (by linarith : 0<(bd-ad)/2))
   filter_upwards [actual_lowerAlias_hierarchy hs hd haD hab (Cact := 1) (Cs := 1)
       (by norm_num) (by norm_num) Cw,
-    hM.eventually (eventually_ge_atTop (1 : ℝ)), hsmall] with x hh hM1 hsmall
-  simp only [Pi.inv_apply] at hsmall
+    hM.eventually (eventually_ge_atTop 1), hsmall] with x hh hM1 hsmall
+  simp at hsmall
   rcases hh with ⟨hell,hτ,_hbase,hlog,_hgap,_hq21,_hq1,_hDq,_hco,_hsingle,_hRM,hactive⟩
-  have hd0 : (0 : ℝ)<d := by linarith
   have hd5 : 5 ≤ d := by
     have h : (4 : ℝ)<d := by linarith
     have h' : 4<d := by exact_mod_cast h
     omega
-  refine ⟨hd5, by change ad+(lowerSaddleM m x : ℝ)⁻¹<bd-(lowerSaddleM m x : ℝ)⁻¹; linarith,
-    hτ, lowerSaddleD_le_fixed_linear hd0 hM1, hell.le, hlog, ?_⟩
+  refine ⟨hd5, by linarith,
+    hτ, lowerSaddleD_le_fixed_linear (by linarith) hM1, hell.le, hlog, ?_⟩
   intro r hr
   have hrmem := (Finset.mem_filter.mp hr).2
   refine ⟨by omega, hactive r ?_⟩

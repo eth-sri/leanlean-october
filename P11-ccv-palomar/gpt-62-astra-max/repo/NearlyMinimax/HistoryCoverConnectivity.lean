@@ -20,16 +20,20 @@ namespace NearlyMinimax
 
 variable {α : Type*} [PartialOrder α] [DecidableEq α]
 
-def historyCoverEdge (U : Finset α) (a b : α) : Prop :=
+section
+variable (U : Finset α) (a b : α)
+
+def historyCoverEdge : Prop :=
   a ∈ U ∧ b ∈ U ∧ (a ⋖ b ∨ b ⋖ a)
 
-def HistoryCoverConnected (U : Finset α) (a b : α) : Prop :=
+def HistoryCoverConnected : Prop :=
   Relation.EqvGen (historyCoverEdge U) a b
+
+end
 
 omit [DecidableEq α] in
 theorem historyCoverConnected_comparable {U : Finset α} {a b : α}
-    (h : HistoryCoverConnected U a b) : HistoryConnected U a b := by
-  exact Relation.EqvGen.mono (r := historyCoverEdge U) (p := historyComparableEdge U)
+    (h : HistoryCoverConnected U a b) : HistoryConnected U a b := Relation.EqvGen.mono
     (fun _ _ h => ⟨h.1, h.2.1, h.2.2.elim (fun h => Or.inl h.le) (fun h => Or.inr h.le)⟩) a b h
 
 omit [DecidableEq α] in
@@ -38,14 +42,11 @@ theorem historyCoverConnected_of_le [Fintype α] {U : Finset α}
     HistoryCoverConnected U a b := by
   classical
   let : LocallyFiniteOrder α := Fintype.toLocallyFiniteOrder
-  have hh := le_iff_reflTransGen_covBy.1 hab
-  induction hh with
+  induction (le_iff_reflTransGen_covBy.1 hab) with
   | refl => exact .refl _
   | @tail c b hac hcb ih =>
-    have hac' : a ≤ c := le_iff_reflTransGen_covBy.2 hac
-    have hc : c ∈ U := hU.2 a ha c (Finset.mem_univ _) hac'
-    have hb : b ∈ U := hU.2 a ha b (Finset.mem_univ _) (hac'.trans hcb.le)
-    exact .trans _ _ _ (ih hac') (.rel _ _ ⟨hc, hb, Or.inl hcb⟩)
+    have hac'  := le_iff_reflTransGen_covBy.2 hac
+    exact .trans _ _ _ (ih hac') (.rel _ _ ⟨(hU.2 a ha c (Finset.mem_univ _) hac'), (hU.2 a ha b (Finset.mem_univ _) (hac'.trans hcb.le)), Or.inl hcb⟩)
 
 omit [DecidableEq α] in
 /-- Actual upper-set comparability connectivity equals cover connectivity. -/
@@ -92,16 +93,10 @@ theorem historyCoverConnected_reachable {U : Finset α} {a b : α}
         induction h with
         | rel x y h => exact Or.inr ⟨h.1, h.2.1⟩
         | refl x => exact Or.inl rfl
-        | symm x y h ih => exact ih.elim (fun h => Or.inl h.symm) (fun h => Or.inr h.symm)
+        | symm x y h ih => aesop
         | trans x y z hxy hyz ihxy ihyz =>
-          rcases ihxy with rfl | ⟨hx, hy⟩
-          · exact ihyz
-          · rcases ihyz with rfl | ⟨_, hz⟩
-            · exact Or.inr ⟨hx, hy⟩
-            · exact Or.inr ⟨hx, hz⟩
-      rcases hs hab with hab' | hab'
-      · exact (hbU (hab' ▸ ha)).elim
-      · exact (hbU hab'.2).elim
+          aesop
+      rcases hs hab with hab' | hab' <;> aesop
 
 omit [DecidableEq α] in
 theorem historyInducedCoverGraph_reachable_connected {U : Finset α} {a b : U}
@@ -112,21 +107,22 @@ theorem historyInducedCoverGraph_reachable_connected {U : Finset α} {a b : U}
   | nil => exact .refl _
   | @cons a c b hac p ih => exact .trans _ _ _ (.rel _ _ ⟨a.prop, c.prop, hac⟩) ih
 
-theorem historyConnected_iff_coverGraph_reachable [Fintype α] {U : Finset α}
+variable [Fintype α]
+
+theorem historyConnected_iff_coverGraph_reachable {U : Finset α}
     (hU : IsHistoryUpper Finset.univ U) {a b : α} (ha : a ∈ U) (hb : b ∈ U) :
     HistoryConnected U a b ↔ (historyInducedCoverGraph U).Reachable ⟨a, ha⟩ ⟨b, hb⟩ := by
   rw [historyConnected_iff_coverConnected hU]
   exact ⟨historyCoverConnected_reachable ha hb, historyInducedCoverGraph_reachable_connected⟩
 
-theorem historyUpperPolymer_coverGraph_connected [Fintype α] {P : Finset α}
+theorem historyUpperPolymer_coverGraph_connected {P : Finset α}
     (hP : P ∈ historyUpperPolymers Finset.univ) :
-    ((historyCoverGraph α).induce (P : Set α)).Connected := by
+    ((historyCoverGraph α).induce P).Connected := by
   obtain ⟨hupper, hconn⟩ := mem_historyUpperPolymers.1 hP
   obtain ⟨x, hx⟩ := hconn.1
-  let : Nonempty (P : Set α) := ⟨⟨x, hx⟩⟩
+  let : Nonempty P := ⟨⟨x, hx⟩⟩
   constructor
   intro a b
-  change (historyInducedCoverGraph P).Reachable a b
   exact (historyConnected_iff_coverGraph_reachable hupper a.prop b.prop).1 (hconn.2 a a.prop b b.prop)
 
 end NearlyMinimax

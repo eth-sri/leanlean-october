@@ -11,25 +11,25 @@ open Set Matrix
 open scoped BigOperators Matrix.Norms.L2Operator
 namespace NearlyMinimax
 
-theorem dyadicCellAffine_same_cell {d : ℕ} (j : ℕ) (x y : Covariate d)
+variable {d ℓ j : ℕ} {x y : Covariate d}
+
+theorem dyadicCellAffine_same_cell
     (hcell : y ∈ dyadicPilotCell j x) :
     dyadicCellAffine j x (dyadicNormalizedAnchor j y) = y := by
-  have hc : regularGridCell ((2 : ℕ) ^ j) (by positivity) y =
-      regularGridCell ((2 : ℕ) ^ j) (by positivity) x := hcell
+  have hc : dyadicGridLabel j y =
+      dyadicGridLabel j x := hcell
   simpa only [dyadicCellAffine, hc] using dyadicCellAffine_anchor j y
 
-theorem dyadicPopulationFit_physical_evaluation {d ℓ : ℕ} (j : ℕ)
-    (x y : Covariate d) (hcell : y ∈ dyadicPilotCell j x) (c : AnchoredIndex d ℓ → ℝ) :
+theorem dyadicPopulationFit_physical_evaluation (hcell : y ∈ dyadicPilotCell j x) (c : AnchoredIndex d ℓ → ℝ) :
     anchoredFitPolynomial (dyadicNormalizedAnchor j x) c (dyadicNormalizedAnchor j y) =
       dyadicAnchoredFeature j x y ⬝ᵥ c := by
-  have he := dyadicCellAffine_same_cell j x y hcell
-  unfold anchoredFitPolynomial dotProduct
+  have he := dyadicCellAffine_same_cell hcell
   apply Finset.sum_congr rfl
   intro γ _
   have h := dyadicAnchoredFeature_affine j x (dyadicNormalizedAnchor j y) γ
   change dyadicAnchoredFeature j x (dyadicCellAffine j x (dyadicNormalizedAnchor j y)) γ = _ at h
   rw [he] at h
-  change dyadicAnchoredFeature j x y γ =
+  change _ =
     anchoredFeature (dyadicNormalizedAnchor j x) (dyadicNormalizedAnchor j y) γ at h
   rw [h]
   ring
@@ -41,8 +41,8 @@ theorem positive_rpow_times_distance (h s r : ℝ) (hh : 0 < h) :
   ring
 
 /-- The known preconditioner cancels in the genuine inverse population fit. -/
-theorem dyadicPopulationFit_preconditioner_cancels {d ℓ : ℕ} (C : ModelConstants d)
-    (θ : RegressionParameter d) (hθ : Admissible C θ) (j : ℕ) (x : Covariate d) :
+theorem dyadicPopulationFit_preconditioner_cancels {C : ModelConstants d}
+    {θ : RegressionParameter d} (hθ : Admissible C θ) (j : ℕ) (x : Covariate d) :
     (dyadicPreconditionedGram (ℓ := ℓ) θ j x)⁻¹ *ᵥ
       ((dyadicKnownGram j x)⁻¹ *ᵥ (dyadicResponseMoment θ j x - θ.regression x • dyadicConstantMoment θ j x)) =
         dyadicPopulationFit θ j x := by

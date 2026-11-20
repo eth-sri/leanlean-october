@@ -18,14 +18,14 @@ theorem higherBandFirstAction_fine_eq_aliasRawAction {d n : ℕ}
     (ad bd lam L T : ℝ) (ha : 0 < ad) (hab : ad < bd) (hlam : 0 ≤ lam)
     (hL : 0 < L) (hT : 1 ≤ T) (r M D q : ℕ) (hr : 2 ≤ r)
     (hD : 1 ≤ D) (hnD : n ≤ D) (C a V η : ℝ)
-    (U : Fin n → Covariate d) (hU : ∀ i j, |U i j| ≤ 2)
+    {U : DesignSample d n} (hU : ∀ i j, |U i j| ≤ 2)
     (p g w : Fin n → ℝ) (hp : ∀ i, p i ∈ Icc ad bd)
-    (c : HighFrameIndex d D → ℝ) (y : Fin n → Fin 3) :
-    higherBandFirstAction ad bd lam L T r M D q C true U p c
+    (c : HighFrameVector d D) (y : TernaryVector n) :
+    higherBandFirstAction ad bd lam L T r M q C true U p c
       (fun v => highResponseProduct a V η g w (fun i => highFrameFeature (U i)) v y) =
       ordinaryFineAliasRawAction ad bd lam L T M r q C a V η U p g w c y := by
-  rw [higherBandFirstAction_actual_count_expansion ad bd lam L T ha hab hlam hL hT
-    r M D q hr hD hnD C true U hU p hp c]
-  simp only [ordinaryFineAliasRawAction, higherBandActualMatrix, ite_true]
+  rw [higherBandFirstAction_actual_count_expansion ha hab hlam hL hT
+    r M D q hr hD hnD C true hU hp c]
+  norm_cast
 
 end NearlyMinimax

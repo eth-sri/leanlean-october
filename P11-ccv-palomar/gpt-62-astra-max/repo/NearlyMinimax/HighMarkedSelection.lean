@@ -17,25 +17,26 @@ set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1000000
 attribute [local instance] Classical.propDecidable
 
-theorem finite_product_split_embedding {n r : ℕ} (e : Fin r ↪ Fin n) (F : Fin n → ℝ) :
-    (∏ i : Fin n, F i) =
-      (∏ i ∈ (Finset.univ : Finset (Fin n)) \ Finset.univ.map e, F i) * ∏ l : Fin r, F (e l) := by
-  rw [← Finset.prod_sdiff (Finset.subset_univ (Finset.univ.map e))]
-  rw [Finset.prod_map]
+section
+variable {n r : ℕ} (e : Fin r ↪ Fin n) (F : Fin n → ℝ)
 
-theorem finite_sum_split_embedding {n r : ℕ} (e : Fin r ↪ Fin n) (F : Fin n → ℝ) :
-    (∑ i : Fin n, F i) =
-      (∑ i ∈ (Finset.univ : Finset (Fin n)) \ Finset.univ.map e, F i) + ∑ l : Fin r, F (e l) := by
-  rw [← Finset.sum_sdiff (Finset.subset_univ (Finset.univ.map e))]
-  rw [Finset.sum_map]
+theorem finite_product_split_embedding :
+    (∏ i, F i) =
+      (∏ i ∈ Finset.univ \ Finset.univ.map e, F i) * ∏ l, F (e l) := by
+  rw [← Finset.prod_sdiff (Finset.subset_univ (Finset.univ.map e))]
+  simp
+
+end
 
 section
 variable {ι E : Type*} [Fintype ι] [DecidableEq ι] [MeasurableSpace E]
 
-theorem high_marked_local_score_ratio {n : ℕ} (π : Measure E) (activation : E → ℝ)
+variable {n r : ℕ} {e : Fin r ↪ Fin n} (π : Measure E) (activation : E → ℝ)
+
+theorem high_marked_local_score_ratio
     (a V η : ℝ) (p : Fin n → ℝ) (pReset : E → Fin n → ℝ)
     (cReset : E → ι → ℝ) (g w : Fin n → ℝ) (φ : Fin n → ι → ℝ)
-    (c : ι → ℝ) (y : Fin n → Fin 3) (hpd : ∀ i, p i ≠ 0)
+    (c : ι → ℝ) (y : TernaryVector n) (hpd : ∀ i, p i ≠ 0)
     (hp : ∀ i b, 0 < ternaryMass a (coefficientRegression η g w φ c i) V b) :
     highMarkedLocalScore π activation a V η p pReset cReset g w φ c y =
       (∫ z, activation z * (∏ i, pReset z i / p i) *
@@ -55,22 +56,21 @@ theorem high_marked_local_score_ratio {n : ℕ} (π : Measure E) (activation : E
         ∏ i, ternaryMass a (coefficientRegression η g w φ (cReset z) i) V (y i) /
           ternaryMass a (coefficientRegression η g w φ c i) V (y i)) := by
     funext z
-    simp only [Finset.prod_div_distrib]
+    simp
     unfold highResponseProduct
-    field_simp [hpP, hqP]
+    field_simp [hpP]
   rw [hfirst]
   congr 1
   calc
     _ = η ^ 2 * ((∑ i, (w i) ^ 2 * highResponseVarianceTerm a V η g w φ c y i) /
-        highResponseProduct a V η g w φ c y) := by field_simp [hpP, hqP]
+        highResponseProduct a V η g w φ c y) := by field_simp [hpP]
     _ = _ := by
       simp_rw [Finset.sum_div, mul_div_assoc,
         high_response_variance_ratio a V η g w φ c y _ (fun i => hp i (y i))]
 
-theorem high_marked_local_score_selected {n r : ℕ} (e : Fin r ↪ Fin n)
-    (π : Measure E) (activation : E → ℝ) (a V η : ℝ)
-    (p : Fin n → ℝ) (pReset : E → Fin n → ℝ) (cReset : E → ι → ℝ)
-    (g w : Fin n → ℝ) (φ : Fin n → ι → ℝ) (c : ι → ℝ) (y : Fin n → Fin 3)
+theorem high_marked_local_score_selected {a V η : ℝ}
+    {p : Fin n → ℝ} {pReset : E → Fin n → ℝ} (cReset : E → ι → ℝ)
+    {g w : Fin n → ℝ} {φ : Fin n → ι → ℝ} {c : ι → ℝ} (y : TernaryVector n)
     (hpd : ∀ i, p i ≠ 0)
     (hp : ∀ i b, 0 < ternaryMass a (coefficientRegression η g w φ c i) V b)
     (hw : ∀ i, i ∉ Finset.univ.map e → w i = 0)
@@ -82,38 +82,32 @@ theorem high_marked_local_score_selected {n r : ℕ} (e : Fin r ↪ Fin n)
     high_marked_local_score_ratio π activation a V η (p ∘ e) (fun z => pReset z ∘ e)
       cReset (g ∘ e) (w ∘ e) (φ ∘ e) c (y ∘ e) (fun l => hpd (e l))
       (fun l b => hp (e l) b)]
-  have hprod (z : E) :
+  have hprod z :
       (∏ i, pReset z i / p i) *
           ∏ i, ternaryMass a (coefficientRegression η g w φ (cReset z) i) V (y i) /
             ternaryMass a (coefficientRegression η g w φ c i) V (y i) =
-      (∏ l : Fin r, pReset z (e l) / p (e l)) *
-          ∏ l : Fin r, ternaryMass a (coefficientRegression η g w φ (cReset z) (e l)) V (y (e l)) /
+      (∏ l, pReset z (e l) / p (e l)) *
+          ∏ l, ternaryMass a (coefficientRegression η g w φ (cReset z) (e l)) V (y (e l)) /
             ternaryMass a (coefficientRegression η g w φ c (e l)) V (y (e l)) := by
     rw [← Finset.prod_mul_distrib, ← Finset.prod_mul_distrib,
       finite_product_split_embedding e]
-    have ho : (∏ i ∈ (Finset.univ : Finset (Fin n)) \ Finset.univ.map e,
+    have ho : (∏ i ∈ Finset.univ \ Finset.univ.map e,
         (pReset z i / p i) *
           (ternaryMass a (coefficientRegression η g w φ (cReset z) i) V (y i) /
             ternaryMass a (coefficientRegression η g w φ c i) V (y i))) = 1 := by
       apply Finset.prod_eq_one
-      intro i hi
-      have hiS := (Finset.mem_sdiff.mp hi).2
-      rw [hReset z i hiS, div_self (hpd i)]
-      have hv : coefficientRegression η g w φ (cReset z) i = coefficientRegression η g w φ c i := by
-        simp [coefficientRegression, hw i hiS]
-      rw [hv, div_self (hp i (y i)).ne', one_mul]
+      grind [coefficientRegression]
     rw [ho, one_mul]
   have hsum : (∑ i, (w i) ^ 2 * (ternaryVarianceDerivative a (y i) /
       ternaryMass a (coefficientRegression η g w φ c i) V (y i))) =
-      ∑ l : Fin r, (w (e l)) ^ 2 * (ternaryVarianceDerivative a (y (e l)) /
+      ∑ l, (w (e l)) ^ 2 * (ternaryVarianceDerivative a (y (e l)) /
         ternaryMass a (coefficientRegression η g w φ c (e l)) V (y (e l))) := by
-    rw [finite_sum_split_embedding e]
-    have ho : (∑ i ∈ (Finset.univ : Finset (Fin n)) \ Finset.univ.map e,
+    rw [(by simp : ∀ (F : Fin n → ℝ), ∑ i, F i = ∑ i ∈ Finset.univ \ Finset.map e Finset.univ, F i + ∑ l, F (e l))]
+    have ho : (∑ i ∈ Finset.univ \ Finset.univ.map e,
         (w i) ^ 2 * (ternaryVarianceDerivative a (y i) /
           ternaryMass a (coefficientRegression η g w φ c i) V (y i))) = 0 := by
       apply Finset.sum_eq_zero
-      intro i hi
-      simp [hw i (Finset.mem_sdiff.mp hi).2]
+      grind
     rw [ho, zero_add]
   simp_rw [mul_assoc, hprod, hsum]
   rfl

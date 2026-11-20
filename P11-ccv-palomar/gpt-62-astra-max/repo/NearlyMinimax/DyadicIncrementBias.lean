@@ -16,10 +16,14 @@ namespace NearlyMinimax
 set_option maxHeartbeats 1000000
 set_option backward.isDefEq.respectTransparency false
 
-def anchoredFinVector {d ℓ : ℕ} (v : AnchoredIndex d ℓ → ℝ) :
+variable {d ℓ : ℕ} (A : Matrix (AnchoredIndex d ℓ) (AnchoredIndex d ℓ) ℝ) {C : ModelConstants d}
+    {θ : RegressionParameter d} (hθ : Admissible C θ) (j : ℕ) {x : Covariate d} (hx : x ∈ unitCube d)
+    {r : ℕ} (t : Bool) (v w : AnchoredIndex d ℓ → ℝ)
+
+def anchoredFinVector :
     Fin (anchoredDimension d ℓ) → ℝ := fun i => v (anchoredFinIndex i)
 
-theorem anchoredFinVector_norm {d ℓ : ℕ} (v : AnchoredIndex d ℓ → ℝ) :
+theorem anchoredFinVector_norm :
     ‖(EuclideanSpace.equiv (Fin (anchoredDimension d ℓ)) ℝ).symm (anchoredFinVector v)‖ =
       ‖(EuclideanSpace.equiv (AnchoredIndex d ℓ) ℝ).symm v‖ := by
   let e := LinearIsometryEquiv.piLpCongrLeft 2 ℝ ℝ (Fintype.equivFin (AnchoredIndex d ℓ))
@@ -30,55 +34,48 @@ theorem anchoredFinVector_norm {d ℓ : ℕ} (v : AnchoredIndex d ℓ → ℝ) :
   rw [← he]
   exact e.norm_map _
 
-theorem anchoredFinReindex_mulVec {d ℓ : ℕ}
-    (A : Matrix (AnchoredIndex d ℓ) (AnchoredIndex d ℓ) ℝ)
-    (v : AnchoredIndex d ℓ → ℝ) :
+theorem anchoredFinReindex_mulVec :
     anchoredFinReindex d ℓ A *ᵥ anchoredFinVector v = anchoredFinVector (A *ᵥ v) := by
   ext i
-  simp only [anchoredFinReindex, Matrix.reindexAlgEquiv_apply, Matrix.reindex_apply,
-    anchoredFinVector, anchoredFinIndex, Matrix.mulVec, dotProduct]
+  simp [anchoredFinReindex, anchoredFinVector, anchoredFinIndex, dotProduct]
   exact (Fintype.equivFin (AnchoredIndex d ℓ)).symm.sum_comp
     (fun γ : AnchoredIndex d ℓ => A (anchoredFinIndex i) γ * v γ)
 
-theorem anchoredFinReindex_inv {d ℓ : ℕ}
-    (A : Matrix (AnchoredIndex d ℓ) (AnchoredIndex d ℓ) ℝ) :
+theorem anchoredFinReindex_inv :
     (anchoredFinReindex d ℓ A)⁻¹ = anchoredFinReindex d ℓ A⁻¹ :=
   Matrix.inv_reindex _ _ A
 
-theorem anchoredFinVector_sub {d ℓ : ℕ} (v w : AnchoredIndex d ℓ → ℝ) :
+theorem anchoredFinVector_sub :
     anchoredFinVector (v - w) = anchoredFinVector v - anchoredFinVector w := rfl
 
-theorem anchoredFinVector_smul {d ℓ : ℕ} (a : ℝ) (v : AnchoredIndex d ℓ → ℝ) :
+theorem anchoredFinVector_smul (a : ℝ) (v : AnchoredIndex d ℓ → ℝ) :
     anchoredFinVector (a • v) = a • anchoredFinVector v := rfl
 
-theorem dyadicFinPilotMoments_eq_actual {d ℓ : ℕ} (C : ModelConstants d)
-    (θ : RegressionParameter d) (hθ : Admissible C θ) (j : ℕ)
-    (x : Covariate d) (hx : x ∈ unitCube d) (t : Bool) :
+include hθ hx in
+theorem dyadicFinPilotMoments_eq_actual :
     dyadicFinPilotMoments (ℓ := ℓ) θ j x t = anchoredFinVector
       ((dyadicKnownGram j x)⁻¹ *ᵥ (if t then dyadicConstantMoment θ j x else dyadicResponseMoment θ j x)) := by
   ext i
   cases t
-  all_goals simp only [dyadicFinPilotMoments, Bool.false_eq_true, ↓reduceIte,
-    anchoredFinVector]
-  all_goals rw [preconditionedPilotPopulation_eq_sum C θ hθ j x hx]
+  all_goals simp [dyadicFinPilotMoments, anchoredFinVector]
+  all_goals rw [preconditionedPilotPopulation_eq_sum hθ j hx]
   all_goals simp only [localPilotRow, localPilotReplaceRow, Matrix.mulVec, dotProduct,
-    dyadicPilotPopulation_response C θ hθ j x hx, dyadicPilotPopulation_constant C θ hθ]
+    dyadicPilotPopulation_response hθ j hx, dyadicPilotPopulation_constant hθ]
 
-theorem dyadicFinPilot_fit {d ℓ : ℕ} (C : ModelConstants d)
-    (θ : RegressionParameter d) (hθ : Admissible C θ) (j : ℕ)
-    (x : Covariate d) (hx : x ∈ unitCube d) :
+include hθ hx in
+theorem dyadicFinPilot_fit :
     (dyadicFinPilotGram (ℓ := ℓ) θ j x)⁻¹ *ᵥ
       (dyadicFinPilotMoments θ j x false - θ.regression x • dyadicFinPilotMoments θ j x true) =
         anchoredFinVector (dyadicPopulationFit θ j x) := by
-  rw [dyadicFinPilotMoments_eq_actual C θ hθ j x hx false,
-    dyadicFinPilotMoments_eq_actual C θ hθ j x hx true]
-  simp only [Bool.false_eq_true, ↓reduceIte]
+  rw [dyadicFinPilotMoments_eq_actual hθ j hx false,
+    dyadicFinPilotMoments_eq_actual hθ j hx true]
+  simp
   rw [← anchoredFinVector_smul, ← anchoredFinVector_sub,
     ← Matrix.mulVec_smul, ← Matrix.mulVec_sub]
   rw [dyadicFinPilotGram, anchoredFinReindex_inv, anchoredFinReindex_mulVec,
-    dyadicPopulationFit_preconditioner_cancels C θ hθ]
+    dyadicPopulationFit_preconditioner_cancels hθ]
 
-theorem dyadicFinite_increment_eq_actual {d ℓ : ℕ} (C : ModelConstants d)
+theorem dyadicFinite_increment_eq_actual (C : ModelConstants d)
     (θ : RegressionParameter d) (hθ : Admissible C θ) (j : ℕ)
     (x : Covariate d) (hx : x ∈ unitCube d) :
     (dyadicFinPilotGram (ℓ := ℓ) θ j x)⁻¹ *ᵥ
@@ -88,21 +85,21 @@ theorem dyadicFinite_increment_eq_actual {d ℓ : ℕ} (C : ModelConstants d)
           ((if j = 0 then 0 else dyadicFinPilotMoments θ (j - 1) x) false -
             θ.regression x • (if j = 0 then 0 else dyadicFinPilotMoments θ (j - 1) x) true)) =
         anchoredFinVector (dyadicPopulationIncrement θ x j) := by
-  rw [dyadicFinPilot_fit C θ hθ j x hx]
+  rw [dyadicFinPilot_fit hθ j hx]
   cases j with
   | zero => simp [dyadicPopulationIncrement, anchoredIncrement]
   | succ j =>
     simp only [Nat.add_one_ne_zero, ↓reduceIte, Nat.add_sub_cancel_right]
-    rw [dyadicFinPilot_fit C θ hθ j x hx]
+    rw [dyadicFinPilot_fit hθ j hx]
     rw [anchoredFinTransport, anchoredFinReindex_mulVec, ← anchoredFinVector_sub]
     rfl
 
-theorem incrementFinVector_eval_population {r : ℕ} [NeZero r] (a b : ℝ)
+theorem incrementFinVector_eval_population [NeZero r] (a b : ℝ)
     (A B T : Matrix (Fin r) (Fin r) ℝ) (U V : Bool → Fin r → ℝ)
     (y : ℝ) (m : ℕ) :
     incrementFinVector r a b T y m
       (fun i => incrementValuation A B U V ((Fintype.equivFin (incrementVariables r)).symm i)) =
-        fun i => eval (incrementValuation A B U V) (incrementEntryPolynomial r a b T y m i) := by
+        fun i => eval (incrementValuation A B U V) (incrementEntryPolynomial a b T y m i) := by
   ext i
   simp only [incrementFinVector, incrementFinPolynomial, eval_rename, Function.comp_def,
     Equiv.symm_apply_apply]
@@ -110,15 +107,15 @@ theorem incrementFinVector_eval_population {r : ℕ} [NeZero r] (a b : ℝ)
 /-- Density bounds yield the actual Hermitian charts used in the inverse
 approximation. Only the explicitly displayed small increment enters this
 generic deterministic helper. -/
-theorem anchoredNormalized_increment_error {d ℓ : ℕ} [Nonempty (AnchoredIndex d ℓ)]
-    (u v : Covariate d) (p q : Covariate d → ℝ) (hpmeas : Measurable p) (hqmeas : Measurable q)
-    (a b χ ε : ℝ) (ha : 0 < a) (hab : a < b)
+theorem anchoredNormalized_increment_error [Nonempty (AnchoredIndex d ℓ)]
+    {u v : Covariate d} {p q : Covariate d → ℝ} (hpmeas : Measurable p) (hqmeas : Measurable q)
+    {a b χ ε : ℝ} (ha : 0 < a) (hab : a < b)
     (hp : ∀ᵐ w ∂cubeVolume d, a ≤ p w ∧ p w ≤ b)
     (hq : ∀ᵐ w ∂cubeVolume d, a ≤ q w ∧ q w ≤ b)
     (hχ : ‖(anchoredFinSimilarityUnit (ℓ := ℓ) u).val‖ *
       ‖((anchoredFinSimilarityUnit (ℓ := ℓ) u)⁻¹).val‖ ≤ χ)
-    (U V : Bool → Fin (anchoredDimension d ℓ) → ℝ)
-    (y : ℝ) (T : Matrix (Fin (anchoredDimension d ℓ)) (Fin (anchoredDimension d ℓ)) ℝ)
+    {U V : Bool → Fin (anchoredDimension d ℓ) → ℝ}
+    {y : ℝ} {T : Matrix (Fin (anchoredDimension d ℓ)) (Fin (anchoredDimension d ℓ)) ℝ}
     (hδ : ‖(EuclideanSpace.equiv (Fin (anchoredDimension d ℓ)) ℝ).symm
       ((anchoredFinNormalizedGram u p)⁻¹ *ᵥ (U false - y • U true) -
         T *ᵥ ((anchoredFinNormalizedGram v q)⁻¹ *ᵥ (V false - y • V true)))‖ ≤ ε)
@@ -126,11 +123,11 @@ theorem anchoredNormalized_increment_error {d ℓ : ℕ} [Nonempty (AnchoredInde
     ‖(EuclideanSpace.equiv (Fin (anchoredDimension d ℓ)) ℝ).symm
       ((fun i => eval (incrementValuation (anchoredFinNormalizedGram u p)
         (anchoredFinNormalizedGram v q) U V)
-          (incrementEntryPolynomial (anchoredDimension d ℓ) a b T y m i)) -
+          (incrementEntryPolynomial a b T y m i)) -
         ((anchoredFinNormalizedGram u p)⁻¹ *ᵥ (U false - y • U true) -
           T *ᵥ ((anchoredFinNormalizedGram v q)⁻¹ *ᵥ (V false - y • V true))))‖ ≤
       (χ ^ 2 * b ^ (anchoredDimension d ℓ + 1) * parentInverseErrorConstant a b (anchoredDimension d ℓ)) * ε *
-        ((m + 1 : ℕ) : ℝ) ^ anchoredDimension d ℓ * Real.exp (-(m : ℝ) * exteriorTau ((a + b) / (b - a))) := by
+        ((m + 1 : ℕ) : ℝ) ^ anchoredDimension d ℓ * Real.exp (-(m : ℝ) * intervalExteriorTau a b) := by
   let Q := anchoredFinSimilarityUnit (ℓ := ℓ) u
   let R := anchoredFinSimilarityUnit (ℓ := ℓ) v
   let G := anchoredFinNormalizedGram (ℓ := ℓ) u p
@@ -139,12 +136,12 @@ theorem anchoredNormalized_increment_error {d ℓ : ℕ} [Nonempty (AnchoredInde
     simp [matrixSimilarity, Matrix.mul_assoc]
   have hH : matrixSimilarity R (matrixSimilarity R⁻¹ H) = H := by
     simp [matrixSimilarity, Matrix.mul_assoc]
-  have he := incrementEntryPolynomial_error a b ha hab
+  have he := incrementEntryPolynomial_error ha hab
     (matrixSimilarity Q⁻¹ G) (matrixSimilarity R⁻¹ H) T
     (anchoredFin_similarity_isHermitian u p) (anchoredFin_similarity_isHermitian v q)
-    (anchoredFin_similarity_spectrum u p hpmeas a b ha.le hp)
-    (anchoredFin_similarity_spectrum v q hqmeas a b ha.le hq)
-    Q R χ hχ U V y ε (by simpa only [hG, hH] using hδ) m
+    (anchoredFin_similarity_spectrum u hpmeas ha.le hp)
+    (anchoredFin_similarity_spectrum v hqmeas ha.le hq)
+    Q R hχ U V y ε (by simpa only [hG, hH] using hδ) m
   simpa only [hG, hH] using he
 
 end NearlyMinimax

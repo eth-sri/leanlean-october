@@ -13,8 +13,12 @@ open scoped BigOperators
 namespace NearlyMinimax
 set_option backward.isDefEq.respectTransparency false
 
-theorem fine_pair_alias_cutoff_inverse {d : ℕ} (hd : 4 ≤ d)
-    {N ell c0 D : ℝ} (hN : 0 < N) (hell : ell=N*Real.exp (-c0*D)) :
+variable {d M : ℕ} (hd : 4 ≤ d) {N ell tau aD bD ad bd c0 D K : ℝ} (haD : 0 < aD) (ha : aD ≤ ad)
+    (hb : bd ≤ bD) (hab : ad < bd) (htau : intervalExteriorTau ad bd ≤ c0) (hN : 0 < N)
+    (hell : ell=N*Real.exp (-c0*D)) (hc0 : 0 ≤ c0) (hK : 0 ≤ K)
+
+include hd hN hell in
+theorem fine_pair_alias_cutoff_inverse :
     1/ell^(d-4) = N^(4-(d : ℝ))*Real.exp (c0*D*((d : ℝ)-4)) := by
   have hnat : ((d-4 : ℕ) : ℝ) = (d : ℝ)-4 := by
     exact_mod_cast (Nat.cast_sub hd : ((d-4 : ℕ) : ℤ) = (d : ℤ)-4)
@@ -30,9 +34,8 @@ theorem fine_pair_alias_cutoff_inverse {d : ℕ} (hd : 4 ≤ d)
 def finePairSaddleAliasExponent (d : ℕ) (c0 K : ℝ) : ℝ :=
   2*c0+c0*K*((d : ℝ)-4)
 
-theorem fine_pair_alias_cutoff_scale_le {d M : ℕ} (hd : 4 ≤ d)
-    {N ell tau c0 D K : ℝ} (hN : 0 < N) (hell : ell=N*Real.exp (-c0*D))
-    (hc0 : 0 ≤ c0) (hK : 0 ≤ K) (htau : tau ≤ c0) (hD : D ≤ K*M) :
+include hd hN hell hc0 hK in
+theorem fine_pair_alias_cutoff_scale_le (htau : tau ≤ c0) (hD : D ≤ K*M) :
     Real.exp (2*tau*M)/ell^(d-4) ≤
       N^(4-(d : ℝ))*Real.exp (finePairSaddleAliasExponent d c0 K*M) := by
   rw [div_eq_mul_inv, ← one_div, fine_pair_alias_cutoff_inverse hd hN hell]
@@ -50,10 +53,8 @@ def finePairSaddleAliasFactorialConstant (d q : ℕ) (aD bD C a rho c0 K Cs : �
     (finePairUniformSpatialPrefactor d q aD bD C a rho c0 * 6*(2 : ℝ)^d*spatialInverseFourConstant d)
     Cs (finePairAliasGeometricBase d bD*2^8) (finePairSaddleAliasExponent d c0 K)
 
-theorem finite_fine_pair_saddle_alias_budget_le {d : ℕ} (hd : 4 ≤ d)
-    {aD bD ad bd c0 K : ℝ} (haD : 0 < aD) (ha : aD ≤ ad) (hb : bd ≤ bD)
-    (hab : ad < bd) (htau : exteriorTau ((ad+bd)/(bd-ad)) ≤ c0)
-    (hc0 : 0 ≤ c0) (hK : 0 ≤ K) (M D q J : ℕ)
+include hd haD ha hb hab htau hc0 hK in
+theorem finite_fine_pair_saddle_alias_budget_le (M D q J : ℕ)
     (C a rho eta ell N Cs mu : ℝ) (hN : 0 < N)
     (hell : ell=N*Real.exp (-c0*D)) (hD : (D : ℝ) ≤ K*M)
     (hCs : 0 ≤ Cs) (hmu : 0 ≤ mu) (hmu1 : mu ≤ 1) :
@@ -89,8 +90,7 @@ theorem finite_fine_pair_saddle_alias_budget_le {d : ℕ} (hd : 4 ≤ d)
       Real.exp (finePairSaddleAliasExponent d c0 K*M))
   apply h.trans
   calc
-    _ ≤ A*finePairAliasGeometricBase d bD^n*(n : ℝ)^8*eta^4 *
-        (N^(4-(d : ℝ))*Real.exp (finePairSaddleAliasExponent d c0 K*M)) := by
+    _ ≤ _ := by
       convert hm using 1 <;> dsimp [A] <;> ring
     _ ≤ A*(eta^4*N^(4-(d : ℝ)))*Real.exp (finePairSaddleAliasExponent d c0 K*M)*
         (finePairAliasGeometricBase d bD*2^8)^n := by

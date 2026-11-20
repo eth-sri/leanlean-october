@@ -16,9 +16,9 @@ set_option maxHeartbeats 1000000
 
  def cardinalRawSpatialEnergyBudget (d n q : ℕ) (bd C a ρ η T : ℝ) : ℝ :=
   2 * cardinalRawAliasCoefficient n bd a η ^ 2 *
-      ((n : ℝ)^2 * (2 : ℝ)^d * cardinalDefectSquareBudget d n T) +
+      (n^2 * 2^d * cardinalDefectSquareBudget d n T) +
     2 * cardinalRawTaylorCoefficient n q bd C a ρ η ^ 2 *
-      ((n : ℝ)^2 * (2 : ℝ)^d *
-        ((100*(d : ℝ))^2*16*spatialScaleIntegralConstant d)^(n-1))
+      (n^2 * 2^d *
+        ((100*d)^2*16*spatialScaleIntegralConstant d)^(n-1))
 
 end NearlyMinimax

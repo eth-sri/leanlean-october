@@ -21,28 +21,24 @@ attribute [local instance] Classical.propDecidable
     (cReset : J → E → ι → ℝ) (g w : J → Fin n → ℝ)
     (φ : J → Fin n → ι → ℝ) (c : J → ι → ℝ) (f : Fin n → ℝ)
     (hreg : ∀ j, coefficientRegression η (g j) (w j) (φ j) (c j) = f)
-    (hpartition : ∀ i, ∑ j, (w j i)^2 = 1) (y : Fin n → Fin 3) :
+    (hpartition : ∀ i, ∑ j, (w j i)^2 = 1) (y : TernaryVector n) :
     (∑ j, highMarkedLocalScore (π j) (activation j) a V η p (pReset j)
       (cReset j) (g j) (w j) (φ j) (c j) y) =
     ((∑ j, highMarkedResponseAction (π j) (activation j) a V η
       (pReset j) (cReset j) (g j) (w j) (φ j) y) -
       η^2*(∏ i, p i)*∑ i, ternaryVarianceDerivative a (y i)*
-        ∏ l ∈ (Finset.univ : Finset (Fin n)).erase i, ternaryMass a (f l) V (y l)) /
+        ∏ l ∈ Finset.univ.erase i, ternaryMass a (f l) V (y l)) /
       ((∏ i, p i)*∏ i, ternaryMass a (f i) V (y i)) := by
   unfold highMarkedLocalScore highResponseProduct highResponseVarianceTerm
   simp_rw [hreg]
   rw [← Finset.sum_div, Finset.sum_sub_distrib]
   congr 2
   calc
-    (∑ j, η^2*(∏ i, p i)*∑ i, (w j i)^2 *
-        (ternaryVarianceDerivative a (y i)*∏ l ∈ Finset.univ.erase i,
-          ternaryMass a (f l) V (y l))) =
+    _ =
       η^2*(∏ i, p i)*∑ j, ∑ i, (w j i)^2 *
         (ternaryVarianceDerivative a (y i)*∏ l ∈ Finset.univ.erase i,
           ternaryMass a (f l) V (y l)) := by rw [Finset.mul_sum]
-    _ = η^2*(∏ i, p i)*∑ i, ∑ j, (w j i)^2 *
-        (ternaryVarianceDerivative a (y i)*∏ l ∈ Finset.univ.erase i,
-          ternaryMass a (f l) V (y l)) := by rw [Finset.sum_comm]
+    _ = _ := by rw [Finset.sum_comm]
     _ = _ := by
       congr 1
       apply Finset.sum_congr rfl

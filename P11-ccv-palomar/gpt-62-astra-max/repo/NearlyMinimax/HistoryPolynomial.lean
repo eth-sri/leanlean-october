@@ -26,27 +26,26 @@ def historyMaximalPieces (S : Finset α) : Finset α := by
 theorem mem_historyMaximalPieces {S : Finset α} {x : α} :
     x ∈ historyMaximalPieces S ↔ x ∈ S ∧ ∀ y ∈ S, x ≤ y → y = x := by
   classical
-  simp only [historyMaximalPieces, Finset.mem_filter]
+  simp [historyMaximalPieces]
 
-theorem historyMaximalPieces_subset (S : Finset α) : historyMaximalPieces S ⊆ S := by
-  intro x hx
-  exact (mem_historyMaximalPieces.1 hx).1
+theorem historyMaximalPieces_subset (S : Finset α) : historyMaximalPieces S ⊆ S := fun x hx => (mem_historyMaximalPieces.1 hx).1
 
 def historyDeletionCoefficient (weight : α → ℝ) : ℕ → Finset α → ℝ
   | 0, _ => 1
   | k + 1, S => ∑ x ∈ historyMaximalPieces S, weight x * historyDeletionCoefficient weight k (S.erase x)
 
-@[simp] theorem historyDeletionCoefficient_zero (weight : α → ℝ) (S : Finset α) :
-    historyDeletionCoefficient weight 0 S = 1 := rfl
+attribute [simp] historyDeletionCoefficient.eq_1
 
-@[simp] theorem historyDeletionCoefficient_succ (weight : α → ℝ) (k : ℕ) (S : Finset α) :
+variable (weight : α → ℝ) (S : Finset α) (t : ℝ)
+
+@[simp] theorem historyDeletionCoefficient_succ (k : ℕ) (S : Finset α) :
     historyDeletionCoefficient weight (k + 1) S =
       ∑ x ∈ historyMaximalPieces S, weight x * historyDeletionCoefficient weight k (S.erase x) := rfl
 
-def historyDeletionPolynomial (weight : α → ℝ) (S : Finset α) (t : ℝ) : ℝ :=
-  ∑ k ∈ Finset.range (S.card + 1), t ^ k / (k.factorial : ℝ) * historyDeletionCoefficient weight k S
+def historyDeletionPolynomial : ℝ :=
+  ∑ k ∈ Finset.range (S.card + 1), t ^ k / k.factorial * historyDeletionCoefficient weight k S
 
-@[simp] theorem historyDeletionPolynomial_at_zero (weight : α → ℝ) (S : Finset α) :
+@[simp] theorem historyDeletionPolynomial_at_zero :
     historyDeletionPolynomial weight S 0 = 1 := by
   unfold historyDeletionPolynomial
   rw [Finset.sum_eq_single 0]
@@ -55,29 +54,29 @@ def historyDeletionPolynomial (weight : α → ℝ) (S : Finset α) (t : ℝ) : 
     simp [zero_pow hk0]
   · simp
 
-theorem historyDeletionPolynomial_derivative_formula (weight : α → ℝ) (S : Finset α) (t : ℝ) :
+theorem historyDeletionPolynomial_derivative_formula :
     HasDerivAt (historyDeletionPolynomial weight S)
       (∑ k ∈ Finset.range (S.card + 1),
-        (k : ℝ) * t ^ (k - 1) / (k.factorial : ℝ) * historyDeletionCoefficient weight k S) t := by
+        k * t ^ (k - 1) / k.factorial * historyDeletionCoefficient weight k S) t := by
   apply HasDerivAt.fun_sum
   intro k hk
-  simpa only [id_eq, mul_one] using! (((hasDerivAt_id t).pow k).div_const (k.factorial : ℝ)).mul_const
+  simpa using (((hasDerivAt_id t).pow k).div_const k.factorial).mul_const
     (historyDeletionCoefficient weight k S)
 
-theorem historyDeletionPolynomial_derivative_shift (weight : α → ℝ) (S : Finset α) (t : ℝ) :
+theorem historyDeletionPolynomial_derivative_shift :
     (∑ k ∈ Finset.range (S.card + 1),
-      (k : ℝ) * t ^ (k - 1) / (k.factorial : ℝ) * historyDeletionCoefficient weight k S) =
-    ∑ k ∈ Finset.range S.card, t ^ k / (k.factorial : ℝ) * historyDeletionCoefficient weight (k + 1) S := by
+      k * t ^ (k - 1) / k.factorial * historyDeletionCoefficient weight k S) =
+    ∑ k ∈ Finset.range S.card, t ^ k / k.factorial * historyDeletionCoefficient weight (k + 1) S := by
   rw [Finset.sum_range_succ']
-  simp only [Nat.cast_zero, zero_mul, zero_div, add_zero, Nat.add_sub_cancel]
+  simp
   apply Finset.sum_congr rfl
   intro k hk
   rw [Nat.factorial_succ]
   push_cast
   field_simp
 
-theorem historyDeletionPolynomial_derivative_deletion (weight : α → ℝ) (S : Finset α) (t : ℝ) :
-    (∑ k ∈ Finset.range S.card, t ^ k / (k.factorial : ℝ) * historyDeletionCoefficient weight (k + 1) S) =
+theorem historyDeletionPolynomial_derivative_deletion :
+    (∑ k ∈ Finset.range S.card, t ^ k / k.factorial * historyDeletionCoefficient weight (k + 1) S) =
       ∑ x ∈ historyMaximalPieces S, weight x * historyDeletionPolynomial weight (S.erase x) t := by
   simp_rw [historyDeletionCoefficient_succ, Finset.mul_sum]
   rw [Finset.sum_comm]
@@ -85,21 +84,11 @@ theorem historyDeletionPolynomial_derivative_deletion (weight : α → ℝ) (S :
   intro x hx
   have hxS := historyMaximalPieces_subset S hx
   have hc : (S.erase x).card + 1 = S.card := by
-    have hcard := Finset.card_erase_of_mem hxS
-    have hpos := Finset.card_pos.2 ⟨x, hxS⟩
-    omega
+    grind
   unfold historyDeletionPolynomial
   rw [hc, Finset.mul_sum]
   apply Finset.sum_congr rfl
   intro k hk
   ring
-
-/-- The genuine finite deletion polynomial satisfies the exact source derivative identity. -/
-theorem historyDeletionPolynomial_hasDerivAt (weight : α → ℝ) (S : Finset α) (t : ℝ) :
-    HasDerivAt (historyDeletionPolynomial weight S)
-      (∑ x ∈ historyMaximalPieces S, weight x * historyDeletionPolynomial weight (S.erase x) t) t := by
-  have hh := historyDeletionPolynomial_derivative_formula weight S t
-  rw [historyDeletionPolynomial_derivative_shift, historyDeletionPolynomial_derivative_deletion] at hh
-  exact hh
 
 end NearlyMinimax

@@ -19,7 +19,7 @@ set_option backward.isDefEq.respectTransparency false
 
 /-- The constructed field moment is jointly Borel in its scale and spatial tuple. -/
 theorem boundedHyperplaneSpatialMoment_joint_measurable (d j : ℕ) [NeZero d] :
-    Measurable (fun z : ℝ × (Fin j → Covariate d) => boundedHyperplaneSpatialMoment d z.1 j z.2) := by
+    Measurable (fun z : ℝ × (Fin j → Covariate d) => boundedHyperplaneSpatialMoment z.1 z.2) := by
   let κ : Kernel (ℝ × (Fin j → Covariate d)) (FinePairFieldMark d) := (finePairFieldKernel d).comap (Prod.fst : ℝ × (Fin j → Covariate d) → ℝ) measurable_fst
   have hm : Measurable (fun z : (ℝ × (Fin j → Covariate d)) × FinePairFieldMark d =>
       ∏ l, boundedHyperplaneFieldValue z.2 (z.1.2 l)) :=
@@ -29,27 +29,28 @@ theorem boundedHyperplaneSpatialMoment_joint_measurable (d j : ℕ) [NeZero d] :
 
 def fineFieldScaleWeight (d : ℕ) (T : ℝ) : ℝ := T / T ^ d
 
-theorem fineFieldScaleWeight_continuousOn {d : ℕ} {lo hi : ℝ} (hlo : 0 < lo) :
+section
+variable {d : ℕ} (hd : 3 ≤ d) {lo hi : ℝ} (hlo : 0 < lo)
+
+include hlo in
+theorem fineFieldScaleWeight_continuousOn :
     ContinuousOn (fineFieldScaleWeight d) (Icc lo hi) := by
   apply continuousOn_id.div (continuous_pow d).continuousOn
   intro T hT
   exact (pow_pos (hlo.trans_le hT.1) d).ne'
 
-theorem fineFieldScaleWeight_integrableOn {d : ℕ} {lo hi : ℝ} (hlo : 0 < lo) :
-    IntegrableOn (fineFieldScaleWeight d) (Icc lo hi) :=
-  (fineFieldScaleWeight_continuousOn hlo).integrableOn_compact isCompact_Icc
-
-theorem fineFieldScaleWeight_eq_rpow {d : ℕ} {T : ℝ} (hT : 0 < T) :
+theorem fineFieldScaleWeight_eq_rpow {T : ℝ} (hT : 0 < T) :
     fineFieldScaleWeight d T = T ^ (1 - (d : ℝ)) := by
   unfold fineFieldScaleWeight
   rw [Real.rpow_sub hT, Real.rpow_one, Real.rpow_natCast]
 
-theorem fineFieldScaleWeight_integral_le {d : ℕ} (hd : 3 ≤ d) {lo hi : ℝ} (hlo : 0 < lo) :
+include hd hlo in
+theorem fineFieldScaleWeight_integral_le :
     (∫ T in Icc lo hi, fineFieldScaleWeight d T) ≤ lo ^ (2 - (d : ℝ)) / (d - 2 : ℝ) := by
   have hdR : (3 : ℝ) ≤ d := by exact_mod_cast hd
   have hdec : (1 : ℝ) - d < -1 := by linarith only [hdR]
   have htail : IntegrableOn (fun T : ℝ => T ^ (1 - (d : ℝ))) (Ici lo) := by
-    change Integrable (fun T : ℝ => T ^ (1 - (d : ℝ))) (volume.restrict (Ici lo))
+    change Integrable _ _
     rw [← Measure.restrict_congr_set Ioi_ae_eq_Ici]
     exact integrableOn_Ioi_rpow_of_lt hdec hlo
   have he : (∫ T in Icc lo hi, fineFieldScaleWeight d T) =
@@ -68,11 +69,13 @@ theorem fineFieldScaleWeight_integral_le {d : ℕ} (hd : 3 ≤ d) {lo hi : ℝ} 
   simp only [div_neg]
   ring
 
+end
+
 /-- Weighted Cauchy--Schwarz and genuine Fubini exchange for a bounded
 jointly Borel spatial moment, integrated over a finite positive scale band. -/
 theorem weighted_scale_square_energy_le {X : Type*} [MeasurableSpace X]
     (mu : Measure X) [IsFiniteMeasure mu] (d : ℕ) {lo hi K : ℝ}
-    (hlo : 0 < lo) (hK : 0 ≤ K) (F : ℝ × X → ℝ) (hF : Measurable F)
+    (hlo : 0 < lo) (hK : 0 ≤ K) {F : ℝ × X → ℝ} (hF : Measurable F)
     (hFb : ∀ z, |F z| ≤ 1)
     (hE : ∀ T ∈ Icc lo hi, (∫ x, F (T,x) ^ 2 ∂mu) ≤ K ^ 2 / (T ^ d) ^ 2) :
     Integrable (fun x => (∫ T in Icc lo hi, T * F (T,x)) ^ 2) mu ∧
@@ -82,7 +85,7 @@ theorem weighted_scale_square_energy_le {X : Type*} [MeasurableSpace X]
   let W : ℝ := ∫ T, fineFieldScaleWeight d T ∂nu
   let f : ℝ × X → ℝ := fun z => z.1 * F z
   let g : ℝ × X → ℝ := fun z => z.1 * z.1 ^ d * F z ^ 2
-  have hw : Integrable (fineFieldScaleWeight d) nu := fineFieldScaleWeight_integrableOn hlo
+  have hw : Integrable (fineFieldScaleWeight d) nu := (fineFieldScaleWeight_continuousOn hlo).integrableOn_compact isCompact_Icc
   have hW : 0 ≤ W := integral_nonneg_of_ae (by
     filter_upwards [ae_restrict_mem measurableSet_Icc] with T hT
     exact div_nonneg (hlo.le.trans hT.1) (pow_nonneg (hlo.le.trans hT.1) _))
@@ -101,8 +104,7 @@ theorem weighted_scale_square_energy_le {X : Type*} [MeasurableSpace X]
       nlinarith only [hFb z, sq_abs (F z), abs_nonneg (F z)])
   have hcs : ∀ᵐ x ∂mu, (∫ T, f (T,x) ∂nu) ^ 2 ≤ W * ∫ T, g (T,x) ∂nu := by
     filter_upwards [hfi.prod_left_ae, hgi.prod_left_ae] with x hfx hgx
-    apply integral_square_le_weight_mass_mul nu (fun T => f (T,x))
-      (fineFieldScaleWeight d) (fun T => g (T,x)) hfx hw hgx
+    apply integral_square_le_weight_mass_mul (fun T => f (T,x)) hfx hw hgx
     · filter_upwards [ae_restrict_mem measurableSet_Icc] with T hT
       exact div_nonneg (hlo.le.trans hT.1) (pow_nonneg (hlo.le.trans hT.1) _)
     · filter_upwards [ae_restrict_mem measurableSet_Icc] with T hT
@@ -141,59 +143,38 @@ theorem weighted_scale_square_energy_le {X : Type*} [MeasurableSpace X]
   refine ⟨hsi, ?_⟩
   convert hfinal using 1 <;> dsimp [f, W, nu] <;> ring
 
-theorem finePairTimeSubsetMoment_univ_eq {d j : ℕ} [NeZero d]
+variable {d j : ℕ} [NeZero d] (hd : 3 ≤ d) (hj : 4 ≤ j) {lo hi : ℝ} (hlo : 0 < lo)
+
+theorem finePairTimeSubsetMoment_univ_eq
     (lo hi : ℝ) (U : Fin j → Covariate d) :
     finePairTimeSubsetMoment lo hi U Finset.univ =
-      ∫ T in Icc lo hi, T * boundedHyperplaneSpatialMoment d T j U := by
+      ∫ T in Icc lo hi, T * boundedHyperplaneSpatialMoment T U := by
   rw [finePairTimeSubsetMoment_actual]
   rfl
 
-/-- The actual time-mark integral is genuinely square integrable over Q^j. -/
-theorem finePairTimeSubsetMoment_univ_square_integrable {d j : ℕ} [NeZero d]
-    (hd : 3 ≤ d) (hj : 4 ≤ j) {lo hi : ℝ} (hlo : 0 < lo) :
-    Integrable (fun U : Fin j → Covariate d =>
-      finePairTimeSubsetMoment lo hi U Finset.univ ^ 2) (fullSpatialPatchDesign d j) := by
-  let K : ℝ := hyperplaneSpatialMomentConstant d ^ j * (j : ℝ) ^ 4
-  have hK : 0 ≤ K := by positivity [hyperplaneSpatialMomentConstant_positive d]
-  have hh := weighted_scale_square_energy_le (fullSpatialPatchDesign d j) d (lo := lo) (hi := hi) (K := K) hlo hK
-    (fun z => boundedHyperplaneSpatialMoment d z.1 j z.2)
-    (boundedHyperplaneSpatialMoment_joint_measurable d j)
-    (fun z => boundedHyperplaneSpatialMoment_abs_le_one d z.1 j z.2) (fun T hT => by
-      have hp : 0 < T := hlo.trans_le hT.1
-      have hb := boundedHyperplaneSpatialMoment_L2_le d T hp j hj
-      have hn : 0 ≤ ∫ U : Fin j → Covariate d,
-          boundedHyperplaneSpatialMoment d T j U ^ 2 ∂fullSpatialPatchDesign d j :=
-        integral_nonneg (fun _ => sq_nonneg _)
-      have hs := (sq_le_sq₀ (Real.sqrt_nonneg _) (by positivity : 0 ≤ K / T ^ d)).mpr hb
-      change Real.sqrt (∫ U : Fin j → Covariate d,
-        boundedHyperplaneSpatialMoment d T j U ^ 2 ∂fullSpatialPatchDesign d j) ^ 2 ≤
-          (K / T ^ d) ^ 2 at hs
-      simpa only [Real.sq_sqrt hn, div_pow] using hs)
-  simp_rw [finePairTimeSubsetMoment_univ_eq]
-  exact hh.1
-
+include hd hj hlo in
 /-- True spatial decay after scale integration, for the fine row's actual
 carrier and field law, rather than an assumed moment or time-energy bound. -/
-theorem finePairTimeSubsetMoment_univ_L2_le {d j : ℕ} [NeZero d]
-    (hd : 3 ≤ d) (hj : 4 ≤ j) {lo hi : ℝ} (hlo : 0 < lo) :
+theorem finePairTimeSubsetMoment_univ_L2 :
+    Integrable (fun U : Fin j → Covariate d =>
+      finePairTimeSubsetMoment lo hi U Finset.univ ^ 2) (fullSpatialPatchDesign d j) ∧
     Real.sqrt (∫ U : Fin j → Covariate d,
       finePairTimeSubsetMoment lo hi U Finset.univ ^ 2 ∂fullSpatialPatchDesign d j) ≤
       hyperplaneSpatialMomentConstant d ^ j * (j : ℝ) ^ 4 * lo ^ (2 - (d : ℝ)) := by
   let K : ℝ := hyperplaneSpatialMomentConstant d ^ j * (j : ℝ) ^ 4
   have hK : 0 ≤ K := by positivity [hyperplaneSpatialMomentConstant_positive d]
   have hh := weighted_scale_square_energy_le (fullSpatialPatchDesign d j) d (lo := lo) (hi := hi) (K := K) hlo hK
-    (fun z => boundedHyperplaneSpatialMoment d z.1 j z.2)
     (boundedHyperplaneSpatialMoment_joint_measurable d j)
-    (fun z => boundedHyperplaneSpatialMoment_abs_le_one d z.1 j z.2) (fun T hT => by
+    (fun z => boundedHyperplaneSpatialMoment_abs_le_one z.1 z.2) (fun T hT => by
       have hp : 0 < T := hlo.trans_le hT.1
-      have hb := boundedHyperplaneSpatialMoment_L2_le d T hp j hj
+      have hb := boundedHyperplaneSpatialMoment_L2_le d hp hj
       have hn : 0 ≤ ∫ U : Fin j → Covariate d,
-          boundedHyperplaneSpatialMoment d T j U ^ 2 ∂fullSpatialPatchDesign d j :=
+          boundedHyperplaneSpatialMoment T U ^ 2 ∂fullSpatialPatchDesign d j :=
         integral_nonneg (fun _ => sq_nonneg _)
       have hs := (sq_le_sq₀ (Real.sqrt_nonneg _) (by positivity : 0 ≤ K / T ^ d)).mpr hb
       change Real.sqrt (∫ U : Fin j → Covariate d,
-        boundedHyperplaneSpatialMoment d T j U ^ 2 ∂fullSpatialPatchDesign d j) ^ 2 ≤
-          (K / T ^ d) ^ 2 at hs
+        boundedHyperplaneSpatialMoment T U ^ 2 ∂fullSpatialPatchDesign d j) ^ 2 ≤
+          _ at hs
       simpa only [Real.sq_sqrt hn, div_pow] using hs)
   have hW0 : 0 ≤ ∫ T in Icc lo hi, fineFieldScaleWeight d T := by
     apply integral_nonneg_of_ae
@@ -206,6 +187,7 @@ theorem finePairTimeSubsetMoment_univ_L2_le {d j : ℕ} [NeZero d]
     hW.trans (div_le_self (Real.rpow_nonneg hlo.le _) hden)
   have hsq := pow_le_pow_left₀ hW0 hw 2
   have ht := mul_le_mul_of_nonneg_left hsq (sq_nonneg K)
+  refine ⟨by simpa only [finePairTimeSubsetMoment_univ_eq] using hh.1, ?_⟩
   apply Real.sqrt_le_iff.mpr
   refine ⟨mul_nonneg hK (Real.rpow_nonneg hlo.le _), ?_⟩
   simp_rw [finePairTimeSubsetMoment_univ_eq]

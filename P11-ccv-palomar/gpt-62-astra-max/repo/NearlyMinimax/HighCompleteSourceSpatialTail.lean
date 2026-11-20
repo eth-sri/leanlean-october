@@ -2,7 +2,7 @@ module
 
 public import NearlyMinimax.HighCompleteSourceFrameTail
 public import NearlyMinimax.HighMarkedMeasurable
-public import NearlyMinimax.ResponseConfigurationEnergy
+public import NearlyMinimax.HighSelectedScoreEnergy
 public import NearlyMinimax.AliasTailSummation
 public import NearlyMinimax.CardinalProductDesign
 
@@ -20,7 +20,7 @@ set_option maxHeartbeats 1200000
 attribute [local instance] Classical.propDecidable
 
 theorem fullSpatialPatchDesign_real_univ (d n : ℕ) :
-    (fullSpatialPatchDesign d n).real univ = (2 : ℝ)^(d*n) := by
+    (fullSpatialPatchDesign d n).real univ = 2^(d*n) := by
   simp only [fullSpatialPatchDesign, measureReal_def, Measure.pi_univ,
     Measure.restrict_apply_univ, Finset.prod_const, Finset.card_univ,
     Fintype.card_fin, ENNReal.toReal_pow]

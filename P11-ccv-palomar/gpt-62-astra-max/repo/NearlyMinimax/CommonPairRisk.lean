@@ -28,13 +28,11 @@ def pairRiskBudget {d : ℕ} (C : ModelConstants d) (m k : ℕ)
         ((2 * Cp ^ 2 + 2 * Cp * W) ^ 2 * C.densityUpper) + 6 * lam * B))
 
 theorem integral_sq_le_twice_centered {Z : Type*} [MeasurableSpace Z]
-    (ρ : Measure Z) [IsProbabilityMeasure ρ] {S : Z → ℝ} (hS : MemLp S 2 ρ) (c : ℝ) :
+    {ρ : Measure Z} [IsProbabilityMeasure ρ] {S : Z → ℝ} (hS : MemLp S 2 ρ) (c : ℝ) :
     (∫ z, S z ^ 2 ∂ρ) ≤ 2 * (∫ z, (S z - c) ^ 2 ∂ρ) + 2 * c ^ 2 := by
   have hc : MemLp (fun z => S z - c) 2 ρ := hS.sub (memLp_const c)
-  have hiR : Integrable (fun z => 2 * (S z - c) ^ 2 + 2 * c ^ 2) ρ :=
-    (hc.integrable_sq.const_mul 2).add (integrable_const (2 * c ^ 2))
   have h : (∫ z, S z ^ 2 ∂ρ) ≤ ∫ z, 2 * (S z - c) ^ 2 + 2 * c ^ 2 ∂ρ :=
-    integral_mono hS.integrable_sq hiR (fun z => by nlinarith [sq_nonneg (S z - 2 * c)])
+    integral_mono hS.integrable_sq ((hc.integrable_sq.const_mul 2).add (integrable_const (2 * c ^ 2))) (fun z => by nlinarith [sq_nonneg (S z - 2 * c)])
   rw [integral_add (hc.integrable_sq.const_mul 2) (integrable_const _), integral_const_mul] at h
   simpa using h
 
@@ -52,62 +50,56 @@ include hθ hp hm hind hX
 
 /-- Extended-real MSE of the actual floored and clipped ratio. All moments,
 conditional means, denominator positivity, and covariance bounds are derived. -/
-theorem common_pair_ratio_risk_le (b a : ℝ) (ha : 0 < a)
+theorem common_pair_ratio_risk_le {b a : ℝ} (ha : 0 < a)
     (hresidual : ∀ᵐ w ∂regularPairDesignMeasure θ k hk,
       |⟪bar w, pairResponseVector (θ.regression w.1) (θ.regression w.2)⟫| ≤ b)
     (hfloor : 2 * a ≤ ∫ p, pairPilotNoiseMean θ k hk bar η p ∂μ.prod μ) :
+    let average := PairUStatistic.fieldPairAverage (k ^ d)
     (∫⁻ z, ENNReal.ofReal
       ((stabilizedRatio C.varianceLower C.varianceUpper a
-        (PairUStatistic.fieldPairAverage m ((k : ℝ) ^ d) (pairPilotNumeratorKernel k hk bar η) X)
-        (PairUStatistic.fieldPairAverage m ((k : ℝ) ^ d) (pairPilotNoiseKernel k hk bar η) X) z -
+        (average (pairPilotNumeratorKernel hk bar η) X)
+        (average (pairPilotNoiseKernel k hk bar η) X) z -
           θ.variance) ^ 2) ∂(μ.prod μ).prod ν) ≤
     ENNReal.ofReal (pairRiskBudget C m k Cp W lam
-      (pairPilotVarianceBase θ k hk μ bar η) b a) := by
+      (pairPilotVarianceBase θ hk μ bar η) b a) := by
+  intro average
   let := observationLaw_isProbability C θ hθ
-  let S := PairUStatistic.fieldPairAverage m ((k : ℝ) ^ d) (pairPilotScoreKernel θ k hk bar η) X
-  let D := PairUStatistic.fieldPairAverage m ((k : ℝ) ^ d) (pairPilotNoiseKernel k hk bar η) X
-  let N := PairUStatistic.fieldPairAverage m ((k : ℝ) ^ d) (pairPilotNumeratorKernel k hk bar η) X
+  let S := average (pairPilotScoreKernel θ k hk bar η) X
+  let D := average (pairPilotNoiseKernel k hk bar η) X
+  let N := average (pairPilotNumeratorKernel hk bar η) X
   have hmc := pairPilotCoefficient_measurable μ θ k hk bar η Cp W lam hp
   have hmS : Measurable S := PairUStatistic.fieldPairAverage_measurable _ _
-    (rawModelPairScore_measurable θ k hk hmc) X (fun i => (hX i).measurable)
+    (rawModelPairScore_measurable θ hk hmc) X (fun i => (hX i).measurable)
   have hmD : Measurable D := PairUStatistic.fieldPairAverage_measurable _ _
-    (rawModelPairNoise_measurable k hk hmc) X (fun i => (hX i).measurable)
+    (rawModelPairNoise_measurable hk hmc) X (fun i => (hX i).measurable)
   have hS : MemLp S 2 ((μ.prod μ).prod ν) := PairUStatistic.fieldPairAverage_memLp _
-    (pairPilotScoreKernel_memLp μ C θ hθ k hk bar η Cp W lam hp) X hind hX
+    (pairPilotScoreKernel_memLp μ C θ hθ k hk bar η Cp W lam hp) hind hX
   have hD : MemLp D 2 ((μ.prod μ).prod ν) := PairUStatistic.fieldPairAverage_memLp _
-    (pairPilotNoiseKernel_memLp μ C θ hθ k hk bar η Cp W lam hp) X hind hX
+    (pairPilotNoiseKernel_memLp μ C θ hθ k hk bar η Cp W lam hp) hind hX
   have he : N = fun z => S z + θ.variance * D z := by
     funext z
     dsimp [N, S, D]
     rw [pairPilotNumeratorKernel_eq_score_add_noise θ]
-    exact PairUStatistic.fieldPairAverage_add_smul _ _ _ _ _ _ _
+    exact PairUStatistic.fieldPairAverage_add_smul ..
   have hmN : Measurable N := by rw [he]; exact hmS.add (hmD.const_mul _)
   have hdif : (fun z => N z - θ.variance * D z) = S := by
-    rw [he]
-    funext z
-    ring
-  have hgap : MemLp (fun z => N z - θ.variance * D z) 2 ((μ.prod μ).prod ν) := by rw [hdif]; exact hS
+    simp_all
   have hvlo := hθ.2.2.2.2.2.1
-  have hvhi := hθ.2.2.2.2.2.2.1
-  have hr := stabilized_ratio_lintegral_mse_le ((μ.prod μ).prod ν) hmN hmD hgap hD
-    ha hvlo hvhi (C.varianceLower_pos.le.trans hvlo) hfloor
-  have hpoint : ∀ z, N z - θ.variance * D z = S z := fun z => congrFun hdif z
-  simp_rw [hpoint] at hr
-  have hM := pairPilotAssumptions_meanConditions μ C θ hθ k hk bar η Cp W lam hp
-  have hb := pairPilotScoreMean_abs_bias_le C θ hθ k hk μ bar η Cp lam hM b hresidual
+  have hr := stabilized_ratio_lintegral_mse_le hmN hmD (by rw [hdif]; exact hS) hD
+    ha hvlo (hθ.2.2.2.2.2.2.1) (C.varianceLower_pos.le.trans hvlo) hfloor
+  simp_rw [(fun z => congrFun hdif z)] at hr
+  have hb := pairPilotScoreMean_abs_bias_le C θ hθ k hk μ bar η Cp lam (pairPilotAssumptions_meanConditions μ C θ hθ k hk bar η Cp W lam hp) hresidual
   have hb2 := pow_le_pow_left₀ (abs_nonneg _) hb 2
   rw [sq_abs] at hb2
   have hSv := pairPilotScoreEstimate_centered_sq_le μ ν C θ hθ k hk bar η Cp W lam hp hm X hind hX
   have hDv := pairPilotNoiseEstimate_centered_sq_le μ ν C θ hθ k hk bar η Cp W lam hp hm X hind hX
-  have hSb := integral_sq_le_twice_centered ((μ.prod μ).prod ν) hS
+  have hSb := integral_sq_le_twice_centered hS
     (∫ p, pairPilotScoreMean θ k hk bar η p ∂μ.prod μ)
   apply hr.trans
   apply ENNReal.ofReal_mono
-  unfold pairRiskBudget
-  apply mul_le_mul_of_nonneg_left _ (by positivity : 0 ≤ 2 / a ^ 2)
+  apply mul_le_mul_of_nonneg_left _ (by positivity)
   apply add_le_add
-  · change (∫ z, S z ^ 2 ∂(μ.prod μ).prod ν) ≤ _
-    nlinarith
+  · nlinarith
   · exact mul_le_mul_of_nonneg_left hDv (sq_nonneg _)
 
 end

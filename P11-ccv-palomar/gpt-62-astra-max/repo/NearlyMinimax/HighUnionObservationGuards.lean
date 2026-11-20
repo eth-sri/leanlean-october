@@ -24,24 +24,24 @@ theorem HighUnionSourceGuards.mono_frame {d k F : ℕ} {I : Type*} [Fintype I]
     HighUnionSourceGuards C M Cfr' R := by
   refine { G with frame := hfr, vector_ball := ?_ }
   intro i e
-  exact (G.vector_ball i e).trans ((inv_le_inv₀ (by linarith : 0 < Cfr)
-    (by linarith : 0 < Cfr')).mpr hle)
+  exact (G.vector_ball i e).trans ((inv_le_inv₀ (by linarith)
+    (by linarith)).mpr hle)
 
 /-- The actual full-union polynomial regression gives a fixed strictly
 positive ternary mass floor on all raw states, without a mass-good premise.
 Thus mass-exceptional states still carry a genuine probability experiment. -/
-theorem highUnionSource_ternary_floor_uniform {d : ℕ} (C : ModelConstants d)
+theorem highUnionSource_ternary_floor_uniform {d : ℕ} {C : ModelConstants d}
     (Q : LowSmoothnessTernaryConstants C) :
     ∃ Cfr η0 : ℝ, 1 ≤ Cfr ∧ 0 < η0 ∧
-      ∀ k F : ℕ, ∀ (_ : NeZero k), ∀ (_ : LinearOrder (HighWindowLabels d k)), 4 ≤ k →
-      ∀ (I : Type*) (_ : Fintype I) (E : I → Type*) (_ : (i : I) → MeasurableSpace (E i))
-        (R : HighUnionRowData d k F I E) (M : ℝ),
+      ∀ k F, ∀ (_ : NeZero k) (_ : LinearOrder (HighWindowLabels d k)), 4 ≤ k →
+      ∀ (I : Type*) (_ : Fintype I) E (_ : (i : I) → MeasurableSpace (E i))
+        (R : HighUnionRowData d k F I E) M,
       HighUnionSourceGuards C M Cfr R →
-      ∀ cf : ℝ, 0 ≤ cf → cf * (k : ℝ)^(-C.smoothness) ≤ η0 →
-      ∀ h : HistoryMarked (fun i j => j ∈ highNeighborLabels d k i) (HighUnionMark E),
-      ∀ V : ℝ, |V-Q.v| ≤ Q.ρ →
+      ∀ cf, 0 ≤ cf → cf * k^(-C.smoothness) ≤ η0 →
+      ∀ h,
+      ∀ V, |V-Q.v| ≤ Q.ρ →
       ∀ x y, Q.c ≤ ternaryMass Q.a
-        (highUnionSourceRegression C R (cf * (k : ℝ)^(-C.smoothness)) h x) V y := by
+        (highUnionSourceRegression C R (cf * k^(-C.smoothness)) h x) V y := by
   obtain ⟨Cfr,hCfr,hbound⟩ := highFrameField_original_model_bounds C
   obtain ⟨η0,hη0,hguard⟩ := highFrame_ternary_amplitude_guards Q
   refine ⟨Cfr,η0,hCfr,hη0,?_⟩
@@ -50,15 +50,10 @@ theorem highUnionSource_ternary_floor_uniform {d : ℕ} (C : ModelConstants d)
   letI := horder
   letI := hI
   letI := hE
-  let η := cf * (k : ℝ)^(-C.smoothness)
   let P := fun j => highFramePolynomial ((highUnionSourceState C R h).2 j)
-  have hP (j) : frameCoefficientL1 (P j) ≤ Cfr⁻¹ :=
+  have hP (j)  :=
     (highFramePolynomial_coefficientL1_le _).trans (highUnionSourceState_coefficient_ball C R G h j)
-  have hηn : 0 ≤ η := by dsimp [η]; positivity
-  obtain ⟨_, hηsup⟩ := hguard η hηn hη
-  have hv := (hbound k hk0 hk cf hcf P hP).1 x
-  have hf : |highUnionSourceRegression C R η h x| ≤ Q.ρ :=
-    hv.trans (hηsup.trans (by linarith [Q.ρ_pos]))
-  exact (Q.legal _ V hf hV).2.2.1 y
+  obtain ⟨_, hηsup⟩ := hguard (cf * k^(-C.smoothness)) (by positivity) hη
+  exact (Q.legal _ V (((hbound k hk0 hk cf hcf P hP).1 x).trans (hηsup.trans (by linarith [Q.ρ_pos]))) hV).2.2.1 y
 
 end NearlyMinimax

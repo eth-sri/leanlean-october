@@ -15,9 +15,10 @@ set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 500000
 attribute [local instance] Classical.propDecidable
 
- def completeSaddleGeometryEnvelope {d : ℕ} (C : ModelConstants d)
-    (Q : LowSmoothnessTernaryConstants C) (Cfr cf Cω : ℝ) (n : ℕ) :
-    (r : ℕ) → (Fin r → Covariate d) → ℝ :=
+ variable {d : ℕ} {C : ModelConstants d} (Q : LowSmoothnessTernaryConstants C) (Cfr cf Cω : ℝ) (n : ℕ)
+
+def completeSaddleGeometryEnvelope :
+    (r : ℕ) → (DesignSample d r) → ℝ :=
   let q := lowerSaddleResponseOrder C.smoothness d
   let m := highCompleteSourceSaddleCoefficient C
   let theta := highCompleteSourceSaddleTheta C
@@ -33,14 +34,12 @@ attribute [local instance] Classical.propDecidable
   let Bl := completeSourceSaddleActivity C q Cfr (spatialInterpolationLambda d) Cω n
   completeSourceGeometryEnvelope D M Rbound q C.densityLower C.densityUpper c0 ell N mu Cfr Q.a Q.ρ eta Chi Bl
 
- theorem completeSaddleGeometryEnvelope_nonneg {d : ℕ} (C : ModelConstants d)
-    (Q : LowSmoothnessTernaryConstants C) (Cfr cf Cω : ℝ) (n r : ℕ) (U : Fin r → Covariate d) :
-    0 ≤ completeSaddleGeometryEnvelope C Q Cfr cf Cω n r U :=
+ theorem completeSaddleGeometryEnvelope_nonneg (r : ℕ) (U : DesignSample d r) :
+    0 ≤ completeSaddleGeometryEnvelope Q Cfr cf Cω n r U :=
   by
-    unfold completeSaddleGeometryEnvelope
-    exact completeSourceGeometryEnvelope_nonneg _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ r U
+    apply completeSourceGeometryEnvelope_nonneg
 
- theorem completeSaddleGeometryEnvelope_integrable {d : ℕ} [NeZero d] (C : ModelConstants d)
+ theorem completeSaddleGeometryEnvelope_integrable [NeZero d] {C : ModelConstants d}
     (Q : LowSmoothnessTernaryConstants C) (hd : 5 ≤ d) (Cfr cf Cω : ℝ) (n r : ℕ)
     (hell : 1 ≤ lowerAliasCutoff C.smoothness d (highCompleteSourceSaddleCoefficient C)
       (highCompleteSourceSaddleTheta C) Cω (densityIntervalExponent C.densityLower C.densityUpper+1)
@@ -50,11 +49,8 @@ attribute [local instance] Classical.propDecidable
       (shrunkDensityExponent C.densityLower C.densityUpper) n ≤
       lowerSaddleN C.smoothness d (highCompleteSourceSaddleCoefficient C)
         (highCompleteSourceSaddleTheta C) Cω (shrunkDensityExponent C.densityLower C.densityUpper) n) :
-    Integrable (completeSaddleGeometryEnvelope C Q Cfr cf Cω n r) (fullSpatialPatchDesign d r) :=
+    Integrable (completeSaddleGeometryEnvelope Q Cfr cf Cω n r) (fullSpatialPatchDesign d r) :=
   by
-    unfold completeSaddleGeometryEnvelope
-    apply completeSourceGeometryEnvelope_integrable hd
-    · exact hell
-    · exact hellN
+    apply completeSourceGeometryEnvelope_integrable hd <;> simp_all
 
 end NearlyMinimax

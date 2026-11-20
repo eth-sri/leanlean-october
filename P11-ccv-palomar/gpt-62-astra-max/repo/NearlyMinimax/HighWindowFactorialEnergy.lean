@@ -1,7 +1,7 @@
 module
 
 public import NearlyMinimax.HighFrameDesignEnergy
-public import NearlyMinimax.LocalEnergySeries
+public import NearlyMinimax.PoissonEnergyBounds
 
 @[expose] public section
 
@@ -14,15 +14,13 @@ namespace NearlyMinimax
 set_option backward.isDefEq.respectTransparency false
 attribute [local instance] Classical.propDecidable
 
-theorem highWindowLabels_card {d k : ℕ} [NeZero k] :
-    Fintype.card (HighWindowLabels d k) = k ^ d := by
-  simp only [HighWindowLabels, Fintype.card_fun, Fintype.card_fin, ZMod.card]
+variable {d k n : ℕ} [NeZero k]
 
-theorem high_design_factorial_parameter {d k n : ℕ} [NeZero k]
-    (Csharp mu : ℝ) (hmu : mu = (n : ℝ) / (k : ℝ) ^ d) :
-    (n : ℝ) * Csharp * (2 / (k : ℝ)) ^ d =
-      (Csharp * (2 : ℝ) ^ d) * mu := by
-  rw [hmu, div_pow]
+theorem high_design_factorial_parameter
+    (Csharp : ℝ) {mu : ℝ} (hmu : mu = n / k ^ d) :
+    n * Csharp * (2 / k) ^ d =
+      (Csharp * 2 ^ d) * mu := by
+  rw [hmu]
   ring
 
 end NearlyMinimax
