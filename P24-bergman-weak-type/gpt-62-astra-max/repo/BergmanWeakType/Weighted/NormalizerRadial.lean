@@ -7,6 +7,7 @@ module
 
 public import BergmanWeakType.Weighted.RadialKernel
 public import BergmanWeakType.Weighted.PolarPotential
+public import BergmanWeakType.Weighted.AngularMean
 
 /-! # The circular normalizer as a polar kernel potential -/
 
@@ -18,117 +19,70 @@ open MeasureTheory Real
 
 namespace BergmanWeakType.Weighted
 
+def boundaryPoint (t : ℝ) : ClosedDisk := ⟨circleMap 0 1 t, by simp⟩
+
+abbrev boundarySource : PolarSource := angleMeasure.map boundaryPoint
+
+theorem boundary_integral (α : ℝ) (z : ℂ) :
+    ∫ w, ‖weightedKernel α z w.val‖ ∂boundarySource = normalizer α ‖z‖ := by
+  change (∫ w : ClosedDisk, _ ∂angleMeasure.map boundaryPoint) = _
+  rw [integral_map (by unfold boundaryPoint; fun_prop)]
+  · simp only [boundaryPoint]; rw [integral_angle (fun w ↦ ‖weightedKernel α z w‖), circleAverage_weightedKernel_norm, one_mul]
+  · apply Measurable.aestronglyMeasurable; measurability
+
 theorem polarIntegral_boundary_eq_normalizer (α r θ : ℝ) :
-    polarIntegral (polarKernel (-(α + 2) / 2)) cos sin
-      (volume.restrict (Set.Icc 0 (2 * π))) (fun _ ↦ (2 * π)⁻¹) r θ =
-        normalizer α r := by
-  have hk (t : ℝ) : polarKernel (-(α + 2) / 2) (cos t) (sin t) r θ =
-      ‖weightedKernel α (circleMap 0 r θ) (circleMap 0 1 t)‖ := by
-    simpa only [circleMap_zero_re, circleMap_zero_im, one_mul] using
-      polarKernel_eq_norm_weightedKernel α r θ (circleMap 0 1 t)
-  have hcircle := circleAverage_weightedKernel_norm α (circleMap 0 r θ) (r := 1)
-    (by norm_num)
-  simp only [one_mul, norm_circleMap_zero] at hcircle
-  have habs : normalizer α |r| = normalizer α r := by
-    simp only [normalizer_eq_circleAverage_radius, circleAverage_abs_radius]
-  rw [habs] at hcircle
-  rw [polarIntegral]
-  simp_rw [hk]
-  rw [integral_mul_const, integral_Icc_eq_integral_Ioc,
-    ← intervalIntegral.integral_of_le (by positivity : (0 : ℝ) ≤ 2 * π)]
-  simpa only [Real.circleAverage_def, smul_eq_mul, mul_comm] using hcircle
+    (boundarySource.field (-(α+2)/2)).val .v r θ = normalizer α r := by
+  simp only [Field.val,Field.eval,PolarSource.field,PolarSource.avg,column_val,boundary_integral]; simp [radialMoment]
 
-def normalizerFirst (α r : ℝ) : ℝ :=
-  polarIntegral (polarKernelR (-(α + 2) / 2)) cos sin
-    (volume.restrict (Set.Icc 0 (2 * π))) (fun _ ↦ (2 * π)⁻¹) r 0
+theorem ae_boundary_norm : ∀ᵐ w ∂boundarySource, ‖w.val‖ = 1 := by
+  rw [ae_map_iff (by unfold boundaryPoint; fun_prop) (by measurability)]
+  simp [boundaryPoint]
 
-def normalizerSecond (α r : ℝ) : ℝ :=
-  polarIntegral (polarKernelRR (-(α + 2) / 2)) cos sin
-    (volume.restrict (Set.Icc 0 (2 * π))) (fun _ ↦ (2 * π)⁻¹) r 0
+abbrev solution (α : ℝ) := (boundarySource.field (-(α+2)/2)).ray
 
-theorem normalizer_hasDerivAt (α : ℝ) {r : ℝ} (hr : r ^ 2 < 1) :
-    HasDerivAt (normalizer α) (normalizerFirst α r) r := by
-  have hd := polarIntegral_kernel_hasDerivAt_r isCompact_Icc
-    (ae_restrict_mem measurableSet_Icc)
-    (integrable_const (μ := volume.restrict (Set.Icc (0 : ℝ) (2 * π))) ((2 * π)⁻¹))
-    continuous_cos.continuousOn continuous_sin.continuousOn
-    (fun t _ ↦ (cos_sq_add_sin_sq t).le) (-(α + 2) / 2) hr 0
-  simpa only [polarIntegral_boundary_eq_normalizer, normalizerFirst] using hd
+@[simp] theorem solution_val (α r : ℝ) : (solution α).v r = normalizer α r := by
+  simp only [Field.ray,angularMean,polarIntegral_boundary_eq_normalizer,integral_const,probReal_univ,one_smul]
 
-theorem normalizerFirst_hasDerivAt (α : ℝ) {r : ℝ} (hr : r ^ 2 < 1) :
-    HasDerivAt (normalizerFirst α) (normalizerSecond α r) r := by
-  exact polarIntegral_kernelR_hasDerivAt_r isCompact_Icc
-    (ae_restrict_mem measurableSet_Icc)
-    (integrable_const (μ := volume.restrict (Set.Icc (0 : ℝ) (2 * π))) ((2 * π)⁻¹))
-    continuous_cos.continuousOn continuous_sin.continuousOn
-    (fun t _ ↦ (cos_sq_add_sin_sq t).le) (-(α + 2) / 2) hr 0
-
-theorem continuousOn_normalizerFirst (α : ℝ) :
-    ContinuousOn (normalizerFirst α) (Set.Ico 0 1) := by
-  apply (continuousOn_polarIntegral_unit isCompact_Icc
-    (ae_restrict_mem measurableSet_Icc)
-    (integrable_const (μ := volume.restrict (Set.Icc (0 : ℝ) (2 * π))) ((2 * π)⁻¹))
-    (continuousOn_polarKernelR_source continuous_cos.continuousOn
-      continuous_sin.continuousOn (fun t _ ↦ (cos_sq_add_sin_sq t).le)
-      (-(α + 2) / 2))).comp (continuous_id.prodMk continuous_const).continuousOn
-  exact fun r hr ↦ ⟨hr, Set.mem_univ _⟩
-
-theorem continuousOn_normalizerSecond (α : ℝ) :
-    ContinuousOn (normalizerSecond α) (Set.Ico 0 1) := by
-  apply (continuousOn_polarIntegral_unit isCompact_Icc
-    (ae_restrict_mem measurableSet_Icc)
-    (integrable_const (μ := volume.restrict (Set.Icc (0 : ℝ) (2 * π))) ((2 * π)⁻¹))
-    (continuousOn_polarKernelRR_source continuous_cos.continuousOn
-      continuous_sin.continuousOn (fun t _ ↦ (cos_sq_add_sin_sq t).le)
-      (-(α + 2) / 2))).comp (continuous_id.prodMk continuous_const).continuousOn
-  exact fun r hr ↦ ⟨hr, Set.mem_univ _⟩
-
-theorem polarIntegral_boundary_angular_eq_zero (α : ℝ) {r : ℝ} (hr : r ^ 2 < 1)
-    (θ : ℝ) :
-    polarIntegral (polarKernelT (-(α + 2) / 2)) cos sin
-      (volume.restrict (Set.Icc 0 (2 * π))) (fun _ ↦ (2 * π)⁻¹) r θ = 0 := by
-  have hd := polarIntegral_kernel_hasDerivAt_t isCompact_Icc
-    (ae_restrict_mem measurableSet_Icc)
-    (integrable_const (μ := volume.restrict (Set.Icc (0 : ℝ) (2 * π))) ((2 * π)⁻¹))
-    continuous_cos.continuousOn continuous_sin.continuousOn
-    (fun t _ ↦ (cos_sq_add_sin_sq t).le) (-(α + 2) / 2) hr θ
-  have heq : polarIntegral (polarKernel (-(α + 2) / 2)) cos sin
-      (volume.restrict (Set.Icc 0 (2 * π))) (fun _ ↦ (2 * π)⁻¹) r =
-        fun _ ↦ normalizer α r := by
-    funext t
-    exact polarIntegral_boundary_eq_normalizer α r t
-  rw [heq] at hd
-  exact hd.unique (hasDerivAt_const θ (normalizer α r))
-
-theorem polarIntegral_boundary_angular_second_eq_zero (α : ℝ) {r : ℝ}
-    (hr : r ^ 2 < 1) (θ : ℝ) :
-    polarIntegral (polarKernelTT (-(α + 2) / 2)) cos sin
-      (volume.restrict (Set.Icc 0 (2 * π))) (fun _ ↦ (2 * π)⁻¹) r θ = 0 := by
-  have hd := polarIntegral_kernelT_hasDerivAt_t isCompact_Icc
-    (ae_restrict_mem measurableSet_Icc)
-    (integrable_const (μ := volume.restrict (Set.Icc (0 : ℝ) (2 * π))) ((2 * π)⁻¹))
-    continuous_cos.continuousOn continuous_sin.continuousOn
-    (fun t _ ↦ (cos_sq_add_sin_sq t).le) (-(α + 2) / 2) hr θ
-  have heq : polarIntegral (polarKernelT (-(α + 2) / 2)) cos sin
-      (volume.restrict (Set.Icc 0 (2 * π))) (fun _ ↦ (2 * π)⁻¹) r = fun _ ↦ 0 := by
-    funext t
-    exact polarIntegral_boundary_angular_eq_zero α hr t
-  rw [heq] at hd
-  exact hd.unique (hasDerivAt_const θ 0)
-
-/-- The exact radial differential equation for the normalizing circular average. -/
-theorem normalizer_ode (α : ℝ) {r : ℝ} (hr : r ^ 2 < 1) (hr0 : r ≠ 0) :
-    normalizerSecond α r + normalizerFirst α r / r -
-      (2 * (α + 2) * r / (1 - r ^ 2)) * normalizerFirst α r -
-      ((α + 2) ^ 2 / (1 - r ^ 2)) * normalizer α r = 0 := by
-  have heq := polarIntegral_operator_boundary isCompact_Icc
-    (ae_restrict_mem measurableSet_Icc)
-    (integrable_const (μ := volume.restrict (Set.Icc (0 : ℝ) (2 * π))) ((2 * π)⁻¹))
-    continuous_cos.continuousOn continuous_sin.continuousOn
-    (fun t _ ↦ (cos_sq_add_sin_sq t).le) (α + 2) hr hr0 0
-    (fun t _ ↦ cos_sq_add_sin_sq t)
-  simpa only [polarIntegral_boundary_eq_normalizer,
-    polarIntegral_boundary_angular_second_eq_zero α hr, normalizerFirst, normalizerSecond,
-    zero_div, add_zero] using heq
+theorem solution_eq (α : ℝ) {r : ℝ} (hr : r ∈ unitInterval) : (solution α).err (α+2) r = 0 := by
+  rw [Field.ray_err _ _ hr]; apply integral_eq_zero_of_ae; exact .of_forall fun t ↦ boundarySource.error_boundary _ (inner_sq hr) hr.1.ne' t ae_boundary_norm
 
 end BergmanWeakType.Weighted
+
+namespace BergmanWeakType
+open Weighted Set
+
+/-- Comparison of the radial solution with the constant function. -/
+theorem normalizer_mono (α : ℝ) : MonotoneOn (normalizer α) radii := by
+  let B : Ray := ⟨1,0,0,continuousOn_const,continuousOn_const,fun _ _ ↦ ⟨hasDerivAt_const ..,hasDerivAt_const ..⟩⟩
+  have H := (solution α).compare B (α+2) (α+2) 0 (-1) (by ring) (by ring) (by aesop) ?sub
+  case sub =>
+    intro r hr; rw [solution_eq α hr]; simp [B,Ray.err,rhs];
+    have := normalizer_nonneg α r; have := sub_pos.mpr (inner_sq hr); positivity
+  intro r hr R hR hle; simpa [B,driftWeight] using H hr hR hle
+
+theorem normalizer_pos (α : ℝ) {r : ℝ} (hr : r ∈ radii) : 0 < normalizer α r :=
+  lt_of_lt_of_le (by simp) (normalizer_mono α (by simp) hr hr.1)
+
+private theorem solution_pos (α : ℝ) (r : ℝ) (hr : r ∈ radii) : 0 < (solution α).v r := by
+  simpa using normalizer_pos α hr
+
+theorem Weighted.Field.mean_comparison (F : Field) (α : ℝ) (L : ∀ r ∈ unitInterval, ∀ t, (F.eval r t).error (α+2) r ≤ 0) :
+    AntitoneOn (fun r ↦ angularMean (F.val .v) r / normalizer α r) radii := by
+  have H := F.ray.compare (solution α) (α+2) (α+2) 0 1 (by ring) (by ring) (solution_pos α) ?sub
+  case sub =>
+    intro r hr; rw [solution_eq α hr, F.ray_err _ hr]; simpa using
+      mul_nonpos_of_nonneg_of_nonpos (solution_pos α r (Ioo_subset_Ico_self hr)).le (integral_nonpos (L r hr))
+  change AntitoneOn (fun r ↦ F.ray.v r / normalizer α r) radii
+  simpa [driftWeight] using H
+
+/-- With complementary parameters both errors vanish: the normalized ratio
+is simultaneously increasing and decreasing, hence equal to its value at zero. -/
+theorem radial_transform (α : ℝ) {r : ℝ} (hr : r ∈ radii) :
+    driftWeight (α+1) r * normalizer α r = normalizer (-α-2) r := by
+  have H (s : ℝ) := (solution α).compare (solution (-α-2)) (α+2) (-α-2+2) (α+1) s (by ring) (by ring)
+    (solution_pos _) (fun x hx ↦ by rw [solution_eq _ hx, solution_eq _ hx]; simp) (by simp) hr hr.1
+  have h (s : ℝ) : s * driftWeight (α+1) r * normalizer α r ≤ s * normalizer (-α-2) r := by
+    simpa [driftWeight, div_le_iff₀ (normalizer_pos (-α-2) hr)] using H s
+  exact le_antisymm (by simpa using h 1) (by simpa using h (-1))
+
+end BergmanWeakType

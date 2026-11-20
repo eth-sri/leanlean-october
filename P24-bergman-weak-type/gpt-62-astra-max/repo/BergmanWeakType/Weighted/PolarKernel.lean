@@ -5,7 +5,10 @@ Authors: Yongxi Lin
 -/
 module
 
-public import BergmanWeakType.Weighted.KernelPotential
+public import BergmanWeakType.Weighted.CompactIntegral
+public import BergmanWeakType.Measure
+public import BergmanWeakType.Weighted.PolarField
+public import Mathlib.Analysis.SpecialFunctions.Pow.Deriv
 public import Mathlib.Analysis.SpecialFunctions.Trigonometric.Deriv
 public import Mathlib.Analysis.SpecialFunctions.Complex.CircleMap
 
@@ -20,175 +23,78 @@ open scoped Topology
 
 namespace BergmanWeakType.Weighted
 
-def radialComponent (a b θ : ℝ) : ℝ := a * cos θ + b * sin θ
-def angularComponent (a b θ : ℝ) : ℝ := b * cos θ - a * sin θ
+open Part
 
-theorem component_norm_sq (a b θ : ℝ) :
-    radialComponent a b θ ^ 2 + angularComponent a b θ ^ 2 = a ^ 2 + b ^ 2 := by
-  calc
-    _ = (a ^ 2 + b ^ 2) * (sin θ ^ 2 + cos θ ^ 2) := by
-      unfold radialComponent angularComponent
-      ring
-    _ = _ := by rw [sin_sq_add_cos_sq, mul_one]
+variable (w : ClosedDisk) (r θ : ℝ)
 
-theorem radialComponent_hasDerivAt (a b θ : ℝ) :
-    HasDerivAt (radialComponent a b) (angularComponent a b θ) θ := by
-  convert ((hasDerivAt_cos θ).const_mul a).add ((hasDerivAt_sin θ).const_mul b) using 1
-  · rfl
-  · unfold angularComponent
-    ring
+def radialComponent := w.val.re * cos θ + w.val.im * sin θ
+def angularComponent := w.val.im * cos θ - w.val.re * sin θ
 
-theorem angularComponent_hasDerivAt (a b θ : ℝ) :
-    HasDerivAt (angularComponent a b) (-radialComponent a b θ) θ := by
-  convert ((hasDerivAt_cos θ).const_mul b).sub ((hasDerivAt_sin θ).const_mul a) using 1
-  · rfl
-  · unfold radialComponent
-    ring
+theorem unit_sq : ‖w.val‖^2 ≤ 1 := by
+  have : ‖w.val‖ ≤ 1 := by grind [Metric.mem_closedBall, dist_zero_right]
+  simp_all
 
-def polarDenominator (a b r θ : ℝ) : ℝ :=
-  (a ^ 2 + b ^ 2) * r ^ 2 - 2 * r * radialComponent a b θ + 1
+theorem component_norm_sq : angularComponent w θ ^ 2 = ‖w.val‖^2 - radialComponent w θ ^ 2 := by
+  rw [Complex.sq_norm, Complex.normSq_apply]
+  unfold angularComponent radialComponent
+  grind [sin_sq_add_cos_sq]
 
-def polarKernel (q a b r θ : ℝ) : ℝ := polarDenominator a b r θ ^ q
+def polarDenominator := ‖w.val‖^2 * r^2 - 2*r*radialComponent w θ + 1
 
-theorem polarDenominator_eq_denominator (a b r θ : ℝ) :
-    polarDenominator a b r θ =
-      denominator (radialComponent a b θ) (angularComponent a b θ) r 0 := by
-  rw [denominator, component_norm_sq]
-  unfold polarDenominator
-  ring
+theorem polarDenominator_pos (hr : r^2 < 1) : 0 < polarDenominator w r θ := by
+  have := component_norm_sq w θ
+  have := unit_sq w
+  have : r * radialComponent w θ < 1 := by nlinarith
+  unfold polarDenominator; nlinarith
 
-theorem polarKernel_eq_powerKernel (q a b r θ : ℝ) :
-    polarKernel q a b r θ =
-      powerKernel q (radialComponent a b θ) (angularComponent a b θ) r 0 := by
-  rw [polarKernel, powerKernel, polarDenominator_eq_denominator]
+def denominatorJet : Jet
+  | .v => polarDenominator w r θ
+  | .r => 2*(‖w.val‖^2*r-radialComponent w θ)
+  | .rr => 2*‖w.val‖^2
+  | .t => -2*r*angularComponent w θ
+  | .tt => 2*r*radialComponent w θ
 
-def polarKernelR (q a b r θ : ℝ) : ℝ :=
-  2 * q * ((a ^ 2 + b ^ 2) * r - radialComponent a b θ) * polarKernel (q - 1) a b r θ
+/-- Kernel and all its pure partials, obtained by powering the denominator jet. -/
+def column (q : ℝ) (i : Part) (p : ℝ × ℝ) (w : ClosedDisk) :=
+  (denominatorJet w p.1 p.2).map (·^q) (fun x ↦ q*x^(q-1)) (fun x ↦ q*(q-1)*x^(q-1-1)) i
 
-def polarKernelRR (q a b r θ : ℝ) : ℝ :=
-  2 * q * (a ^ 2 + b ^ 2) * polarKernel (q - 1) a b r θ +
-    4 * q * (q - 1) * ((a ^ 2 + b ^ 2) * r - radialComponent a b θ) ^ 2 *
-      polarKernel (q - 2) a b r θ
+private theorem powerJet (q : ℝ) {x : ℝ} (hp : 0 < x) :
+    JetAt (·^q) (fun u ↦ q*u^(q-1)) (q*(q-1)*x^(q-1-1)) x := by
+  constructor <;> scalar_deriv <;> ring
 
-def polarKernelT (q a b r θ : ℝ) : ℝ :=
-  -2 * q * r * angularComponent a b θ * polarKernel (q - 1) a b r θ
+theorem column_jet (q : ℝ) (l : Slice) (u : ℝ) (hu : (l.point u).1^2 < 1) :
+    l.jet (fun p i ↦ column q i p w) u := by
+  apply l.chain (J := fun p ↦ denominatorJet w p.1 p.2) _ (powerJet q (polarDenominator_pos _ _ _ hu))
+  cases l <;> constructor <;> dsimp [Slice.point,Slice.first,Slice.second,denominatorJet,polarDenominator,radialComponent,angularComponent] <;>
+    scalar_deriv [hasDerivAt_cos,hasDerivAt_sin] <;> ring
 
-def polarKernelTT (q a b r θ : ℝ) : ℝ :=
-  2 * q * r * radialComponent a b θ * polarKernel (q - 1) a b r θ +
-    4 * q * (q - 1) * r ^ 2 * angularComponent a b θ ^ 2 * polarKernel (q - 2) a b r θ
+abbrev cylinder := {p : ℝ × ℝ | p.1^2 < 1}
 
-theorem polarDenominator_pos {a b r : ℝ} (hr : r ^ 2 < 1)
-    (hw : a ^ 2 + b ^ 2 ≤ 1) (θ : ℝ) : 0 < polarDenominator a b r θ := by
-  rw [polarDenominator_eq_denominator]
-  exact denominator_pos_coordinates (by simpa using hr) (by simpa [component_norm_sq] using hw)
+theorem column_continuous (q : ℝ) (i : Part) : ContinuousOn (column q i).uncurry (cylinder ×ˢ Set.univ) := by
+  have hk (a : ℝ) : ContinuousOn (fun p  ↦ polarDenominator p.2 p.1.1 p.1.2 ^ a) (cylinder ×ˢ Set.univ) :=
+    ContinuousOn.rpow_const (by unfold polarDenominator radialComponent; fun_prop) (by grind [polarDenominator_pos])
+  unfold Function.uncurry column
+  cases i <;> dsimp [Jet.map,denominatorJet,radialComponent,angularComponent] <;> fun_prop
 
-theorem polarKernel_hasDerivAt_r (q a b r θ : ℝ) (hd : 0 < polarDenominator a b r θ) :
-    HasDerivAt (fun u ↦ polarKernel q a b u θ) (polarKernelR q a b r θ) r := by
-  have hd' : 0 < denominator (radialComponent a b θ) (angularComponent a b θ) r 0 := by
-    simpa only [polarDenominator_eq_denominator] using hd
-  simpa only [← polarKernel_eq_powerKernel, component_norm_sq, polarKernelR, powerKernel,
-    ← polarDenominator_eq_denominator, polarKernel] using
-      powerKernel_hasDerivAt_x q (radialComponent a b θ) (angularComponent a b θ) r 0 hd'
+theorem column_period (q : ℝ) (i : Part) : column q i (r,π) w = column q i (r,-π) w := by
+  simp_all [column, Jet.map, denominatorJet, polarDenominator, radialComponent, angularComponent]
 
-theorem polarKernelR_hasDerivAt_r (q a b r θ : ℝ) (hd : 0 < polarDenominator a b r θ) :
-    HasDerivAt (fun u ↦ polarKernelR q a b u θ) (polarKernelRR q a b r θ) r := by
-  have hd' : 0 < denominator (radialComponent a b θ) (angularComponent a b θ) r 0 := by
-    simpa only [polarDenominator_eq_denominator] using hd
-  simpa only [powerKernelX, powerKernelXX, component_norm_sq, ← polarKernel_eq_powerKernel,
-    polarKernelR, polarKernelRR] using
-      powerKernelX_hasDerivAt q (radialComponent a b θ) (angularComponent a b θ) r 0 hd'
+/-- The error vanishes on the boundary, and is nonpositive throughout the closed disk. -/
+theorem column_equation (k : ℝ) (hr : r^2 < 1) (hn : r ≠ 0) :
+    Jet.error (fun i ↦ column (-k/2) i (r,θ) w) k r =
+      -(k^2*(1-‖w.val‖^2))/((1-r^2)*polarDenominator w r θ) * column (-k/2) .v (r,θ) w := by
+  have hd := (polarDenominator_pos w r θ hr).ne'
+  simp [Jet.error,rhs,column,Jet.map,denominatorJet,rpow_sub_one hd]
+  field_simp [(sub_pos.mpr hr).ne']
+  ; grind [component_norm_sq, polarDenominator]
 
-theorem polarDenominator_hasDerivAt_t (a b r θ : ℝ) :
-    HasDerivAt (polarDenominator a b r) (-2 * r * angularComponent a b θ) θ := by
-  convert ((radialComponent_hasDerivAt a b θ).const_mul (-2 * r)).const_add
-    ((a ^ 2 + b ^ 2) * r ^ 2 + 1) using 1
-  · funext u
-    unfold polarDenominator
-    ring
+theorem polarDenominator_eq_norm_sq : polarDenominator w r θ = ‖1 - circleMap 0 r θ * star w.val‖^2 := by
+  simp [polarDenominator, radialComponent, Complex.sq_norm, Complex.normSq_apply, circleMap_zero_re, circleMap_zero_im]
+  grind [cos_sq_add_sin_sq]
 
-theorem polarKernel_hasDerivAt_t (q a b r θ : ℝ) (hd : 0 < polarDenominator a b r θ) :
-    HasDerivAt (polarKernel q a b r) (polarKernelT q a b r θ) θ := by
-  convert (polarDenominator_hasDerivAt_t a b r θ).rpow_const (p := q) (Or.inl hd.ne') using 1
-  · rfl
-  · unfold polarKernelT polarKernel
-    ring
-
-theorem polarKernelT_hasDerivAt_t (q a b r θ : ℝ) (hd : 0 < polarDenominator a b r θ) :
-    HasDerivAt (polarKernelT q a b r) (polarKernelTT q a b r θ) θ := by
-  convert ((angularComponent_hasDerivAt a b θ).mul
-    (polarKernel_hasDerivAt_t (q - 1) a b r θ hd)).const_mul (-2 * q * r) using 1
-  · funext u
-    unfold polarKernelT
-    simp only [Pi.mul_apply]
-    ring
-  · unfold polarKernelT polarKernelTT
-    rw [show q - 1 - 1 = q - 2 by ring]
-    ring
-
-theorem polarKernel_laplacian (q a b r θ : ℝ)
-    (hd : 0 < polarDenominator a b r θ) (hr : r ≠ 0) :
-    polarKernelRR q a b r θ + polarKernelR q a b r θ / r +
-      polarKernelTT q a b r θ / r ^ 2 =
-        4 * q ^ 2 * (a ^ 2 + b ^ 2) * polarKernel (q - 1) a b r θ := by
-  have hp : polarKernel (q - 1) a b r θ =
-      polarDenominator a b r θ * polarKernel (q - 2) a b r θ := by
-    unfold polarKernel
-    have he : polarDenominator a b r θ ^ (q - 2) =
-        polarDenominator a b r θ ^ (q - 1) / polarDenominator a b r θ := by
-      rw [show q - 2 = (q - 1) - 1 by ring]
-      exact Real.rpow_sub_one hd.ne' _
-    rw [he, mul_div_cancel₀ _ hd.ne']
-  have hB : angularComponent a b θ ^ 2 = a ^ 2 + b ^ 2 - radialComponent a b θ ^ 2 := by
-    linarith [component_norm_sq a b θ]
-  unfold polarKernelRR polarKernelR polarKernelTT
-  rw [hp, hB]
-  unfold polarDenominator
-  field_simp [hr]
-  ring
-
-/-- The weighted elliptic equation in polar coordinates, with no mixed derivatives. -/
-theorem polarKernel_equation (k a b r θ : ℝ)
-    (hd : 0 < polarDenominator a b r θ) (hr : r ≠ 0) (ht : 1 - r ^ 2 ≠ 0) :
-    polarKernelRR (-k / 2) a b r θ + polarKernelR (-k / 2) a b r θ / r +
-      polarKernelTT (-k / 2) a b r θ / r ^ 2 -
-      (2 * k * r / (1 - r ^ 2)) * polarKernelR (-k / 2) a b r θ -
-      (k ^ 2 / (1 - r ^ 2)) * polarKernel (-k / 2) a b r θ =
-        -(k ^ 2 * (1 - (a ^ 2 + b ^ 2))) /
-          ((1 - r ^ 2) * polarDenominator a b r θ) * polarKernel (-k / 2) a b r θ := by
-  rw [polarKernel_laplacian (-k / 2) a b r θ hd hr]
-  unfold polarKernelR polarKernel
-  rw [Real.rpow_sub_one hd.ne']
-  field_simp [hr, ht, hd.ne']
-  unfold polarDenominator
-  ring
-
-theorem polarKernel_equation_nonpos (k a b r θ : ℝ)
-    (hd : 0 < polarDenominator a b r θ) (hr : r ≠ 0) (ht : 0 < 1 - r ^ 2)
-    (hw : a ^ 2 + b ^ 2 ≤ 1) :
-    polarKernelRR (-k / 2) a b r θ + polarKernelR (-k / 2) a b r θ / r +
-      polarKernelTT (-k / 2) a b r θ / r ^ 2 -
-      (2 * k * r / (1 - r ^ 2)) * polarKernelR (-k / 2) a b r θ -
-      (k ^ 2 / (1 - r ^ 2)) * polarKernel (-k / 2) a b r θ ≤ 0 := by
-  rw [polarKernel_equation k a b r θ hd hr ht.ne']
-  exact mul_nonpos_of_nonpos_of_nonneg
-    (div_nonpos_of_nonpos_of_nonneg (neg_nonpos.mpr
-      (mul_nonneg (sq_nonneg k) (sub_nonneg.mpr hw))) (mul_nonneg ht.le hd.le))
-    (Real.rpow_nonneg hd.le _)
-
-theorem polarDenominator_eq_norm_sq (r θ : ℝ) (w : ℂ) :
-    polarDenominator w.re w.im r θ = ‖1 - circleMap 0 r θ * star w‖ ^ 2 := by
-  rw [← denominator_eq_norm_sq, circleMap_zero_re, circleMap_zero_im]
-  have hs : (r * cos θ) ^ 2 + (r * sin θ) ^ 2 = r ^ 2 := by
-    nlinarith [cos_sq_add_sin_sq θ, sq_nonneg r]
-  unfold denominator polarDenominator radialComponent
-  rw [hs]
-  ring
-
-theorem polarKernel_eq_norm_weightedKernel (α r θ : ℝ) (w : ℂ) :
-    polarKernel (-(α + 2) / 2) w.re w.im r θ = ‖weightedKernel α (circleMap 0 r θ) w‖ := by
-  rw [polarKernel, polarDenominator_eq_norm_sq, norm_weightedKernel,
-    ← Real.rpow_natCast_mul (norm_nonneg _) 2]
-  congr 1
+theorem column_val (α : ℝ) : column (-(α+2)/2) .v (r,θ) w = ‖weightedKernel α (circleMap 0 r θ) w.val‖ := by
+  change polarDenominator w r θ ^ _ = _
+  rw [polarDenominator_eq_norm_sq, norm_weightedKernel, ← rpow_natCast_mul (norm_nonneg _) 2]
   ring
 
 end BergmanWeakType.Weighted

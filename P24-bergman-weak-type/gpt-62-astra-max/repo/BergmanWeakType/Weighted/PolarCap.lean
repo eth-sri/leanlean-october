@@ -5,7 +5,8 @@ Authors: Yongxi Lin
 -/
 module
 
-public import BergmanWeakType.Weighted.AngularMean
+public import BergmanWeakType.Weighted.PolarPotential
+public import BergmanWeakType.Weighted.NormalizerRadial
 
 /-! # Truncated angular means of polar supersolutions -/
 
@@ -14,71 +15,59 @@ public import BergmanWeakType.Weighted.AngularMean
 noncomputable section
 
 open MeasureTheory Set Real
+open scoped Topology
 
 namespace BergmanWeakType.Weighted
 
-/-- Truncations of a regular periodic polar supersolution have decreasing angular means. -/
-theorem antitoneOn_angularMean_min_of_polar_flux {F Fr Frr Ft Ftt : ℝ → ℝ → ℝ}
-    {w w' : ℝ → ℝ} (c : ℝ)
-    (hF : ContinuousOn (fun p : ℝ × ℝ ↦ F p.1 p.2) (Ico 0 1 ×ˢ univ))
-    (hFr : ContinuousOn (fun p : ℝ × ℝ ↦ Fr p.1 p.2) (Ico 0 1 ×ˢ univ))
-    (hFrr : ContinuousOn (fun p : ℝ × ℝ ↦ Frr p.1 p.2) (Ico 0 1 ×ˢ univ))
-    (hFt : ContinuousOn (fun p : ℝ × ℝ ↦ Ft p.1 p.2) (Ico 0 1 ×ˢ univ))
-    (hFtt : ContinuousOn (fun p : ℝ × ℝ ↦ Ftt p.1 p.2) (Ico 0 1 ×ˢ univ))
-    (hFd : ∀ r ∈ Ioo (0 : ℝ) 1, ∀ θ, HasDerivAt (fun r ↦ F r θ) (Fr r θ) r)
-    (hFrd : ∀ r ∈ Ioo (0 : ℝ) 1, ∀ θ, HasDerivAt (fun r ↦ Fr r θ) (Frr r θ) r)
-    (hFdt : ∀ r ∈ Ioo (0 : ℝ) 1, ∀ θ, HasDerivAt (F r) (Ft r θ) θ)
-    (hFtd : ∀ r ∈ Ioo (0 : ℝ) 1, ∀ θ, HasDerivAt (Ft r) (Ftt r θ) θ)
-    (hperiodF : ∀ r ∈ Ioo (0 : ℝ) 1, F r (2 * π) = F r 0)
-    (hperiodFt : ∀ r ∈ Ioo (0 : ℝ) 1, Ft r (2 * π) = Ft r 0)
-    (hw : ContinuousOn w (Ico 0 1))
-    (hwd : ∀ r ∈ Ioo (0 : ℝ) 1, HasDerivAt w (w' r) r)
-    (hwpos : ∀ r ∈ Ioo (0 : ℝ) 1, 0 < w r)
-    (hineq : ∀ r ∈ Ioo (0 : ℝ) 1, ∀ θ,
-      r * w r * Frr r θ + (w r + r * w' r) * Fr r θ + (w r / r) * Ftt r θ ≤ 0) :
-    AntitoneOn (angularMean (fun r θ ↦ min (F r θ) c)) (Ico 0 1) := by
-  apply antitoneOn_angularMean_min_of_smoothCap
-  · intro r hr
-    apply continuousOn_univ.mp
-    apply hF.comp (continuous_const.prodMk continuous_id).continuousOn
-    exact fun θ _ ↦ ⟨hr, mem_univ θ⟩
-  intro ε hε
-  let d₁ := smoothCapInputDeriv ε c
-  let d₂ := fun u ↦ -(ε ^ 2) / (2 * sqrt ((u - c) ^ 2 + ε ^ 2) ^ 3)
-  have hd₁ : Continuous d₁ := continuous_iff_continuousAt.mpr
-    (fun _ ↦ (hasDerivAt_smoothCapInputDeriv hε).continuousAt)
-  have hd₂ : Continuous d₂ := by
-    dsimp [d₂]
-    apply Continuous.div continuous_const (by fun_prop)
-    intro u
-    have hp : 0 < (u - c) ^ 2 + ε ^ 2 := by positivity
-    exact (mul_pos (by norm_num) (pow_pos (sqrt_pos.mpr hp) _)).ne'
-  have hcap : Continuous (smoothCap ε c) := continuous_iff_continuousAt.mpr
-    (fun _ ↦ (hasDerivAt_smoothCap_input hε).continuousAt)
-  apply antitoneOn_angularMean_of_polar_flux
-    (Fr := fun r θ ↦ d₁ (F r θ) * Fr r θ)
-    (Frr := fun r θ ↦ d₂ (F r θ) * (Fr r θ) ^ 2 + d₁ (F r θ) * Frr r θ)
-    (Ft := fun r θ ↦ d₁ (F r θ) * Ft r θ)
-    (Ftt := fun r θ ↦ d₂ (F r θ) * (Ft r θ) ^ 2 + d₁ (F r θ) * Ftt r θ)
-    (w := w) (w' := w')
-  · exact hcap.comp_continuousOn hF
-  · exact (hd₁.comp_continuousOn hF).mul hFr
-  · exact ((hd₂.comp_continuousOn hF).mul (hFr.pow 2)).add
-      ((hd₁.comp_continuousOn hF).mul hFrr)
-  · exact ((hd₂.comp_continuousOn hF).mul (hFt.pow 2)).add
-      ((hd₁.comp_continuousOn hF).mul hFtt)
-  · intro r hr θ
-    exact (hasDerivAt_smoothCap_input hε).comp r (hFd r hr θ)
-  · intro r hr θ
-    exact hasDerivAt_smoothCap_comp_first hε (hFd r hr θ) (hFrd r hr θ)
-  · intro r hr θ
-    exact hasDerivAt_smoothCap_comp_first hε (hFdt r hr θ) (hFtd r hr θ)
-  · intro r hr
-    rw [hperiodF r hr, hperiodFt r hr]
-  · exact hw
-  · exact hwd
-  · exact hwpos
-  · intro r hr θ
-    exact smoothCap_polar_flux_nonpos hε hr.1 (hwpos r hr) (hineq r hr θ)
+namespace Field
+
+/-- The negative part of a polar subsolution still satisfies radial comparison.
+Indeed, for a smooth increasing concave `g` with `g(0)=0`, the extra terms in
+`L(g ∘ F)` are the concavity times a squared gradient, and the potential times
+`g'(F)F - g(F)`, both nonpositive. Pass to `min x 0` through such `g`. -/
+theorem min_comparison (A H : Field) (α c : ℝ)
+    (L : ∀ r ∈ unitInterval, ∀ t, (A.eval r t).error (α+2) r ≤ 0)
+    (Z : ∀ r ∈ unitInterval, ∀ t, (H.eval r t).error (α+2) r = 0) :
+    AntitoneOn (fun r ↦ angularMean (fun r t ↦ min (A.val .v r t) (c*H.val .v r t)) r / normalizer α r) radii := by
+  let F := A.subScaled H c
+  let G ε r := angularMean (fun u t ↦ smoothCap ε (F.val .v u t) - (-c)*H.val .v u t) r / normalizer α r
+  have smooth ε (he : 0 < ε) : AntitoneOn (G ε) radii := by
+    apply ((F.comp (cap_jet he) (by unfold capDD; fun_prop (disch := intros; positivity))).subScaled H (-c)).mean_comparison α
+    intro r hr t
+    rw [error_subScaled, Z r hr t, mul_zero, sub_zero]
+    have hf : (F.eval r t).error (α+2) r ≤ 0 := by grind [error_subScaled]
+    obtain ⟨hd, hdd, hg⟩ := cap_signs he (F.val .v r t)
+    have h₁ := mul_nonpos_of_nonneg_of_nonpos hd hf
+    have h₂ := mul_nonpos_of_nonpos_of_nonneg hdd (show 0 ≤ F.val .r r t^2 + F.val .t r t^2/r^2 by positivity)
+    have h₃ := mul_nonpos_of_nonneg_of_nonpos (div_nonneg (sq_nonneg (α+2)) (sub_nonneg.mpr (inner_sq hr).le)) (sub_nonpos.mpr hg)
+    dsimp only [comp,Field.eval,Jet.map,Jet.error,rhs] at h₁ ⊢
+    grind
+  have lim r (hr : r ∈ radii) : Filter.Tendsto (fun ε ↦ G ε r) (𝓝[>] 0) (𝓝 (G 0 r)) := by
+    have ct := F.slice_cont .v hr
+    have ch := H.slice_cont .v hr
+    have hc : Continuous (fun ε ↦ angularMean (fun _ t ↦ smoothCap ε (F.val .v r t) - (-c)*H.val .v r t) r) := by
+      apply continuousOn_univ.mp (continuousOn_angularMean  ?_)
+      change ContinuousOn (fun p : ℝ × ℝ ↦ smoothCap p.1 (F.val .v r p.2) - (-c)*H.val .v r p.2) _
+      generalize F.val .v r = f at ct ⊢; generalize H.val .v r = g at ch ⊢
+      unfold smoothCap; fun_prop
+    exact (hc.div_const _).continuousWithinAt
+  intro r hr R hR hrR
+  simpa only [G,F,Field.val,Field.eval,subScaled,smoothCap_zero,neg_mul,sub_neg_eq_add,← min_add_add_right,sub_add_cancel,zero_add] using le_of_tendsto_of_tendsto (lim R hR) (lim r hr)
+    (Filter.Eventually.mono self_mem_nhdsWithin (by aesop))
+
+end Field
+/-- Compare a potential with multiples of the exact boundary solution. -/
+theorem normalized_cap_anti (s : PolarSource) [IsFiniteMeasure s] (α c : ℝ) :
+    AntitoneOn (angularMean (fun r θ ↦ min (s.potential α (circleMap 0 r θ) / normalizer α r) c)) radii := by
+  let q := -(α+2)/2
+  have h := (s.field q).min_comparison (boundarySource.field q) α c
+    (fun r hr t ↦ s.error_nonpos _ (inner_sq hr) hr.1.ne' t)
+    (fun r hr t ↦ boundarySource.error_boundary _ (inner_sq hr) hr.1.ne' t ae_boundary_norm)
+  simp only [q,polarIntegral_boundary_eq_normalizer] at h
+  intro r hr R hR hle
+  have pos x (hx : x ∈ radii) := normalizer_pos α hx
+  simpa only [q,polarIntegral_boundary_eq_normalizer,PolarSource.value,angularMean, ← integral_div,
+    ← min_div_div_right (pos r hr).le, ← min_div_div_right (pos R hR).le, mul_div_cancel_right₀ _ (pos r hr).ne',
+    mul_div_cancel_right₀ _ (pos R hR).ne'] using h hr hR hle
 
 end BergmanWeakType.Weighted

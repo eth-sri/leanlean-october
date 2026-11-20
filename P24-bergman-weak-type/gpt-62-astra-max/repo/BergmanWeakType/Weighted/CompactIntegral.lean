@@ -5,6 +5,7 @@ Authors: Yongxi Lin
 -/
 module
 
+public import BergmanWeakType.Calculus
 public import Mathlib.Analysis.Calculus.ParametricIntegral
 public import Mathlib.MeasureTheory.Integral.IntegrableOn
 public import Mathlib.Topology.Order.Compact
@@ -20,71 +21,43 @@ open scoped Topology
 
 namespace BergmanWeakType.Weighted
 
-theorem integrable_mul_of_continuousOn_compact {X : Type*} [TopologicalSpace X]
-    [T2Space X] [MeasurableSpace X] [OpensMeasurableSpace X]
-    {μ : Measure X} {K : Set X}
-    (hK : IsCompact K) (hμ : ∀ᵐ w ∂μ, w ∈ K) {f g : X → ℝ}
-    (hf : Integrable f μ) (hg : ContinuousOn g K) :
-    Integrable (fun w ↦ g w * f w) μ := by
-  have hm : AEStronglyMeasurable g μ := by
-    simpa only [Measure.restrict_eq_self_of_ae_mem hμ] using
-      hg.aestronglyMeasurable hK.isClosed.measurableSet (μ := μ)
-  obtain ⟨M, hM⟩ := hK.bddAbove_image hg.norm
-  apply hf.bdd_mul hm
-  exact hμ.mono fun w hw ↦ hM (mem_image_of_mem _ hw)
+section
+variable {X A E : Type*} [TopologicalSpace A] [TopologicalSpace X] [T2Space X]
+    [MeasurableSpace X] [OpensMeasurableSpace X] {μ : Measure X} [IsFiniteMeasure μ]
+    [NormedAddCommGroup E] [NormedSpace ℝ E] {K : Set X} (hk : IsCompact K) (hm : ∀ᵐ w ∂μ, w ∈ K)
 
-theorem continuousOn_integral_mul_of_compact {X Y : Type*} [TopologicalSpace X]
-    [T2Space X] [MeasurableSpace X] [OpensMeasurableSpace X]
-    [TopologicalSpace Y] [FirstCountableTopology Y] {μ : Measure X} {K : Set X} {S : Set Y}
-    (hK : IsCompact K) (hμ : ∀ᵐ w ∂μ, w ∈ K) (hS : IsCompact S)
-    {f : X → ℝ} (hf : Integrable f μ) {F : Y → X → ℝ}
-    (hF : ContinuousOn (fun p : Y × X ↦ F p.1 p.2) (S ×ˢ K)) :
-    ContinuousOn (fun z ↦ ∫ w, F z w * f w ∂μ) S := by
-  have hslice {z : Y} (hz : z ∈ S) : ContinuousOn (F z) K :=
-    hF.comp (continuous_const.prodMk continuous_id).continuousOn fun w hw ↦ ⟨hz, hw⟩
-  obtain ⟨M, hM⟩ := (hS.prod hK).bddAbove_image hF.norm
-  apply continuousOn_of_dominated (bound := fun w ↦ M * ‖f w‖)
-    (fun z hz ↦ (integrable_mul_of_continuousOn_compact hK hμ hf (hslice hz)).aestronglyMeasurable)
-    (fun z hz ↦ hμ.mono fun w hw ↦ ?_) (hf.norm.const_mul M)
-    (hμ.mono fun w hw ↦ ?_)
-  · rw [norm_mul]
-    exact mul_le_mul_of_nonneg_right
-      (hM (mem_image_of_mem (fun p : Y × X ↦ ‖F p.1 p.2‖)
-        (show (z, w) ∈ S ×ˢ K from ⟨hz, hw⟩))) (norm_nonneg _)
-  · exact (hF.comp (continuous_id.prodMk continuous_const).continuousOn
-      (fun z hz ↦ ⟨hz, hw⟩)).mul_const _
+include hk hm
 
-/-- Continuous kernel derivatives on a compact parameter cylinder can be integrated against any
-integrable density. Compactness supplies the common domination needed by differentiation. -/
-theorem hasDerivAt_integral_mul_of_continuousOn_compact {X : Type*} [TopologicalSpace X]
-    [T2Space X] [MeasurableSpace X] [OpensMeasurableSpace X]
-    {μ : Measure X} {K : Set X}
-    (hK : IsCompact K) (hμ : ∀ᵐ w ∂μ, w ∈ K) {S : Set ℝ}
-    (hS : IsCompact S) {x : ℝ} (hSx : S ∈ nhds x) {f : X → ℝ}
-    (hf : Integrable f μ) {F F' : ℝ → X → ℝ}
-    (hF : ContinuousOn (fun p : ℝ × X ↦ F p.1 p.2) (S ×ˢ K))
-    (hF' : ContinuousOn (fun p : ℝ × X ↦ F' p.1 p.2) (S ×ˢ K))
-    (hderiv : ∀ w ∈ K, ∀ u ∈ S, HasDerivAt (fun v ↦ F v w) (F' u w) u) :
-    Integrable (fun w ↦ F' x w * f w) μ ∧
-      HasDerivAt (fun u ↦ ∫ w, F u w * f w ∂μ) (∫ w, F' x w * f w ∂μ) x := by
-  have hx : x ∈ S := mem_of_mem_nhds hSx
-  have hslice {G : ℝ → X → ℝ}
-      (hG : ContinuousOn (fun p : ℝ × X ↦ G p.1 p.2) (S ×ˢ K))
-      {u : ℝ} (hu : u ∈ S) : ContinuousOn (G u) K := by
-    exact hG.comp (continuous_const.prodMk continuous_id).continuousOn fun w hw ↦ ⟨hu, hw⟩
-  obtain ⟨M, hM⟩ := (hS.prod hK).bddAbove_image hF'.norm
-  refine hasDerivAt_integral_of_dominated_loc_of_deriv_le
-    (F := fun u w ↦ F u w * f w) (F' := fun u w ↦ F' u w * f w) hSx ?_
-    (integrable_mul_of_continuousOn_compact hK hμ hf (hslice hF hx))
-    (integrable_mul_of_continuousOn_compact hK hμ hf (hslice hF' hx)).aestronglyMeasurable
-    (bound := fun w ↦ M * ‖f w‖) ?_ (hf.norm.const_mul M) ?_
-  · exact Filter.mem_of_superset hSx fun u hu ↦
-      (integrable_mul_of_continuousOn_compact hK hμ hf (hslice hF hu)).aestronglyMeasurable
-  · exact hμ.mono fun w hw u hu ↦ by
-      rw [norm_mul]
-      exact mul_le_mul_of_nonneg_right
-        (hM (mem_image_of_mem (fun p : ℝ × X ↦ ‖F' p.1 p.2‖)
-          (show (u, w) ∈ S ×ˢ K from ⟨hu, hw⟩))) (norm_nonneg _)
-  · exact hμ.mono fun w hw u hu ↦ (hderiv w hw u hu).mul_const (f w)
+theorem integrable_on_support {f : X → E} (hc : ContinuousOn f K) : Integrable f μ := by
+  rw [← Measure.restrict_eq_self_of_ae_mem hm]; exact hc.integrableOn_compact hk
 
+/-- Continuity on the support compact suffices; no extension of the integrand
+across its boundary is required. -/
+theorem continuousOn_average {S : Set A} {f : A → X → E} (hc : ContinuousOn f.uncurry (S ×ˢ K)) :
+    ContinuousOn (fun p ↦ ∫ w, f p w ∂μ) S := by
+  let := isCompact_iff_compactSpace.mp hk
+  have h := continuousOn_integral_of_compact_support (μ := μ.comap ((↑) : K → X)) isCompact_univ
+    (f := fun p w ↦ f p w.val) (hc.comp (f := fun z : A × K ↦ (z.1,z.2.val)) (by fun_prop)
+      (s := S ×ˢ univ) (fun z hz ↦ (by simp_all))) (by simp)
+  simp_all [integral_subtype_comap, hk.isClosed.measurableSet, Measure.restrict_eq_self_of_ae_mem]
+
+/-- Differentiate an integral supported on a compact set: continuous derivatives on
+one compact parameter neighborhood have a common constant majorant. -/
+theorem integral_jet {ι : Type*} {S : Set A}
+    {F : ι → A → X → ℝ} (hc : ∀ i, ContinuousOn (F i).uncurry (S ×ˢ K))
+    {g : ℝ → A} (hg : Continuous g) {x : ℝ} (hx : g ⁻¹' S ∈ 𝓝 x) {i j k : ι}
+    (h : ∀ w ∈ K, ∀ u, g u ∈ S → JetAt (fun y ↦ F i (g y) w) (fun y ↦ F j (g y) w) (F k (g u) w) u) :
+    JetAt (fun y ↦ ∫ w, F i (g y) w ∂μ) (fun y ↦ ∫ w, F j (g y) w ∂μ) (∫ w, F k (g x) w ∂μ) x := by
+  obtain ⟨T, ht, hs, hcT⟩ := local_compact_nhds hx
+  have hi i {u : ℝ} (hu : u ∈ T) :=
+    integrable_on_support hk hm ((hc i).comp (continuous_const.prodMk continuous_id).continuousOn fun _ hw ↦ ⟨hs hu,hw⟩)
+  have D i j (d : ∀ w ∈ K, ∀ u, g u ∈ S → HasDerivAt (fun y ↦ F i (g y) w) (F j (g u) w) u) :
+      HasDerivAt (fun y ↦ ∫ w, F i (g y) w ∂μ) (∫ w, F j (g x) w ∂μ) x := by
+    obtain ⟨M,hM⟩ := ((hcT.image hg).prod hk).bddAbove_image ((hc j).mono (by grind)).norm
+    exact (hasDerivAt_integral_of_dominated_loc_of_deriv_le ht
+      (Filter.mem_of_superset ht fun _ hu ↦ (hi i hu).1) (by simp_all [mem_of_mem_nhds]) (hi j (mem_of_mem_nhds ht)).1
+      (hm.mono (by aesop)) (integrable_const M) (hm.mono (by grind))).2
+  simp_all [JetAt]
+
+end
 end BergmanWeakType.Weighted

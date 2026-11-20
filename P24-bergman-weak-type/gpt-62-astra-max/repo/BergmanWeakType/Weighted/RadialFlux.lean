@@ -7,8 +7,10 @@ module
 
 public import Mathlib.Analysis.Calculus.Deriv.MeanValue
 public import Mathlib.MeasureTheory.Integral.IntervalIntegral.FundThmCalculus
+public import Mathlib.Analysis.SpecialFunctions.Pow.Deriv
 public import Mathlib.Tactic.Linarith
 public import BergmanWeakType.Weighted.SmoothCap
+public import BergmanWeakType.Weighted.PolarField
 
 /-! # Radial flux and decreasing circular means
 
@@ -21,92 +23,74 @@ open MeasureTheory Set
 
 namespace BergmanWeakType.Weighted
 
-/-- A periodic derivative has zero integral over one period. -/
-theorem integral_periodic_derivative_eq_zero {g g' : ℝ → ℝ} {T : ℝ}
-    (hT : 0 ≤ T) (hg : ∀ θ ∈ Icc 0 T, HasDerivAt g (g' θ) θ)
-    (hgi : IntervalIntegrable g' volume 0 T) (hperiod : g T = g 0) :
-    (∫ θ in (0 : ℝ)..T, g' θ) = 0 := by
-  rw [intervalIntegral.integral_eq_sub_of_hasDerivAt
-    (by simpa only [uIcc_of_le hT] using hg) hgi, hperiod, sub_self]
+/-- Integrating factor for the radial drift. -/
+noncomputable def driftWeight (k r : ℝ) := (1 - r ^ 2) ^ k
 
-/-- A nonincreasing radial flux vanishing at the origin forces the mean to decrease. -/
-theorem antitoneOn_of_radial_flux {M M' w F F' : ℝ → ℝ}
-    (hM : ContinuousOn M (Ico 0 1))
-    (hMd : ∀ r ∈ Ioo (0 : ℝ) 1, HasDerivAt M (M' r) r)
-    (hw : ∀ r ∈ Ioo (0 : ℝ) 1, 0 < w r)
-    (hF : ContinuousOn F (Ico 0 1)) (hFzero : F 0 = 0)
-    (hFd : ∀ r ∈ Ioo (0 : ℝ) 1, HasDerivAt F (F' r) r)
-    (hFnonpos : ∀ r ∈ Ioo (0 : ℝ) 1, F' r ≤ 0)
-    (hflux : ∀ r ∈ Ioo (0 : ℝ) 1, F r = r * w r * M' r) :
-    AntitoneOn M (Ico 0 1) := by
-  have hanti : AntitoneOn F (Ico 0 1) := by
-    apply antitoneOn_of_hasDerivWithinAt_nonpos (convex_Ico 0 1) hF
-    · intro r hr
-      exact (hFd r (by simpa only [interior_Ico] using hr)).hasDerivWithinAt
-    · simpa only [interior_Ico] using hFnonpos
-  apply antitoneOn_of_hasDerivWithinAt_nonpos (convex_Ico 0 1) hM
-  · intro r hr
-    exact (hMd r (by simpa only [interior_Ico] using hr)).hasDerivWithinAt
-  · intro r hr
-    have hr' : r ∈ Ioo (0 : ℝ) 1 := by simpa only [interior_Ico] using hr
-    have hle := hanti (show (0 : ℝ) ∈ Ico 0 1 by norm_num)
-      ⟨hr'.1.le, hr'.2⟩ hr'.1.le
-    rw [hFzero, hflux r hr'] at hle
-    exact nonpos_of_mul_nonpos_right hle (mul_pos hr'.1 (hw r hr'))
+theorem driftWeight_pos (k : ℝ) {r : ℝ} (hr : r ^ 2 < 1) : 0 < driftWeight k r :=
+  Real.rpow_pos_of_pos (sub_pos.mpr hr) _
 
-/-- Integration of the angular divergence removes it from the radial flux inequality. -/
-theorem integral_radial_term_nonpos {A B : ℝ → ℝ} {T c : ℝ}
-    (hT : 0 ≤ T) (hA : IntervalIntegrable A volume 0 T)
-    (hB : IntervalIntegrable B volume 0 T) (hBzero : (∫ θ in (0 : ℝ)..T, B θ) = 0)
-    (hineq : ∀ θ ∈ Icc 0 T, A θ + c * B θ ≤ 0) :
-    (∫ θ in (0 : ℝ)..T, A θ) ≤ 0 := by
-  have hi := intervalIntegral.integral_mono_on hT (hA.add (hB.const_mul c))
-    (intervalIntegrable_const (c := (0 : ℝ))) hineq
-  rw [intervalIntegral.integral_add hA (hB.const_mul c),
-    intervalIntegral.integral_const_mul, hBzero, mul_zero, add_zero,
-    intervalIntegral.integral_zero] at hi
-  exact hi
+theorem driftWeight_hasDerivAt (k : ℝ) {r : ℝ} (hr : r ^ 2 < 1) :
+    HasDerivAt (driftWeight k) (-(2*k*r/(1-r^2)) * driftWeight k r) r := by
+  unfold driftWeight
+  scalar_deriv
+  grind [Real.rpow_sub_one]
 
-/-- Differentiating the first derivative of a smooth truncation of a one-variable function. -/
-theorem hasDerivAt_smoothCap_comp_first {ε c x : ℝ} {U U' : ℝ → ℝ} {U'' : ℝ}
-    (hε : 0 < ε) (hU : HasDerivAt U (U' x) x) (hU' : HasDerivAt U' U'' x) :
-    HasDerivAt (fun y ↦ smoothCapInputDeriv ε c (U y) * U' y)
-      ((-(ε ^ 2) / (2 * Real.sqrt ((U x - c) ^ 2 + ε ^ 2) ^ 3)) * (U' x) ^ 2 +
-        smoothCapInputDeriv ε c (U x) * U'') x := by
-  convert ((hasDerivAt_smoothCapInputDeriv (c := c) hε).comp x hU).mul hU' using 1 <;>
-    simp only [Function.comp_def, Pi.mul_def]
-  ring
+@[fun_prop] theorem continuousOn_driftWeight (k : ℝ) : ContinuousOn (driftWeight k) (Ico 0 1) :=
+  fun r hr ↦ (driftWeight_hasDerivAt k (square_lt_one hr)).continuousAt.continuousWithinAt
 
-/-- Increasing concave truncation preserves the polar divergence inequality. -/
-theorem smoothCap_polar_flux_nonpos {ε c u r w w' ur urr uθ uθθ : ℝ}
-    (hε : 0 < ε) (hr : 0 < r) (hw : 0 < w)
-    (hL : r * w * urr + (w + r * w') * ur + (w / r) * uθθ ≤ 0) :
-    let d₁ := smoothCapInputDeriv ε c u
-    let d₂ := -(ε ^ 2) / (2 * Real.sqrt ((u - c) ^ 2 + ε ^ 2) ^ 3)
-    r * w * (d₂ * ur ^ 2 + d₁ * urr) +
-      (w + r * w') * (d₁ * ur) + (w / r) * (d₂ * uθ ^ 2 + d₁ * uθθ) ≤ 0 := by
-  dsimp only
-  have hd₁ := (smoothCapInputDeriv_mem_Icc (c := c) (x := u) hε).1
-  have hd₂ := smoothCap_secondDeriv_nonpos (ε := ε) (c := c) (x := u)
-  have hfirst := mul_nonpos_of_nonneg_of_nonpos hd₁ hL
-  have hsecond := mul_nonpos_of_nonpos_of_nonneg hd₂
-    (show 0 ≤ r * w * ur ^ 2 + (w / r) * uθ ^ 2 by positivity)
-  nlinarith
+/-- First and second radial derivatives in the open interval; only the first
+derivative and the function itself need to extend continuously to zero. -/
+structure Ray where
+  v : ℝ → ℝ
+  d : ℝ → ℝ
+  e : ℝ → ℝ
+  cont : ContinuousOn v radii
+  contD : ContinuousOn d radii
+  jet : ∀ r ∈ unitInterval, JetAt v d (e r) r
 
-/-- Dividing an elliptic supersolution by a positive radial solution removes the potential term.
-The displayed first and second derivatives are the ordinary quotient-rule expressions. -/
-theorem quotient_polar_operator_nonpos {F Fr Frr Fθθ J Jr Jrr a b r : ℝ}
-    (hJ : 0 < J) (hr : r ≠ 0) (hJode : Jrr + a * Jr + b * J = 0)
-    (hFode : Frr + a * Fr + Fθθ / r ^ 2 + b * F ≤ 0) :
-    (Frr / J - F * Jrr / J ^ 2 - 2 * Fr * Jr / J ^ 2 + 2 * F * Jr ^ 2 / J ^ 3) +
-      (a + 2 * Jr / J) * ((Fr * J - F * Jr) / J ^ 2) + (Fθθ / J) / r ^ 2 ≤ 0 := by
-  have heq : J * ((Frr / J - F * Jrr / J ^ 2 - 2 * Fr * Jr / J ^ 2 +
-        2 * F * Jr ^ 2 / J ^ 3) + (a + 2 * Jr / J) * ((Fr * J - F * Jr) / J ^ 2) +
-        (Fθθ / J) / r ^ 2) =
-      Frr + a * Fr + Fθθ / r ^ 2 + b * F - (F / J) * (Jrr + a * Jr + b * J) := by
-    field_simp [hJ.ne', hr]
-    ring
-  rw [hJode, mul_zero, sub_zero] at heq
-  exact nonpos_of_mul_nonpos_right (heq.trans_le hFode) hJ
+attribute [fun_prop] Ray.cont Ray.contD
 
+theorem radial_antitone {f : ℝ → ℝ} (hc : ContinuousOn f radii)
+    (h : ∀ r ∈ unitInterval, ∃ d ≤ 0, HasDerivAt f d r) : AntitoneOn f radii := by
+  apply antitoneOn_of_deriv_nonpos (convex_Ico 0 1) hc <;> rw [interior_Ico] <;>
+    intro r hr <;> obtain ⟨d,hd,H⟩ := h r hr
+  · exact H.differentiableAt.differentiableWithinAt
+  · rwa [H.deriv]
+
+namespace Ray
+
+noncomputable def err (A : Ray) (k x : ℝ) := A.e x - rhs k x (A.v x) (A.d x)
+
+/-- One weighted Wronskian treats both ordinary comparison (`b = a`) and
+Euler's complementary parameters (`a+b = 2`). In the latter case the
+extra logarithmic derivative accounts for the factor `(1-x²)^((a-b)/2)`. -/
+theorem compare (A B : Ray) (a b c s : ℝ) (shift : 2*c = a-b) (params : c*(a+b-2) = 0)
+    (pos : ∀ r ∈ radii, 0 < B.v r)
+    (sub : ∀ r ∈ unitInterval, s*(B.v r*A.err a r - A.v r*B.err b r) ≤ 0) :
+    AntitoneOn (fun r ↦ s * driftWeight c r * A.v r / B.v r) radii := by
+  let w := driftWeight ((a+b)/2)
+  let v := driftWeight c
+  let D r := A.d r*B.v r - A.v r*B.d r - (a-b)*r/(1-r^2)*A.v r*B.v r
+  let P r := r*w r*(s*D r)
+  have nz r (hr : r ∈ radii) := (sub_pos.mpr (square_lt_one hr)).ne'
+  have H : AntitoneOn P radii := by
+    apply radial_antitone (by fun_prop)
+    intro r hr
+    have := driftWeight_pos ((a+b)/2) (inner_sq hr)
+    refine ⟨r*w r*(s*(B.v r*A.err a r-A.v r*B.err b r)), mul_nonpos_of_nonneg_of_nonpos (by have := hr.1; positivity) (sub r hr), ?_⟩
+    have hr' := nz r (Ioo_subset_Ico_self hr)
+    ; scalar_deriv [(A.jet r hr).1,(A.jet r hr).2,(B.jet r hr).1,(B.jet r hr).2,driftWeight_hasDerivAt ((a+b)/2) (inner_sq hr)]
+    dsimp only [err,rhs]; field_simp; grind
+  apply radial_antitone (by fun_prop (disch := grind))
+  intro r hr
+  have hp := driftWeight_pos c (inner_sq hr)
+  have h := H (by simp) (Ioo_subset_Ico_self hr) hr.1.le
+  simp [P] at h
+  have hd := nonpos_of_mul_nonpos_right h (mul_pos hr.1 (driftWeight_pos ((a+b)/2) (inner_sq hr)))
+  have hb := (pos r (Ioo_subset_Ico_self hr)).ne'
+  refine ⟨v r*(s*D r)/B.v r^2, div_nonpos_of_nonpos_of_nonneg (by nlinarith) (sq_nonneg _), ?_⟩
+  scalar_deriv [(A.jet r hr).1,(B.jet r hr).1,driftWeight_hasDerivAt c (inner_sq hr)]
+  grind
+
+end Ray
 end BergmanWeakType.Weighted

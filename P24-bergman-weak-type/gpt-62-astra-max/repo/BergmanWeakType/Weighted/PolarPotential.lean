@@ -13,308 +13,60 @@ public import BergmanWeakType.Weighted.PolarKernel
 
 noncomputable section
 
-open MeasureTheory Set Real
+open MeasureTheory Set Real Metric
 open scoped Topology
 
 namespace BergmanWeakType.Weighted
 
-variable {X : Type*} [TopologicalSpace X]
+/-- A finite positive source, including sources on the boundary of the disk. -/
+abbrev PolarSource := Measure ClosedDisk
 
-def polarSourceDomain (K : Set X) : Set ((ℝ × ℝ) × X) :=
-  {p | p.1.1 ^ 2 < 1 ∧ p.2 ∈ K}
+namespace PolarSource
+variable (s : PolarSource) [IsFiniteMeasure s] (q : ℝ)
 
-section Continuity
+/-- Evaluate the positive kernel on a finite source, including boundary sources. -/
+def potential (α : ℝ) (z : ℂ) := ∫ w, ‖weightedKernel α z w.val‖ ∂s
 
-variable {K : Set X} {a b : X → ℝ}
-  (ha : ContinuousOn a K) (hb : ContinuousOn b K)
-  (hsource : ∀ w ∈ K, a w ^ 2 + b w ^ 2 ≤ 1)
+@[fun_prop] theorem measurable_potential (α : ℝ) : Measurable (s.potential α) :=
+  (StronglyMeasurable.integral_prod_right' (f := fun p : ℂ × ClosedDisk ↦ ‖weightedKernel α p.1 p.2.val‖) (by measurability)).measurable
 
-include ha hb
+def avg (i : Part) (p : ℝ × ℝ) := ∫ w, column q i p w ∂s
 
-theorem continuousOn_radialComponent_source :
-    ContinuousOn (fun p : (ℝ × ℝ) × X ↦ radialComponent (a p.2) (b p.2) p.1.2)
-      (polarSourceDomain K) := by
-  have ha' : ContinuousOn (fun p : (ℝ × ℝ) × X ↦ a p.2) (polarSourceDomain K) :=
-    ha.comp continuous_snd.continuousOn (fun p hp ↦ hp.2)
-  have hb' : ContinuousOn (fun p : (ℝ × ℝ) × X ↦ b p.2) (polarSourceDomain K) :=
-    hb.comp continuous_snd.continuousOn (fun p hp ↦ hp.2)
-  exact (ha'.mul (Real.continuous_cos.comp (continuous_snd.comp continuous_fst)).continuousOn).add
-    (hb'.mul (Real.continuous_sin.comp (continuous_snd.comp continuous_fst)).continuousOn)
+theorem integrable_column (i : Part) {p : ℝ × ℝ} (hp : p ∈ cylinder) : Integrable (column q i p) s := by
+  apply Continuous.integrable_of_hasCompactSupport _ (.of_compactSpace _)
+  apply continuousOn_univ.mp ((column_continuous q i).comp (continuous_const.prodMk continuous_id).continuousOn _)
+  simp_all
 
-theorem continuousOn_angularComponent_source :
-    ContinuousOn (fun p : (ℝ × ℝ) × X ↦ angularComponent (a p.2) (b p.2) p.1.2)
-      (polarSourceDomain K) := by
-  have ha' : ContinuousOn (fun p : (ℝ × ℝ) × X ↦ a p.2) (polarSourceDomain K) :=
-    ha.comp continuous_snd.continuousOn (fun p hp ↦ hp.2)
-  have hb' : ContinuousOn (fun p : (ℝ × ℝ) × X ↦ b p.2) (polarSourceDomain K) :=
-    hb.comp continuous_snd.continuousOn (fun p hp ↦ hp.2)
-  exact (hb'.mul (Real.continuous_cos.comp (continuous_snd.comp continuous_fst)).continuousOn).sub
-    (ha'.mul (Real.continuous_sin.comp (continuous_snd.comp continuous_fst)).continuousOn)
+/-- Continuity and all pure derivatives commute with integration over the compact source disk. -/
+def field : Field where
+  get p i := s.avg q i p
+  cont i := (continuousOn_integral_of_compact_support (μ := s) isCompact_univ (column_continuous q i) (by simp)).mono
+    fun p hp ↦ square_lt_one hp.1
+  jet l x hx := integral_jet isCompact_univ (by simp) (column_continuous q) l.cont
+    ((isOpen_lt ((continuous_fst.comp l.cont).pow 2) continuous_const).mem_nhds hx)
+    (fun w _ u ↦ column_jet w q l u)
+  period i x := by simp [avg,column_period]
 
-theorem continuousOn_polarDenominator_source :
-    ContinuousOn (fun p : (ℝ × ℝ) × X ↦ polarDenominator (a p.2) (b p.2) p.1.1 p.1.2)
-      (polarSourceDomain K) := by
-  have ha' : ContinuousOn (fun p : (ℝ × ℝ) × X ↦ a p.2) (polarSourceDomain K) :=
-    ha.comp continuous_snd.continuousOn (fun p hp ↦ hp.2)
-  have hb' : ContinuousOn (fun p : (ℝ × ℝ) × X ↦ b p.2) (polarSourceDomain K) :=
-    hb.comp continuous_snd.continuousOn (fun p hp ↦ hp.2)
-  have hr : ContinuousOn (fun p : (ℝ × ℝ) × X ↦ p.1.1) (polarSourceDomain K) :=
-    (continuous_fst.comp continuous_fst).continuousOn
-  exact (((ha'.pow 2).add (hb'.pow 2)).mul (hr.pow 2)).sub
-    ((hr.const_mul 2).mul (continuousOn_radialComponent_source ha hb)) |>.add_const 1
+theorem value (α r t : ℝ) : (s.field (-(α+2)/2)).val .v r t = s.potential α (circleMap 0 r t) := by
+  simp only [Field.val,Field.eval,field,avg,column_val,potential]
 
-include hsource
+private theorem error_integral (k : ℝ) {x : ℝ} (hx : x^2 < 1) (θ : ℝ) :
+    (((s.field (-k/2)).eval x θ).error k x) = ∫ w, Jet.error (fun i ↦ column (-k/2) i (x,θ) w) k x ∂s := by
+  have hi i := s.integrable_column (-k/2) i (p := (x,θ)) hx
+  simp (disch := fun_prop) [Jet.error, rhs, field, avg, integral_sub, integral_add, integral_div, integral_const_mul]
 
-theorem continuousOn_polarKernel_source (q : ℝ) :
-    ContinuousOn (fun p : (ℝ × ℝ) × X ↦ polarKernel q (a p.2) (b p.2) p.1.1 p.1.2)
-      (polarSourceDomain K) := by
-  apply (continuousOn_polarDenominator_source ha hb).rpow_const
-  intro p hp
-  exact Or.inl (polarDenominator_pos hp.1 (hsource p.2 hp.2) p.1.2).ne'
+theorem error_nonpos (k : ℝ) {x : ℝ} (hx : x^2 < 1) (hn : x ≠ 0) (θ : ℝ) :
+    ((s.field (-k/2)).eval x θ).error k x ≤ 0 := by
+  rw [s.error_integral k hx θ]; apply integral_nonpos; intro w; dsimp only [Pi.zero_apply]
+  rw [column_equation w x θ k hx hn, neg_div, neg_mul, neg_nonpos]
+  have := polarDenominator_pos w x θ hx
+  have := sub_nonneg.mpr (unit_sq w)
+  change 0 ≤ _ * polarDenominator w x θ ^ (-k/2); positivity
 
-theorem continuousOn_polarKernelR_source (q : ℝ) :
-    ContinuousOn (fun p : (ℝ × ℝ) × X ↦ polarKernelR q (a p.2) (b p.2) p.1.1 p.1.2)
-      (polarSourceDomain K) := by
-  have ha' : ContinuousOn (fun p : (ℝ × ℝ) × X ↦ a p.2) (polarSourceDomain K) :=
-    ha.comp continuous_snd.continuousOn (fun p hp ↦ hp.2)
-  have hb' : ContinuousOn (fun p : (ℝ × ℝ) × X ↦ b p.2) (polarSourceDomain K) :=
-    hb.comp continuous_snd.continuousOn (fun p hp ↦ hp.2)
-  have hr : ContinuousOn (fun p : (ℝ × ℝ) × X ↦ p.1.1) (polarSourceDomain K) :=
-    (continuous_fst.comp continuous_fst).continuousOn
-  exact (((((ha'.pow 2).add (hb'.pow 2)).mul hr).sub
-    (continuousOn_radialComponent_source ha hb)).const_mul (2 * q)).mul
-    (continuousOn_polarKernel_source ha hb hsource (q - 1))
+theorem error_boundary (k : ℝ) {x : ℝ} (hx : x^2 < 1) (hn : x ≠ 0) (θ : ℝ)
+    (hb : ∀ᵐ w ∂s, ‖w.val‖ = 1) : ((s.field (-k/2)).eval x θ).error k x = 0 := by
+  rw [s.error_integral k hx θ]; apply integral_eq_zero_of_ae
+  filter_upwards [hb] with w hw; simp_all [column_equation]
 
-theorem continuousOn_polarKernelRR_source (q : ℝ) :
-    ContinuousOn (fun p : (ℝ × ℝ) × X ↦ polarKernelRR q (a p.2) (b p.2) p.1.1 p.1.2)
-      (polarSourceDomain K) := by
-  have ha' : ContinuousOn (fun p : (ℝ × ℝ) × X ↦ a p.2) (polarSourceDomain K) :=
-    ha.comp continuous_snd.continuousOn (fun p hp ↦ hp.2)
-  have hb' : ContinuousOn (fun p : (ℝ × ℝ) × X ↦ b p.2) (polarSourceDomain K) :=
-    hb.comp continuous_snd.continuousOn (fun p hp ↦ hp.2)
-  have hr : ContinuousOn (fun p : (ℝ × ℝ) × X ↦ p.1.1) (polarSourceDomain K) :=
-    (continuous_fst.comp continuous_fst).continuousOn
-  exact ((((ha'.pow 2).add (hb'.pow 2)).const_mul (2 * q)).mul
-    (continuousOn_polarKernel_source ha hb hsource (q - 1)) |>.add
-    ((((((ha'.pow 2).add (hb'.pow 2)).mul hr).sub
-      (continuousOn_radialComponent_source ha hb)).pow 2).const_mul (4 * q * (q - 1)) |>.mul
-        (continuousOn_polarKernel_source ha hb hsource (q - 2))))
-
-theorem continuousOn_polarKernelT_source (q : ℝ) :
-    ContinuousOn (fun p : (ℝ × ℝ) × X ↦ polarKernelT q (a p.2) (b p.2) p.1.1 p.1.2)
-      (polarSourceDomain K) := by
-  have hr : ContinuousOn (fun p : (ℝ × ℝ) × X ↦ p.1.1) (polarSourceDomain K) :=
-    (continuous_fst.comp continuous_fst).continuousOn
-  exact ((hr.const_mul (-2 * q)).mul (continuousOn_angularComponent_source ha hb)).mul
-    (continuousOn_polarKernel_source ha hb hsource (q - 1))
-
-theorem continuousOn_polarKernelTT_source (q : ℝ) :
-    ContinuousOn (fun p : (ℝ × ℝ) × X ↦ polarKernelTT q (a p.2) (b p.2) p.1.1 p.1.2)
-      (polarSourceDomain K) := by
-  have hr : ContinuousOn (fun p : (ℝ × ℝ) × X ↦ p.1.1) (polarSourceDomain K) :=
-    (continuous_fst.comp continuous_fst).continuousOn
-  exact (((hr.const_mul (2 * q)).mul (continuousOn_radialComponent_source ha hb)).mul
-    (continuousOn_polarKernel_source ha hb hsource (q - 1))).add
-    ((((hr.pow 2).const_mul (4 * q * (q - 1))).mul
-      ((continuousOn_angularComponent_source ha hb).pow 2)).mul
-      (continuousOn_polarKernel_source ha hb hsource (q - 2)))
-
-end Continuity
-
-section Integration
-
-variable [T2Space X] [MeasurableSpace X] [OpensMeasurableSpace X]
-
-def polarIntegral (H : ℝ → ℝ → ℝ → ℝ → ℝ) (a b : X → ℝ)
-    (μ : Measure X) (f : X → ℝ) (r θ : ℝ) : ℝ :=
-  ∫ w, H (a w) (b w) r θ * f w ∂μ
-
-variable {K : Set X} {a b : X → ℝ} {μ : Measure X} {f : X → ℝ}
-  (hK : IsCompact K) (hμ : ∀ᵐ w ∂μ, w ∈ K) (hf : Integrable f μ)
-
-include hK hμ hf
-
-theorem integrable_polarIntegral_kernel {H : ℝ → ℝ → ℝ → ℝ → ℝ}
-    (hH : ContinuousOn (fun p : (ℝ × ℝ) × X ↦ H (a p.2) (b p.2) p.1.1 p.1.2)
-      (polarSourceDomain K)) {r : ℝ} (hr : r ^ 2 < 1) (θ : ℝ) :
-    Integrable (fun w ↦ H (a w) (b w) r θ * f w) μ := by
-  apply integrable_mul_of_continuousOn_compact hK hμ hf
-  exact hH.comp ((continuous_const (y := (r, θ))).prodMk continuous_id).continuousOn
-    (fun w hw ↦ ⟨hr, hw⟩)
-
-theorem continuousOn_polarIntegral {H : ℝ → ℝ → ℝ → ℝ → ℝ}
-    (hH : ContinuousOn (fun p : (ℝ × ℝ) × X ↦ H (a p.2) (b p.2) p.1.1 p.1.2)
-      (polarSourceDomain K)) {S : Set (ℝ × ℝ)} (hS : IsCompact S)
-    (hSr : ∀ p ∈ S, p.1 ^ 2 < 1) :
-    ContinuousOn (fun p : ℝ × ℝ ↦ polarIntegral H a b μ f p.1 p.2) S := by
-  apply continuousOn_integral_mul_of_compact hK hμ hS hf
-  exact hH.mono (fun p hp ↦ ⟨hSr p.1 hp.1, hp.2⟩)
-
-theorem continuousOn_polarIntegral_radius {H : ℝ → ℝ → ℝ → ℝ → ℝ}
-    (hH : ContinuousOn (fun p : (ℝ × ℝ) × X ↦ H (a p.2) (b p.2) p.1.1 p.1.2)
-      (polarSourceDomain K)) :
-    ContinuousOn (fun p : ℝ × ℝ ↦ polarIntegral H a b μ f p.1 p.2)
-      {p | p.1 ^ 2 < 1} := by
-  intro p hp
-  obtain ⟨S, hS, hpS, hsub⟩ := exists_compact_subset
-    (isOpen_lt (continuous_fst.pow 2) continuous_const) hp
-  exact ((continuousOn_polarIntegral hK hμ hf hH hS hsub).continuousAt
-    (mem_interior_iff_mem_nhds.mp hpS)).continuousWithinAt
-
-theorem continuousOn_polarIntegral_unit {H : ℝ → ℝ → ℝ → ℝ → ℝ}
-    (hH : ContinuousOn (fun p : (ℝ × ℝ) × X ↦ H (a p.2) (b p.2) p.1.1 p.1.2)
-      (polarSourceDomain K)) :
-    ContinuousOn (fun p : ℝ × ℝ ↦ polarIntegral H a b μ f p.1 p.2)
-      (Ico 0 1 ×ˢ univ) := by
-  apply (continuousOn_polarIntegral_radius hK hμ hf hH).mono
-  rintro ⟨r, θ⟩ ⟨hr, _⟩
-  exact (sq_lt_one_iff_abs_lt_one r).mpr (abs_lt.mpr ⟨by linarith [hr.1], hr.2⟩)
-
-theorem polarIntegral_hasDerivAt_r {H H' : ℝ → ℝ → ℝ → ℝ → ℝ}
-    (hH : ContinuousOn (fun p : (ℝ × ℝ) × X ↦ H (a p.2) (b p.2) p.1.1 p.1.2)
-      (polarSourceDomain K))
-    (hH' : ContinuousOn (fun p : (ℝ × ℝ) × X ↦ H' (a p.2) (b p.2) p.1.1 p.1.2)
-      (polarSourceDomain K))
-    (hd : ∀ w ∈ K, ∀ r θ : ℝ, r ^ 2 < 1 →
-      HasDerivAt (fun u ↦ H (a w) (b w) u θ) (H' (a w) (b w) r θ) r)
-    {r : ℝ} (hr : r ^ 2 < 1) (θ : ℝ) :
-    HasDerivAt (fun u ↦ polarIntegral H a b μ f u θ) (polarIntegral H' a b μ f r θ) r := by
-  obtain ⟨S, hS, hSr, htarget⟩ := exists_coordinate_interval (show r ^ 2 + 0 ^ 2 < 1 by simpa using hr)
-  have hmap : MapsTo (fun p : ℝ × X ↦ ((p.1, θ), p.2)) (S ×ˢ K) (polarSourceDomain K) := by
-    intro p hp
-    exact ⟨by simpa using htarget p.1 hp.1, hp.2⟩
-  have hcont : Continuous (fun p : ℝ × X ↦ ((p.1, θ), p.2)) :=
-    (continuous_fst.prodMk continuous_const).prodMk continuous_snd
-  exact (hasDerivAt_integral_mul_of_continuousOn_compact hK hμ hS hSr hf
-    (hH.comp hcont.continuousOn hmap) (hH'.comp hcont.continuousOn hmap)
-    (fun w hw u hu ↦ hd w hw u θ (by simpa using htarget u hu))).2
-
-theorem polarIntegral_hasDerivAt_t {H H' : ℝ → ℝ → ℝ → ℝ → ℝ}
-    (hH : ContinuousOn (fun p : (ℝ × ℝ) × X ↦ H (a p.2) (b p.2) p.1.1 p.1.2)
-      (polarSourceDomain K))
-    (hH' : ContinuousOn (fun p : (ℝ × ℝ) × X ↦ H' (a p.2) (b p.2) p.1.1 p.1.2)
-      (polarSourceDomain K))
-    (hd : ∀ w ∈ K, ∀ r θ : ℝ, r ^ 2 < 1 →
-      HasDerivAt (H (a w) (b w) r) (H' (a w) (b w) r θ) θ)
-    {r : ℝ} (hr : r ^ 2 < 1) (θ : ℝ) :
-    HasDerivAt (polarIntegral H a b μ f r) (polarIntegral H' a b μ f r θ) θ := by
-  have hmap : MapsTo (fun p : ℝ × X ↦ ((r, p.1), p.2))
-      (Metric.closedBall θ 1 ×ˢ K) (polarSourceDomain K) := fun _ hp ↦ ⟨hr, hp.2⟩
-  have hcont : Continuous (fun p : ℝ × X ↦ ((r, p.1), p.2)) :=
-    (continuous_const.prodMk continuous_fst).prodMk continuous_snd
-  exact (hasDerivAt_integral_mul_of_continuousOn_compact hK hμ (isCompact_closedBall θ 1)
-    (Metric.closedBall_mem_nhds θ (by norm_num)) hf
-    (hH.comp hcont.continuousOn hmap) (hH'.comp hcont.continuousOn hmap)
-    (fun w hw u _ ↦ hd w hw r u hr)).2
-
-variable (ha : ContinuousOn a K) (hb : ContinuousOn b K)
-  (hsource : ∀ w ∈ K, a w ^ 2 + b w ^ 2 ≤ 1)
-
-include ha hb hsource
-
-theorem polarIntegral_kernel_hasDerivAt_r (q : ℝ) {r : ℝ} (hr : r ^ 2 < 1) (θ : ℝ) :
-    HasDerivAt (fun u ↦ polarIntegral (polarKernel q) a b μ f u θ)
-      (polarIntegral (polarKernelR q) a b μ f r θ) r :=
-  polarIntegral_hasDerivAt_r hK hμ hf
-    (continuousOn_polarKernel_source ha hb hsource q)
-    (continuousOn_polarKernelR_source ha hb hsource q)
-    (fun w hw s t hs ↦ polarKernel_hasDerivAt_r q (a w) (b w) s t
-      (polarDenominator_pos hs (hsource w hw) t)) hr θ
-
-theorem polarIntegral_kernelR_hasDerivAt_r (q : ℝ) {r : ℝ} (hr : r ^ 2 < 1) (θ : ℝ) :
-    HasDerivAt (fun u ↦ polarIntegral (polarKernelR q) a b μ f u θ)
-      (polarIntegral (polarKernelRR q) a b μ f r θ) r :=
-  polarIntegral_hasDerivAt_r hK hμ hf
-    (continuousOn_polarKernelR_source ha hb hsource q)
-    (continuousOn_polarKernelRR_source ha hb hsource q)
-    (fun w hw s t hs ↦ polarKernelR_hasDerivAt_r q (a w) (b w) s t
-      (polarDenominator_pos hs (hsource w hw) t)) hr θ
-
-theorem polarIntegral_kernel_hasDerivAt_t (q : ℝ) {r : ℝ} (hr : r ^ 2 < 1) (θ : ℝ) :
-    HasDerivAt (polarIntegral (polarKernel q) a b μ f r)
-      (polarIntegral (polarKernelT q) a b μ f r θ) θ :=
-  polarIntegral_hasDerivAt_t hK hμ hf
-    (continuousOn_polarKernel_source ha hb hsource q)
-    (continuousOn_polarKernelT_source ha hb hsource q)
-    (fun w hw s t hs ↦ polarKernel_hasDerivAt_t q (a w) (b w) s t
-      (polarDenominator_pos hs (hsource w hw) t)) hr θ
-
-theorem polarIntegral_kernelT_hasDerivAt_t (q : ℝ) {r : ℝ} (hr : r ^ 2 < 1) (θ : ℝ) :
-    HasDerivAt (polarIntegral (polarKernelT q) a b μ f r)
-      (polarIntegral (polarKernelTT q) a b μ f r θ) θ :=
-  polarIntegral_hasDerivAt_t hK hμ hf
-    (continuousOn_polarKernelT_source ha hb hsource q)
-    (continuousOn_polarKernelTT_source ha hb hsource q)
-    (fun w hw s t hs ↦ polarKernelT_hasDerivAt_t q (a w) (b w) s t
-      (polarDenominator_pos hs (hsource w hw) t)) hr θ
-
-theorem polarIntegral_operator (k : ℝ) {r : ℝ} (hr : r ^ 2 < 1) (θ : ℝ) :
-    polarIntegral (polarKernelRR (-k / 2)) a b μ f r θ +
-      polarIntegral (polarKernelR (-k / 2)) a b μ f r θ / r +
-      polarIntegral (polarKernelTT (-k / 2)) a b μ f r θ / r ^ 2 -
-      (2 * k * r / (1 - r ^ 2)) * polarIntegral (polarKernelR (-k / 2)) a b μ f r θ -
-      (k ^ 2 / (1 - r ^ 2)) * polarIntegral (polarKernel (-k / 2)) a b μ f r θ =
-    ∫ w, (polarKernelRR (-k / 2) (a w) (b w) r θ +
-      polarKernelR (-k / 2) (a w) (b w) r θ / r +
-      polarKernelTT (-k / 2) (a w) (b w) r θ / r ^ 2 -
-      (2 * k * r / (1 - r ^ 2)) * polarKernelR (-k / 2) (a w) (b w) r θ -
-      (k ^ 2 / (1 - r ^ 2)) * polarKernel (-k / 2) (a w) (b w) r θ) * f w ∂μ := by
-  have h0 := integrable_polarIntegral_kernel hK hμ hf
-    (continuousOn_polarKernel_source ha hb hsource (-k / 2)) hr θ
-  have h1 := integrable_polarIntegral_kernel hK hμ hf
-    (continuousOn_polarKernelR_source ha hb hsource (-k / 2)) hr θ
-  have h2 := integrable_polarIntegral_kernel hK hμ hf
-    (continuousOn_polarKernelRR_source ha hb hsource (-k / 2)) hr θ
-  have h3 := integrable_polarIntegral_kernel hK hμ hf
-    (continuousOn_polarKernelTT_source ha hb hsource (-k / 2)) hr θ
-  have heq (w : X) : (polarKernelRR (-k / 2) (a w) (b w) r θ +
-      polarKernelR (-k / 2) (a w) (b w) r θ / r +
-      polarKernelTT (-k / 2) (a w) (b w) r θ / r ^ 2 -
-      (2 * k * r / (1 - r ^ 2)) * polarKernelR (-k / 2) (a w) (b w) r θ -
-      (k ^ 2 / (1 - r ^ 2)) * polarKernel (-k / 2) (a w) (b w) r θ) * f w =
-      polarKernelRR (-k / 2) (a w) (b w) r θ * f w +
-      (polarKernelR (-k / 2) (a w) (b w) r θ * f w) / r +
-      (polarKernelTT (-k / 2) (a w) (b w) r θ * f w) / r ^ 2 -
-      (2 * k * r / (1 - r ^ 2)) * (polarKernelR (-k / 2) (a w) (b w) r θ * f w) -
-      (k ^ 2 / (1 - r ^ 2)) * (polarKernel (-k / 2) (a w) (b w) r θ * f w) := by ring
-  simp_rw [heq]
-  have hs1 := integral_add h2 (h1.div_const r)
-  have hs2 := integral_add (h2.add (h1.div_const r)) (h3.div_const (r ^ 2))
-  have hs3 := integral_sub ((h2.add (h1.div_const r)).add (h3.div_const (r ^ 2)))
-    (h1.const_mul (2 * k * r / (1 - r ^ 2)))
-  have hs4 := integral_sub (((h2.add (h1.div_const r)).add (h3.div_const (r ^ 2))).sub
-    (h1.const_mul (2 * k * r / (1 - r ^ 2)))) (h0.const_mul (k ^ 2 / (1 - r ^ 2)))
-  simp only [Pi.add_apply, Pi.sub_apply] at hs1 hs2 hs3 hs4
-  rw [hs4, hs3, hs2, hs1]
-  simp only [integral_div, integral_const_mul, polarIntegral]
-
-theorem polarIntegral_operator_nonpos (k : ℝ) {r : ℝ} (hr : r ^ 2 < 1)
-    (hr0 : r ≠ 0) (θ : ℝ) (hfn : ∀ᵐ w ∂μ, 0 ≤ f w) :
-    polarIntegral (polarKernelRR (-k / 2)) a b μ f r θ +
-      polarIntegral (polarKernelR (-k / 2)) a b μ f r θ / r +
-      polarIntegral (polarKernelTT (-k / 2)) a b μ f r θ / r ^ 2 -
-      (2 * k * r / (1 - r ^ 2)) * polarIntegral (polarKernelR (-k / 2)) a b μ f r θ -
-      (k ^ 2 / (1 - r ^ 2)) * polarIntegral (polarKernel (-k / 2)) a b μ f r θ ≤ 0 := by
-  rw [polarIntegral_operator hK hμ hf ha hb hsource k hr θ]
-  apply integral_nonpos_of_ae
-  filter_upwards [hμ, hfn] with w hw hfw
-  exact mul_nonpos_of_nonpos_of_nonneg (polarKernel_equation_nonpos k (a w) (b w) r θ
-    (polarDenominator_pos hr (hsource w hw) θ) hr0 (sub_pos.mpr hr) (hsource w hw)) hfw
-
-theorem polarIntegral_operator_boundary (k : ℝ) {r : ℝ} (hr : r ^ 2 < 1)
-    (hr0 : r ≠ 0) (θ : ℝ) (hboundary : ∀ w ∈ K, a w ^ 2 + b w ^ 2 = 1) :
-    polarIntegral (polarKernelRR (-k / 2)) a b μ f r θ +
-      polarIntegral (polarKernelR (-k / 2)) a b μ f r θ / r +
-      polarIntegral (polarKernelTT (-k / 2)) a b μ f r θ / r ^ 2 -
-      (2 * k * r / (1 - r ^ 2)) * polarIntegral (polarKernelR (-k / 2)) a b μ f r θ -
-      (k ^ 2 / (1 - r ^ 2)) * polarIntegral (polarKernel (-k / 2)) a b μ f r θ = 0 := by
-  rw [polarIntegral_operator hK hμ hf ha hb hsource k hr θ]
-  apply integral_eq_zero_of_ae
-  filter_upwards [hμ] with w hw
-  rw [polarKernel_equation k (a w) (b w) r θ
-    (polarDenominator_pos hr (hsource w hw) θ) hr0 (sub_pos.mpr hr).ne', hboundary w hw]
-  simp
-
-end Integration
-
+end PolarSource
 end BergmanWeakType.Weighted

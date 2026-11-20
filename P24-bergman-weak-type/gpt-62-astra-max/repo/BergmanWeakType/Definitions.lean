@@ -28,6 +28,9 @@ def disk : Set ℂ := Metric.ball 0 1
 /-- Euclidean area divided by π. -/
 def area : Measure ℂ := ENNReal.ofReal Real.pi⁻¹ • volume
 
+instance : Measure.IsAddHaarMeasure area :=
+  Measure.IsAddHaarMeasure.smul volume (by positivity) ENNReal.ofReal_ne_top
+
 /-- Probability area on the unit disk. -/
 def diskArea : Measure ℂ := area.restrict disk
 

@@ -5,7 +5,13 @@ Authors: Yongxi Lin
 -/
 module
 
-public import BergmanWeakType.Weighted.DiskCap
+public import Mathlib.MeasureTheory.Integral.IntervalIntegral.FundThmCalculus
+public import Mathlib.MeasureTheory.Integral.IntervalIntegral.DerivIntegrable
+public import Mathlib.Tactic.Linarith
+public import Mathlib.Tactic.Ring
+public import BergmanWeakType.PolarMeasure
+public import Mathlib.MeasureTheory.Integral.Prod
+public import Mathlib.Analysis.SpecialFunctions.Pow.Real
 
 /-! # Distribution estimates from increasing truncations in a radial mass coordinate -/
 
@@ -18,141 +24,74 @@ open scoped Topology
 
 namespace BergmanWeakType.Weighted
 
-def radialCapMean (U : ℂ → ℝ) (ρ : ℝ → ℝ) (y c : ℝ) : ℝ :=
-  circleAverage (fun z ↦ min (U z) c) 0 (ρ y)
+/-- Integrate a one-sided difference bound using the integral estimate for slopes
+of a monotone function. Neither a derivative nor measurability of `A` is required. -/
+theorem integral_le_of_slope_bound {α : ℝ} {A G : ℝ → ℝ} (hm : MonotoneOn G (Icc 0 1))
+    (hs : ∀ x y : ℝ, 0 < x → x < y → y < 1 → (exteriorMass α x-exteriorMass α y)*A x ≤ G y-G x) :
+    (∫ x in (0:ℝ)..1, radialDensity α x * A x) ≤ G 1 - G 0 := by
+  have nonneg := sub_nonneg.mpr (hm (by simp) (by simp) zero_le_one)
+  by_cases hi : IntervalIntegrable (fun x ↦ radialDensity α x * A x) volume 0 1
+  · have m : MonotoneOn G (uIcc 0 1) := by simpa
+    have H := m.intervalIntegral_deriv_mem_uIcc
+    rw [uIcc_of_le nonneg] at H
+    apply le_trans (intervalIntegral.integral_mono_ae_restrict zero_le_one hi m.intervalIntegrable_deriv ?_) H.2
+    rw [← restrict_Ioo_eq_restrict_Icc, Filter.EventuallyLE, ae_restrict_iff' measurableSet_Ioo]
+    filter_upwards [hm.ae_differentiableWithinAt_of_mem] with x hd hx
+    have D := ((hd (Ioo_subset_Icc_self hx)).differentiableAt (by simp_all)).hasDerivAt
+    have W := hasDerivAt_iff_tendsto_slope_left_right.mp (exteriorMass_deriv (α := α) (inner_sq hx))
+    apply le_of_tendsto_of_tendsto (by simpa using W.2.neg.mul_const (A x)) (hasDerivAt_iff_tendsto_slope_left_right.mp D).2
+    filter_upwards [Ioo_mem_nhdsGT hx.2] with y hy
+    simp only [slope_def_field, ← neg_div, div_mul_eq_mul_div, div_le_div_iff_of_pos_right (sub_pos.mpr hy.1)]
+    grind [exteriorMass]
+  · rwa [intervalIntegral.integral_undef hi]
 
-def radialLevelFraction (U : ℂ → ℝ) (ρ : ℝ → ℝ) (t y : ℝ) : ℝ :=
-  circleAverage (fun z ↦ if t * y < U z then (1 : ℝ) else 0) 0 (ρ y)
+variable {X : Type*} [MeasurableSpace X] (μ : Measure X) [IsFiniteMeasure μ]
 
-theorem circleIntegrable_radialLevel {U : ℂ → ℝ} (hU : Measurable U) (t y r : ℝ) :
-    CircleIntegrable (fun z ↦ if t * y < U z then (1 : ℝ) else 0) 0 r := by
-  apply circleIntegrable_of_measurable_bounded
-    (measurable_const.ite (measurableSet_lt measurable_const hU) measurable_const) (M := 1) _ r
-  intro z
-  split_ifs <;> norm_num
+def capMean (U : ℝ → X → ℝ) (y c : ℝ) := ∫ z, min (U y z) c ∂μ
 
-theorem circleIntegrable_radialCap {U : ℂ → ℝ} (hU : Measurable U)
-    (hUpos : ∀ z, 0 ≤ U z) (c r : ℝ) :
-    CircleIntegrable (fun z ↦ min (U z) c) 0 r := by
-  apply circleIntegrable_of_measurable_bounded (hU.inf measurable_const) (M := |c|) _ r
-  intro z
-  rw [Real.norm_eq_abs, abs_le]
-  exact ⟨le_min ((neg_nonpos.mpr (abs_nonneg c)).trans (hUpos z)) (neg_abs_le c),
-    (min_le_right _ _).trans (le_abs_self c)⟩
-
-theorem radialLevelFraction_mem_Icc {U : ℂ → ℝ} (hU : Measurable U)
-    (ρ : ℝ → ℝ) (t y : ℝ) : radialLevelFraction U ρ t y ∈ Icc (0 : ℝ) 1 := by
-  constructor
-  · apply circleAverage_nonneg_of_nonneg
-    intro z _
-    split_ifs <;> norm_num
-  · apply circleAverage_mono_on_of_le_circle (circleIntegrable_radialLevel hU t y _)
-    intro z _
-    split_ifs <;> norm_num
-
-theorem measurable_radialLevelFraction {U : ℂ → ℝ} (hU : Measurable U)
-    {ρ : ℝ → ℝ} (hρ : Measurable ρ) (t : ℝ) :
-    Measurable (radialLevelFraction U ρ t) := by
-  have hpoint : Measurable (fun p : ℝ × ℝ ↦ circleMap 0 (ρ p.1) p.2) :=
-    circleMap.continuous.measurable.comp ((hρ.comp measurable_fst).prodMk measurable_snd)
-  have hm : Measurable (fun p : ℝ × ℝ ↦ if t * p.1 < U (circleMap 0 (ρ p.1) p.2)
-      then (1 : ℝ) else 0) := measurable_const.ite
-    (measurableSet_lt (measurable_const.mul measurable_fst) (hU.comp hpoint)) measurable_const
-  have hi := hm.stronglyMeasurable.integral_prod_right'
-    (ν := volume.restrict (Ioc (0 : ℝ) (2 * π)))
-  change Measurable (fun y ↦ radialLevelFraction U ρ t y)
-  simp only [radialLevelFraction, circleAverage_def, smul_eq_mul,
-    intervalIntegral.integral_of_le two_pi_pos.le]
-  exact measurable_const.mul hi.measurable
-
-theorem integrableOn_radialLevelFraction {U : ℂ → ℝ} (hU : Measurable U)
-    {ρ : ℝ → ℝ} (hρ : Measurable ρ) (t : ℝ) :
-    IntegrableOn (radialLevelFraction U ρ t) (Icc (0 : ℝ) 1) := by
-  apply Measure.integrableOn_of_bounded measure_Icc_lt_top.ne
-    (measurable_radialLevelFraction hU hρ t).aestronglyMeasurable (M := 1)
-  exact Filter.Eventually.of_forall fun y ↦ by
-    rw [Real.norm_of_nonneg (radialLevelFraction_mem_Icc hU ρ t y).1]
-    exact (radialLevelFraction_mem_Icc hU ρ t y).2
-
-theorem radialCapMean_nonneg {U : ℂ → ℝ} (hUpos : ∀ z, 0 ≤ U z)
-    (ρ : ℝ → ℝ) (y : ℝ) {c : ℝ} (hc : 0 ≤ c) : 0 ≤ radialCapMean U ρ y c := by
-  apply circleAverage_nonneg_of_nonneg
-  exact fun z _ ↦ le_min (hUpos z) hc
-
-theorem radialCapMean_le_level {U : ℂ → ℝ} (hU : Measurable U)
-    (hUpos : ∀ z, 0 ≤ U z) (ρ : ℝ → ℝ) (y c : ℝ) : radialCapMean U ρ y c ≤ c := by
-  apply circleAverage_mono_on_of_le_circle (circleIntegrable_radialCap hU hUpos c _)
-  exact fun _ _ ↦ min_le_right _ _
-
-theorem measurable_radialCapMean_diagonal {U : ℂ → ℝ} (hU : Measurable U)
-    {ρ : ℝ → ℝ} (hρ : Measurable ρ) (t : ℝ) :
-    Measurable (fun y ↦ radialCapMean U ρ y (t * y)) := by
-  have hpoint : Measurable (fun p : ℝ × ℝ ↦ circleMap 0 (ρ p.1) p.2) :=
-    circleMap.continuous.measurable.comp ((hρ.comp measurable_fst).prodMk measurable_snd)
-  have hm : Measurable (fun p : ℝ × ℝ ↦ min (U (circleMap 0 (ρ p.1) p.2)) (t * p.1)) :=
-    (hU.comp hpoint).inf (measurable_const.mul measurable_fst)
-  have hi := hm.stronglyMeasurable.integral_prod_right'
-    (ν := volume.restrict (Ioc (0 : ℝ) (2 * π)))
-  simp only [radialCapMean, circleAverage_def, smul_eq_mul,
-    intervalIntegral.integral_of_le two_pi_pos.le]
-  exact measurable_const.mul hi.measurable
-
-theorem integrableOn_radialCapMean_diagonal {U : ℂ → ℝ} (hU : Measurable U)
-    (hUpos : ∀ z, 0 ≤ U z) {ρ : ℝ → ℝ} (hρ : Measurable ρ)
-    {t : ℝ} (ht : 0 ≤ t) :
-    IntegrableOn (fun y ↦ radialCapMean U ρ y (t * y)) (Icc (0 : ℝ) 1) := by
-  apply Measure.integrableOn_of_bounded measure_Icc_lt_top.ne
-    (measurable_radialCapMean_diagonal hU hρ t).aestronglyMeasurable (M := t)
-  filter_upwards [ae_restrict_mem measurableSet_Icc] with y hy
-  rw [Real.norm_of_nonneg (radialCapMean_nonneg hUpos ρ y (mul_nonneg ht hy.1))]
-  exact (radialCapMean_le_level hU hUpos ρ y _).trans (mul_le_of_le_one_right ht hy.2)
-
-theorem radialCapMean_increment {U : ℂ → ℝ} (hU : Measurable U)
-    (hUpos : ∀ z, 0 ≤ U z) (ρ : ℝ → ℝ) (t y : ℝ) {c : ℝ} (hc : c ≤ t * y) :
-    (t * y - c) * radialLevelFraction U ρ t y ≤
-      radialCapMean U ρ y (t * y) - radialCapMean U ρ y c := by
-  have hiL : CircleIntegrable
-      (fun z ↦ (t * y - c) • (if t * y < U z then (1 : ℝ) else 0)) 0 (ρ y) :=
-    (circleIntegrable_radialLevel hU t y _).const_smul
-  have hiR := (circleIntegrable_radialCap hU hUpos (t * y) (ρ y)).sub
-    (circleIntegrable_radialCap hU hUpos c (ρ y))
-  have hpoint (z : ℂ) : (t * y - c) • (if t * y < U z then (1 : ℝ) else 0) ≤
-      min (U z) (t * y) - min (U z) c := by
-    by_cases hz : t * y < U z
-    · rw [ite_eq_left hz, smul_eq_mul, mul_one, min_eq_right hz.le,
-        min_eq_right (hc.trans hz.le)]
-    · rw [ite_eq_right hz, smul_eq_mul, mul_zero]
-      exact sub_nonneg.mpr (min_le_min_left _ hc)
-  have havg := circleAverage_mono hiL hiR (fun z _ ↦ hpoint z)
-  rw [circleAverage_fun_smul, circleAverage_sub
-    (circleIntegrable_radialCap hU hUpos (t * y) _) (circleIntegrable_radialCap hU hUpos c _)] at havg
-  exact havg
-
-/-- Increasing cap means in the mass coordinate give the integrated level-set estimate. -/
-theorem integral_mul_radialLevelFraction_le {U : ℂ → ℝ} (hU : Measurable U)
-    (hUpos : ∀ z, 0 ≤ U z) {ρ : ℝ → ℝ} (hρ : Measurable ρ) {M : ℝ}
-    (hmono : ∀ c, MonotoneOn (fun y ↦ radialCapMean U ρ y c) (Ioo 0 1))
-    (hbound : ∀ y ∈ Ioo (0 : ℝ) 1, ∀ c, radialCapMean U ρ y c ≤ M)
-    {t : ℝ} (ht : 0 ≤ t) :
-    (∫ y in (0 : ℝ)..1, t * radialLevelFraction U ρ t y) ≤ M := by
-  apply integral_le_of_finite_difference_domination
-    ((integrableOn_radialLevelFraction hU hρ t).const_mul t)
-    (integrableOn_radialCapMean_diagonal hU hUpos hρ ht)
-  · intro y hy
-    exact radialCapMean_nonneg hUpos ρ y (mul_nonneg ht hy.1.le)
-  · intro y hy
-    exact hbound y hy _
-  · intro y h hy hh hyh
-    have hy' : y ∈ Ioo (0 : ℝ) 1 := ⟨hy, by linarith⟩
-    have hyh' : y + h ∈ Ioo (0 : ℝ) 1 := ⟨by linarith, hyh⟩
-    have hinc := radialCapMean_increment hU hUpos ρ t (y + h)
-      (mul_le_mul_of_nonneg_left (by linarith : y ≤ y + h) ht)
-    have hm := hmono (t * y) hy' hyh' (by linarith)
-    have heq : t * (y + h) - t * y = h * t := by ring
-    rw [heq] at hinc
-    calc
-      _ = (h * t) * radialLevelFraction U ρ t (y + h) := by ring
-      _ ≤ _ := hinc
-      _ ≤ _ := sub_le_sub_left hm _
+/-- Moving the cap from `t*x` to `t*y` pays at least `t*(y-x)` on the section
+of `E` at `y`. Monotonicity of fixed-cap means lets us sum these increments. -/
+theorem moving_cap_bound {α : ℝ} (hα : -1 < α) {U : ℝ → X → ℝ} (meas : ∀ y, Measurable (U y))
+    (pos : ∀ y z, 0 ≤ U y z) {t : ℝ} (ht : 0 ≤ t) {E : Set (ℝ × X)} (me : MeasurableSet E)
+    (sub : ∀ y ∈ radii, ∀ z, (y,z) ∈ E → t*exteriorMass α y ≤ U y z)
+    (mono : ∀ c, AntitoneOn (fun y ↦ capMean μ U y c) radii) :
+    t * ((radialLaw α).prod μ).real E ≤ capMean μ U 0 t := by
+  let := radialLaw_prob hα
+  let B y := Prod.mk y ⁻¹' E
+  let Y := exteriorMass α
+  let G y := -capMean μ U y (t*Y y)
+  have ep : Y 1 = 0 := by grind [exteriorMass, Real.zero_rpow]
+  have capI y {c : ℝ} (hc : 0 ≤ c) : Integrable (fun z ↦ min (U y z) c) μ :=
+    (integrable_const c).mono' (by fun_prop)
+      (by simp_all [abs_of_nonneg])
+  have inc {x y : ℝ} (hx : 0 ≤ x) (hxy : x < y) (hy : y ≤ 1) :
+      (Y x-Y y) * (t * μ.real (B x)) ≤ G y-G x := by
+    have hx' : x ∈ radii := ⟨hx,hxy.trans_le hy⟩
+    have hy' : y ∈ Icc 0 1 := ⟨hx.trans hxy.le,hy⟩
+    have hy0 := (mass_anti hα).antitoneOn hy' (by simp) hy
+    have m := (mass_anti hα).antitoneOn (Ico_subset_Icc_self hx') hy' hxy.le
+    have mt : t*Y y ≤ t*Y x := mul_le_mul_of_nonneg_left m ht
+    have h : capMean μ U y (t*Y y) ≤ capMean μ U x (t*Y y) := by
+      rcases hy.eq_or_lt with rfl|hlt
+      · grind [capMean]
+      · exact mono _ hx' ⟨hy'.1,hlt⟩ hxy.le
+    have meB : MeasurableSet (B x) := measurable_prodMk_left me
+    have dif : (t*Y x-t*Y y) * μ.real (B x) ≤ capMean μ U x (t*Y x) - capMean μ U x (t*Y y) := by
+      change Y 1 ≤ Y y at hy0; rw [ep] at hy0
+      rw [← integral_indicator_one meB, ← integral_const_mul,capMean,capMean,
+        ← integral_sub (capI _ (by bound)) (capI _ (by bound))]
+      apply integral_mono (((integrable_const 1).indicator meB).const_mul _) (by fun_prop (disch := bound))
+      intro z; by_cases hz : z ∈ B x
+      · have hu : t*Y x ≤ U x z := sub x hx' z hz
+        simp_all [mt.trans]
+      · simp_all
+    dsimp [G]; linarith
+  rw [measureReal_def,Measure.prod_apply me, ← integral_toReal (measurable_measure_prodMk_left me).aemeasurable
+    (by simp_all), ← integral_const_mul,integral_radialLaw hα,← unit_integral]
+  apply le_trans (integral_le_of_slope_bound (G := G) (A := fun x ↦ t*μ.real (B x)) ?_ (by grind [exteriorMass]))
+  · simp [G,ep,capMean,min_eq_right (pos _ _),Y,exteriorMass,Real.zero_rpow (by linarith : α+1 ≠ 0)]
+  · intro x hx y hy hxy
+    rcases hxy.eq_or_lt with rfl|hlt; · rfl
+    exact sub_nonneg.mp ((mul_nonneg (sub_nonneg.mpr ((mass_anti hα).antitoneOn hx hy hxy)) (by positivity)).trans (inc hx.1 hlt hy.2))
 
 end BergmanWeakType.Weighted
