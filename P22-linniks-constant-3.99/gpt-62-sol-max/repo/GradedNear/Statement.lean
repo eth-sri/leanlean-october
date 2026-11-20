@@ -1,19 +1,23 @@
 module
 
-public import GradedNear.Main
-public import GradedNear.BurgessReduction
+public import GradedNear.FirstFactor
+public import GradedNear.SievePart
+public import GradedNear.GramForm
 
 /-!
-# The graded near lemma: statement
+# Proof of the graded near lemma
 
-Paper §8.2 (Theorem 8.4). For fixed data, every `η > 0` and
-all large `q`: for every finite family of entries of height at most `T ≤ (log q)/3` under the
-safe-anchor hypothesis at height `2T + 1`, and every `a ≥ 0`,
-`(Σ a_j R_j)_+² ≤ (1 + η) I_B [Σ_j (D(δ_j) - d₁ + e_j) a_j² + (d₁ + η)(Σ_j a_j)²]`.
-Entries of the same character are allowed only when the sieve weight vanishes.
+Assembly (paper §8.5): the responses as one sum over `n`, Cauchy–Schwarz with the weight
+`ω = g e^{s₁ t} + H`, the first factor by `first_factor_bound`, and the second factor split into
+the Gram part (`gram_part_bound`) and the sieve part (`sieve_part_bound`).
 -/
 
 @[expose] public section
+
+open Complex Finset Filter
+open scoped ArithmeticFunction.vonMangoldt
+
+noncomputable section
 
 namespace GradedNear
 
@@ -30,16 +34,67 @@ nonzero) and all `a ≥ 0`:
 theorem graded_near_lemma
     (hX31 : XylourisLemma31) (hX32 : XylourisLemma32) (hBur : BurgessPrimitive)
     (hGr : GrahamEstimate) (D : NearData) (hD : D.Valid) {η : ℝ} (hη : 0 < η) :
-    ∃ q₀ : ℕ, ∀ q : ℕ, [NeZero q] → q₀ ≤ q → ∀ T : ℝ, 0 ≤ T → T ≤ Real.log q / 3 →
-      SafeAnchor q D.s₁ (2 * T + 1) →
-      ∀ (ι : Type) [Fintype ι] (E : Entries q ι),
-        (∀ j, E.χ j ≠ 1) → (∀ j, |E.γ j| ≤ T) → (∀ j, E.δ j ∈ D.Δ) →
-        ((∃ k < D.m, D.h k ≠ 0) → Function.Injective E.χ) →
+    LargeModuli[q => NearFamily[D, q; ι, E =>
         ∀ a : ι → ℝ, (∀ j, 0 ≤ a j) →
           (max 0 (∑ j, a j * response D E j)) ^ 2 ≤
             (1 + η) * D.IB *
-              (∑ j, (D.Dδ (E.δ j) - D.d₁ + pairExcess D E j) * a j ^ 2 +
-                (D.d₁ + η) * (∑ j, a j) ^ 2) :=
-  graded_near_lemma' hX31 hX32 (burgessBound_of_primitive hBur) hGr D hD hη
+              (∑ j, diagNumerator D E j * a j ^ 2 +
+                (D.d₁ + η) * (∑ j, a j) ^ 2)]] := by
+  have hIB := hD.IB_pos
+  have hF := FirstFactor.first_factor_bound D hD (mul_pos hη hIB)
+  have hG := gram_part_bound hX31 hX32 D hD (half_pos hη)
+  have hS := sieve_part_bound hGr (burgessBound_of_primitive hBur) D hD (half_pos hη)
+  obtain ⟨c, hc, hω⟩ := hD.omega_lb
+  apply eventually_neZero
+  filter_upwards [hF, hG, hS, eventually_ge_atTop 2] with q hF hG hS hq2
+  intro _ T hT hTq hsafe ι _ E _ hγ hΔ hinj a ha
+  have hℓ := log_q_pos hq2
+  let U := Ioc 0 ⌊(q : ℝ) ^ D.xf⌋₊
+  let N := max ⌊(q : ℝ) ^ D.xf⌋₊ ⌊(q : ℝ) ^ D.xg⌋₊
+  let w (n : ℕ) := Λ n / n * D.omega (tn q n)
+  let Y := Yn E a
+  have hω0 n : 0 ≤ D.omega (tn q n) := by
+    unfold NearData.omega NearData.sieveH
+    refine add_nonneg (mul_nonneg (hD.g_cond2.nonneg _ (tn_nonneg q n)) (Real.exp_pos _).le) ?_
+    exact sum_nonneg fun k hk => by split <;> simp [hD.h_nonneg k (mem_range.mp hk)]
+  have hm n : 0 ≤ Λ n / (n : ℝ) := by positivity
+  have hw n : 0 ≤ w n * ‖Y n‖ ^ 2 := mul_nonneg (mul_nonneg (hm n) (hω0 n)) (sq_nonneg _)
+  let A := (∑ n ∈ U, Λ n / n * FirstFactor.phi D (tn q n)) / Real.log q
+  let B := (∑ n ∈ U, w n * ‖Y n‖ ^ 2) / Real.log q
+  have hA : A ≤ (1 + η) * D.IB := by simpa only [A, add_mul, one_mul] using hF
+  have hB0 : 0 ≤ B := div_nonneg (sum_nonneg fun n _ => hw n) hℓ.le
+  have hB : B ≤ ∑ j, diagNumerator D E j * a j ^ 2 +
+      (D.d₁ + η) * (∑ j, a j) ^ 2 := by
+    have hsub : U ⊆ Ioc 0 N := Ioc_subset_Ioc le_rfl (le_max_left _ _)
+    refine (div_le_div_of_nonneg_right (sum_le_sum_of_subset_of_nonneg hsub
+      (fun n _ _ => hw n)) hℓ.le).trans ?_
+    dsimp only [w, Y]
+    simp only [NearData.omega, mul_add, add_mul, sum_add_distrib, add_div]
+    have hg := hG T hT hTq hsafe ι E hγ hΔ a ha N (le_max_right _ _)
+    have hs := hS ι E (fun j => (hγ j).trans hTq) hΔ hinj a ha N
+    have hd δ : D.Dδ δ = gramDiag D δ + sieveDiag D δ := rfl
+    simp only [hd, add_mul, sub_mul, sum_add_distrib, sum_sub_distrib] at hg hs ⊢
+    linarith
+  have hsq : (∑ j, a j * response D E j) ^ 2 ≤ A * B := by
+    rw [sum_response D E a hq2 hD.f_cond.vanish, neg_div, neg_sq, div_pow]
+    dsimp [A, B]
+    rw [div_mul_div_comm, ← sq]
+    rw [Complex.re_sum]
+    refine div_le_div_of_nonneg_right (sum_sq_le_sum_mul_sum_of_sq_le_mul U (fun n _ => ?_)
+      (fun n _ => hw n) (fun n _ => ?_)) (sq_nonneg _)
+    · exact mul_nonneg (hm n) (div_nonneg (by positivity) (hω0 n))
+    · rw [pow_two]
+      refine (re_sq_le_normSq _).trans_eq ?_
+      rw [Complex.normSq_eq_norm_sq, norm_mul, norm_real, Real.norm_eq_abs, mul_pow, sq_abs]
+      by_cases hf : D.f (tn q n) = 0
+      · simp [cWeight, FirstFactor.phi, hf]
+      · have hωp := hc.trans_le (hω _ (tn_nonneg q n) hf)
+        simp only [cWeight, w, FirstFactor.phi, mul_assoc, Real.exp_add, two_mul, add_mul]
+        field_simp [hωp.ne']; ring
+
+  refine le_trans ?_ (hsq.trans (mul_le_mul hA hB hB0 (by positivity)))
+  rw [← sq_abs (∑ j, a j * response D E j)]
+  gcongr
+  exact max_le (abs_nonneg _) (le_abs_self _)
 
 end GradedNear

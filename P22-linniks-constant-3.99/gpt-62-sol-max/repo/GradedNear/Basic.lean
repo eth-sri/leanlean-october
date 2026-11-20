@@ -5,89 +5,118 @@ public import GradedNear.Defs
 /-!
 # Basic identities for the graded near lemma
 
-* `primeSum` as a finite sum over `1 ≤ n ≤ q^X` when the test function vanishes on `[X, ∞)`;
-* the factorization `n^{-((A:ℝ) + iγ)} = e^{-A log n} e^{-iγ log n}`;
-* a weighted Cauchy–Schwarz inequality for finite sums.
+Logarithmic scale, spectral points, and the integration cutoff.
 -/
 
 @[expose] public section
 
-open Complex
-open scoped ArithmeticFunction.vonMangoldt
+open Complex Filter Topology
 
 noncomputable section
 
 namespace GradedNear
 
+-- The zero and entry coordinates used in the explicit formula and threshold estimates.
+scoped notation "zeroOffset " q:max ρ:max => ((1 - Complex.re ρ) * Real.log q)
+scoped notation "discGap " γ:max ρ:max => ‖(1 + (γ : ℂ) * I) - ρ‖
+scoped notation "heightGap " q:max γ:max ρ:max => (|γ - Complex.im ρ| * Real.log q)
+scoped notation "entryAnchor " D:max E:max j:max => (NearData.s D - Entries.δ E j)
+scoped notation "diagNumerator " D:max E:max j:max =>
+  (NearData.Dδ D (Entries.δ E j) - NearData.d₁ D + pairExcess D E j)
+scoped notation "heightTerm " D:max E:max j:max hi:max =>
+  Complex.re (laplace (NearData.f D) ((hi - entryAnchor D E j : ℝ) : ℂ))
+
+-- Common statement forms. These expand to the quantifiers and inequalities themselves.
+scoped macro "LargeModuli[" q:ident " => " P:term "]" : term =>
+  `(∃ q₀ : ℕ, ∀ ($q : ℕ), [NeZero $q] → q₀ ≤ $q → $P)
+
+scoped macro "SeparatedModuli[" M:ident ", " δ:ident ", " q:ident " => " P:term "]" : term =>
+  `(Exists fun ($M : ℝ) => 0 < $M ∧ Exists fun ($δ : ℝ) => 0 < $δ ∧ $δ < 1 ∧ LargeModuli[$q => $P])
+
+scoped macro "NearFamily[" D:term ", " q:term "; " ι:ident ", " E:ident " => " P:term "]" : term =>
+  `(∀ T : ℝ, 0 ≤ T → T ≤ Real.log $q / 3 → SafeAnchor $q (NearData.s₁ $D) (2 * T + 1) →
+    ∀ ($ι : Type) [Fintype $ι] ($E : Entries $q $ι),
+      (∀ j, Entries.χ $E j ≠ 1) → (∀ j, |Entries.γ $E j| ≤ T) → (∀ j, Entries.δ $E j ∈ NearData.Δ $D) →
+      ((∃ k < NearData.m $D, NearData.h $D k ≠ 0) → Function.Injective (Entries.χ $E)) → $P)
+
+/-- Keep only disc zeros, and bound the number and distance of the unkept zeros right of the anchor. -/
+scoped macro "KeptFamily[" D:term ", " q:term "; " ι:term ", " E:term "; " M:term ", " δ:term ", " K:term "; " Sz:ident " => " P:term "]" : term =>
+  `(∀ ($Sz : $ι → Finset ℂ),
+    (∀ j, ∀ ρ ∈ $Sz j, DirichletCharacter.LFunction (Entries.χ $E j) ρ = 0 ∧ discGap (Entries.γ $E j) ρ ≤ $δ) →
+    (∀ j, ∀ ρ : ℂ, DirichletCharacter.LFunction (Entries.χ $E j) ρ = 0 →
+      discGap (Entries.γ $E j) ρ ≤ $δ → ρ ∉ $Sz j →
+      zeroOffset $q ρ < entryAnchor $D $E j → $M ≤ heightGap $q (Entries.γ $E j) ρ) →
+    (∀ j, (∑ᶠ ρ ∈ {ρ : ℂ | DirichletCharacter.LFunction (Entries.χ $E j) ρ = 0 ∧
+        discGap (Entries.γ $E j) ρ ≤ $δ ∧ ρ ∉ $Sz j ∧ zeroOffset $q ρ < entryAnchor $D $E j},
+      zmult (Entries.χ $E j) ρ) ≤ $K) → $P)
+
+lemma tendsto_log_nat_atTop : Tendsto (fun q : ℕ => Real.log q) atTop atTop :=
+  Real.tendsto_log_atTop.comp tendsto_natCast_atTop_atTop
+
+lemma tendsto_div_log_nat (c : ℝ) : Tendsto (fun q : ℕ => c / Real.log q) atTop (𝓝 0) := 
+  tendsto_const_nhds.div_atTop tendsto_log_nat_atTop
+
+lemma eventually_neZero {P : (q : ℕ) → NeZero q → Prop}
+    (h : ∀ᶠ q in atTop, ∀ [z : NeZero q], P q z) :
+    ∃ q₀, ∀ q [z : NeZero q], q₀ ≤ q → P q z :=
+  (eventually_atTop.mp h).imp fun _ h q _ hq => h q hq
+
+def spectralPoint (q : ℕ) (s t : ℝ) : ℂ := ((1 - s / Real.log q : ℝ) : ℂ) + (t : ℂ) * I
+
+@[simp] lemma spectralPoint_re (q : ℕ) (s t : ℝ) :
+    (spectralPoint q s t).re = 1 - s / Real.log q := by
+  simp [spectralPoint, -natCast_log]
+
+@[simp] lemma spectralPoint_im (q : ℕ) (s t : ℝ) :
+    (spectralPoint q s t).im = t := by
+  simp [spectralPoint, -natCast_log]
+
+lemma spectralPoint_sub {q : ℕ} (r t : ℝ) (ρ : ℂ) (h : Real.log q ≠ 0) :
+    (spectralPoint q r t - ρ) * (Real.log q : ℂ) =
+      (((1 - ρ.re) * Real.log q - r : ℝ) : ℂ) + (((t - ρ.im) * Real.log q : ℝ) : ℂ) * I := by
+  apply Complex.ext <;> simp [mul_re, mul_im, -natCast_log]
+  field_simp
+  ring
+
 /-- `t_n = log n / log q`. -/
 def tn (q n : ℕ) : ℝ := Real.log n / Real.log q
 
 lemma log_q_pos {q : ℕ} (hq : 2 ≤ q) : 0 < Real.log q :=
-  Real.log_pos (by exact_mod_cast (show 1 < q by omega))
+  Real.log_pos (by simpa)
 
-lemma tn_nonneg (q n : ℕ) (hq : 2 ≤ q) : 0 ≤ tn q n :=
-  div_nonneg (Real.log_natCast_nonneg n) (log_q_pos hq).le
+lemma tendsto_loglog_nat : Tendsto (fun q : ℕ => Real.log (Real.log q)) atTop atTop :=
+  Real.tendsto_log_atTop.comp tendsto_log_nat_atTop
 
-/-- For `n ≥ 1` and real `A, γ`: `n^{-(A + iγ)} = e^{-A log n} · e^{-i γ log n}`. -/
-lemma natCast_cpow_neg {n : ℕ} (hn : n ≠ 0) (A γ : ℝ) :
-    (n : ℂ) ^ (-((A : ℂ) + (γ : ℂ) * I)) =
-      (Real.exp (-A * Real.log n) : ℂ) * cexp (-((γ * Real.log n : ℝ) : ℂ) * I) := by
-  have hn' : (n : ℂ) ≠ 0 := by exact_mod_cast hn
-  rw [cpow_def_of_ne_zero hn', ← natCast_log, ofReal_exp, ← Complex.exp_add]
-  congr 1
-  push_cast
-  ring
+lemma eventually_loglog_ge (K : ℝ) :
+    ∀ᶠ q : ℕ in atTop, K ≤ Real.sqrt (Real.log (Real.log q)) ∧ 2 ≤ q := by
+  filter_upwards [tendsto_loglog_nat.eventually_ge_atTop (K ^ 2), eventually_ge_atTop 2] with q hq hq2
+  exact ⟨Real.le_sqrt_of_sq_le hq, hq2⟩
 
-/-- Indices beyond `q^X` have `t_n ≥ X`. -/
-lemma tn_ge_of_gt {q n : ℕ} (hq : 2 ≤ q) {X : ℝ} (hn : ⌊(q : ℝ) ^ X⌋₊ < n) : X ≤ tn q n := by
-  have hℓ := log_q_pos hq
-  have hq0 : (0 : ℝ) < q := by exact_mod_cast (show 0 < q by omega)
-  have h1 : (q : ℝ) ^ X < n := by
-    have := Nat.lt_floor_add_one ((q : ℝ) ^ X)
-    have h2 : ((⌊(q : ℝ) ^ X⌋₊ : ℕ) : ℝ) + 1 ≤ n := by exact_mod_cast hn
-    linarith
-  have hpos : 0 < (q : ℝ) ^ X := Real.rpow_pos_of_pos hq0 X
-  have h3 : Real.log ((q : ℝ) ^ X) < Real.log n := Real.log_lt_log hpos h1
-  rw [Real.log_rpow hq0] at h3
-  unfold tn
-  rw [le_div_iff₀ hℓ]
-  linarith
+lemma spectralPoint_region {q : ℕ} (hq : 2 ≤ q) {σ γ : ℝ}
+    (hσ : |σ| ≤ Real.sqrt (Real.log (Real.log q))) (hγ : |γ| ≤ Real.log q) :
+    LemmaRegion q (spectralPoint q σ γ) := by
+  refine ⟨?_, by simpa using hγ⟩
+  simpa only [spectralPoint_re, sub_sub_cancel_left, abs_neg, abs_div, abs_of_pos (log_q_pos hq)] using
+    div_le_div_of_nonneg_right hσ (log_q_pos hq).le
 
-/-- `primeSum` is a finite sum when the test function vanishes on `[X, ∞)`. -/
-lemma primeSum_eq_sum {q : ℕ} (hq : 2 ≤ q) (χ : DirichletCharacter ℂ q) (f : ℝ → ℝ) {X : ℝ}
-    (hf : ∀ t, X ≤ t → f t = 0) (s : ℂ) :
-    primeSum χ f s = ∑ n ∈ Finset.Icc 1 ⌊(q : ℝ) ^ X⌋₊,
-      (Λ n : ℂ) * χ n * (n : ℂ) ^ (-s) * (f (tn q n) : ℂ) := by
-  unfold primeSum
-  rw [tsum_eq_sum (s := Finset.Icc 1 ⌊(q : ℝ) ^ X⌋₊)]
-  · rfl
-  · intro n hn
-    rw [Finset.mem_Icc, not_and_or, not_le, not_le] at hn
-    rcases hn with hn | hn
-    · have : n = 0 := by omega
-      subst this; simp
-    · have := hf _ (tn_ge_of_gt hq hn)
-      simp [tn] at this
-      simp [this]
+lemma tn_nonneg (q n : ℕ) : 0 ≤ tn q n :=
+  div_nonneg (Real.log_natCast_nonneg n) (Real.log_natCast_nonneg q)
 
-/-- Weighted Cauchy–Schwarz: `(Σ |c_n| y_n)² ≤ (Σ c_n²/w_n)(Σ w_n y_n²)` when `w ≥ 0`
-and `c_n ≠ 0 → w_n > 0`. -/
-lemma weighted_cs {β : Type*} (N : Finset β) (c w y : β → ℝ) (hw : ∀ n ∈ N, 0 ≤ w n)
-    (hcw : ∀ n ∈ N, c n ≠ 0 → 0 < w n) :
-    (∑ n ∈ N, |c n| * y n) ^ 2 ≤ (∑ n ∈ N, c n ^ 2 / w n) * (∑ n ∈ N, w n * y n ^ 2) := by
-  have key : ∀ n ∈ N, |c n| * y n = (|c n| / Real.sqrt (w n)) * (Real.sqrt (w n) * y n) := by
-    intro n hn
-    by_cases hc : c n = 0
-    · simp [hc]
-    · have hwn := hcw n hn hc
-      have hs : Real.sqrt (w n) ≠ 0 := (Real.sqrt_pos.2 hwn).ne'
-      field_simp
-  rw [Finset.sum_congr rfl key]
-  refine (Finset.sum_mul_sq_le_sq_mul_sq N _ _).trans (le_of_eq ?_)
-  congr 1
-  · refine Finset.sum_congr rfl fun n hn => ?_
-    rw [div_pow, sq_abs, Real.sq_sqrt (hw n hn)]
-  · refine Finset.sum_congr rfl fun n hn => ?_
-    rw [mul_pow, Real.sq_sqrt (hw n hn)]
+lemma le_tn_iff {q n : ℕ} (hq : 2 ≤ q) (hn : 1 ≤ n) {X : ℝ} : X ≤ tn q n ↔ (q : ℝ) ^ X ≤ n := by
+  rw [tn, le_div_iff₀ (log_q_pos hq), ← Real.log_rpow (by positivity : 0 < (q : ℝ))]
+  exact Real.log_le_log_iff (by positivity) (by positivity)
+
+open MeasureTheory in
+lemma integral_support_interval {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
+    {f : ℝ → E} {X : ℝ} (hX : 0 ≤ X) (hf : ∀ t ≥ X, f t = 0) :
+    (∫ t in (0 : ℝ)..X, f t) = ∫ t in Set.Ioi 0, f t := by
+  rw [intervalIntegral.integral_of_le hX]
+  exact (setIntegral_eq_of_subset_of_forall_sdiff_eq_zero measurableSet_Ioi Set.Ioc_subset_Ioi_self
+    fun t ht => hf t (by grind)).symm
+
+open Finset in
+lemma sum_Ioc_eq_range {α : Type*} [AddCommMonoid α] (f : ℕ → α) (a b : ℕ) :
+    ∑ n ∈ Ioc a b, f n = ∑ n ∈ range (b - a), f (a + 1 + n) := by
+  rw [← Ico_add_one_add_one_eq_Ioc, sum_Ico_eq_sum_range, Nat.add_sub_add_right]
 
 end GradedNear

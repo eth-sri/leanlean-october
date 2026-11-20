@@ -348,13 +348,11 @@ structure Col where
   E : ℤ
   v : List ℤ
   D : List ℤ
-deriving Repr
 
 /-- A near row: its radius `d` and its fixed family terms `(n, v, D)`. -/
 structure RowHead where
   d : ℤ
   fam : List (ℤ × ℤ × ℤ)
-deriving Repr
 
 /-- The integer data of a leaf. -/
 structure Leaf where
@@ -365,7 +363,6 @@ structure Leaf where
   n2 : ℤ
   first : ℤ
   final : ℤ
-deriving Repr
 
 /-! ## The checker -/
 
@@ -427,13 +424,11 @@ structure Duals where
   P : ℕ
   M : ℕ
   Z : List ℕ
-deriving Repr
 
 /-- The certificate of one case. -/
 inductive CaseCert where
   | excluded
   | duals (du : Duals)
-deriving Repr
 
 /-- The value certified by duals for one case (`none` if a column inequality fails). -/
 def caseValue (L : Leaf) (box : List (ℤ × ℤ)) (cs : List ℕ) (du : Duals) : Option ℤ :=
@@ -478,7 +473,6 @@ and case certificates. -/
 inductive Tree where
   | split (k : ℕ) (mid : ℤ) (left right : Tree)
   | node (orders : List ℕ) (certs : List CaseCert)
-deriving Repr
 
 /-- Checks a tree on a box; returns the maximum certified value, each node's value `< S`. -/
 def verifyTree (L : Leaf) : Tree → List (ℤ × ℤ) → Option ℤ

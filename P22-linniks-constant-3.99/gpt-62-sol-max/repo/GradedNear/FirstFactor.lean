@@ -1,26 +1,13 @@
 module
 
-public import Mathlib
+public import GradedNear.Basic
 
 /-!
-# (A) The first Cauchy–Schwarz factor: a Mertens-type upper Riemann sum
+# The first Cauchy–Schwarz factor
 
-For `φ` bounded on `[0, X]` and continuous at every point of `(0, X)` outside a finite set,
-`𝓛⁻¹ Σ_{1 ≤ n ≤ q^X} Λ(n)/n · φ(log n / 𝓛) ≤ ∫₀^X φ + ε` for all large `q`, where `𝓛 = log q`.
-The proof uses Mertens' estimate `Σ_{n ≤ x} Λ(n)/n = log x + O(1)`.
-
-## Proof outline
-
-* `FirstFactor.abs_mertensSum_sub_log_le`: `|Σ_{n ≤ x} Λ(n)/n - log x| ≤ 6` for `x ≥ 1`, from
-  `log N! = Σ_{n ≤ N} Λ(n) ⌊N/n⌋`, Chebyshev's bound `ψ(N) ≤ (log 4 + 4) N` and
-  `N log N - N ≤ log N! ≤ N log N`.
-* `FirstFactor.sum_le_partition`: if `φ ≤ c_i` on `(u_i, u_{i+1}]`, then the weighted sum up to
-  `q^{u_j}` is at most `Σ_{i < j} c_i (S(q^{u_{i+1}}) - S(q^{u_i}))`, `S` the Mertens sum.
-* `FirstFactor.tendsto_integral_stepFn`: the upper step functions of `φ` on the uniform mesh
-  `X / K` converge to `φ` at every continuity point, so by dominated convergence their integrals
-  tend to `∫₀^X φ`.
-* `riemann_upper`: fix `K` with `∫ stepFn ≤ ∫ φ + ε/2`; Mertens on each of the `K` cells costs
-  `12 M` per cell, which is `≤ ε/2` after division by `log q` for `q` large.
+Use each normalized Mangoldt mass as the length of a cell of a step function.
+Mertens' estimate places that cell close to its sample point `log n / log q`.
+Dominated convergence then gives the limit of the weighted sums.
 -/
 
 @[expose] public section
@@ -31,418 +18,185 @@ namespace GradedNear
 
 namespace FirstFactor
 
-open Filter Topology MeasureTheory
+open Filter Topology MeasureTheory Finset
 
 /-! ### Mertens' first theorem -/
 
 /-- The Mertens partial sum `Σ_{1 ≤ n ≤ y} Λ(n)/n`. -/
-noncomputable def mertensSum (y : ℝ) : ℝ := ∑ n ∈ Finset.Ioc 0 ⌊y⌋₊, Λ n / n
+noncomputable def mertensSum (N : ℕ) : ℝ := ∑ n ∈ Finset.Ioc 0 N, Λ n / n
 
-/-- `log N! = Σ_{n ≤ N} Λ(n) ⌊N/n⌋`. -/
-lemma sum_log_eq_sum_vonMangoldt (N : ℕ) :
-    ∑ n ∈ Finset.Ioc 0 N, Real.log n = ∑ n ∈ Finset.Ioc 0 N, Λ n * ((N / n : ℕ) : ℝ) := by
-  have h := ArithmeticFunction.sum_Ioc_mul_zeta_eq_sum (R := ℝ) Λ N
-  rw [ArithmeticFunction.vonMangoldt_mul_zeta] at h
-  simpa [ArithmeticFunction.log_apply] using h
-
-/-- Mertens lower bound at an integer: `Σ_{n ≤ N} Λ(n)/n ≥ log N - 1`. -/
-lemma mertens_nat_lower (N : ℕ) (hN : 1 ≤ N) :
-    Real.log N - 1 ≤ ∑ n ∈ Finset.Ioc 0 N, Λ n / n := by
-  have hNR : (0 : ℝ) < N := by exact_mod_cast hN
-  have h1 := Real.le_sum_log_nat N
-  rw [sum_log_eq_sum_vonMangoldt] at h1
-  have h2 : ∑ n ∈ Finset.Ioc 0 N, Λ n * ((N / n : ℕ) : ℝ) ≤
-      ∑ n ∈ Finset.Ioc 0 N, Λ n * ((N : ℝ) / n) := by
-    apply Finset.sum_le_sum
-    intro n _
-    exact mul_le_mul_of_nonneg_left Nat.cast_div_le ArithmeticFunction.vonMangoldt_nonneg
-  have h3 : ∑ n ∈ Finset.Ioc 0 N, Λ n * ((N : ℝ) / n) =
-      N * ∑ n ∈ Finset.Ioc 0 N, Λ n / n := by
-    rw [Finset.mul_sum]
-    apply Finset.sum_congr rfl
-    intro n _
-    ring
-  rw [h3] at h2
-  have h4 : (N : ℝ) * (Real.log N - 1) ≤ N * ∑ n ∈ Finset.Ioc 0 N, Λ n / n := by
-    linarith
-  exact le_of_mul_le_mul_left h4 hNR
-
-/-- Mertens upper bound at an integer: `Σ_{n ≤ N} Λ(n)/n ≤ log N + log 4 + 4`. -/
-lemma mertens_nat_upper (N : ℕ) (hN : 1 ≤ N) :
-    ∑ n ∈ Finset.Ioc 0 N, Λ n / n ≤ Real.log N + (Real.log 4 + 4) := by
-  have hNR : (0 : ℝ) < N := by exact_mod_cast hN
-  have h1 := Real.sum_log_le' (x := (N : ℝ)) (by exact_mod_cast hN)
-  rw [Nat.floor_natCast, sum_log_eq_sum_vonMangoldt] at h1
-  have h2 : ∑ n ∈ Finset.Ioc 0 N, Λ n * ((N : ℝ) / n - 1) ≤
-      ∑ n ∈ Finset.Ioc 0 N, Λ n * ((N / n : ℕ) : ℝ) := by
-    apply Finset.sum_le_sum
-    intro n hn
-    have hn0 : 0 < n := (Finset.mem_Ioc.1 hn).1
-    apply mul_le_mul_of_nonneg_left _ ArithmeticFunction.vonMangoldt_nonneg
-    have hnR : (0 : ℝ) < n := by exact_mod_cast hn0
-    have h5 : N < N / n * n + n := Nat.lt_div_mul_add hn0
-    have h6 : (N : ℝ) < ((N / n : ℕ) : ℝ) * n + n := by exact_mod_cast h5
-    rw [div_sub_one hnR.ne', div_le_iff₀ hnR]
-    linarith
-  have h3 : ∑ n ∈ Finset.Ioc 0 N, Λ n * ((N : ℝ) / n - 1) =
-      N * ∑ n ∈ Finset.Ioc 0 N, Λ n / n - Chebyshev.psi N := by
-    rw [Chebyshev.psi, Nat.floor_natCast, Finset.mul_sum, ← Finset.sum_sub_distrib]
-    apply Finset.sum_congr rfl
-    intro n _
-    ring
-  rw [h3] at h2
-  have h4 := Chebyshev.psi_le_const_mul_self (x := (N : ℝ)) hNR.le
-  have h5 : (N : ℝ) * ∑ n ∈ Finset.Ioc 0 N, Λ n / n ≤ N * (Real.log N + (Real.log 4 + 4)) := by
-    nlinarith
-  exact le_of_mul_le_mul_left h5 hNR
-
-/-- **Mertens' first theorem**: `|Σ_{n ≤ x} Λ(n)/n - log x| ≤ 6` for `x ≥ 1`. -/
+/-- Mertens' first theorem, by summing `Λ * ζ = log` and bounding the floor error. -/
 lemma abs_mertensSum_sub_log_le (x : ℝ) (hx : 1 ≤ x) :
-    |mertensSum x - Real.log x| ≤ 6 := by
-  have hN : 1 ≤ ⌊x⌋₊ := Nat.le_floor (by simpa using hx)
-  have hNR : (1 : ℝ) ≤ ⌊x⌋₊ := by exact_mod_cast hN
-  have hlo := mertens_nat_lower _ hN
-  have hup := mertens_nat_upper _ hN
-  have hfl : (⌊x⌋₊ : ℝ) ≤ x := Nat.floor_le (by linarith)
-  have hfl2 : x < ⌊x⌋₊ + 1 := Nat.lt_floor_add_one x
-  have hlog1 : Real.log ⌊x⌋₊ ≤ Real.log x := Real.log_le_log (by linarith) hfl
-  have hlog2 : Real.log x ≤ Real.log 2 + Real.log ⌊x⌋₊ := by
-    rw [← Real.log_mul (by norm_num) (by linarith)]
-    exact Real.log_le_log (by linarith) (by linarith)
-  have hl2 := Real.log_two_lt_d9
-  have hl4 : Real.log 4 = 2 * Real.log 2 := by
-    rw [show (4 : ℝ) = 2 ^ 2 by norm_num, Real.log_pow]; norm_num
-  unfold mertensSum
-  rw [abs_le]
-  constructor <;> linarith
+    |mertensSum ⌊x⌋₊ - Real.log x| ≤ 7 := by
+  let A := ∑ n ∈ Ioc 0 ⌊x⌋₊, Real.log n
+  have hA : A = ∑ n ∈ Ioc 0 ⌊x⌋₊, Λ n * (⌊x / n⌋₊ : ℝ) := by
+    simpa [A, Nat.floor_div_natCast, ArithmeticFunction.vonMangoldt_mul_zeta,
+      ArithmeticFunction.log_apply] using (ArithmeticFunction.sum_Ioc_mul_zeta_eq_sum (R := ℝ) Λ ⌊x⌋₊)
+  have hψ : x * mertensSum ⌊x⌋₊ - A ∈ Set.Icc 0 (Chebyshev.psi x) := by
+    rw [mertensSum, hA, mul_sum, ← sum_sub_distrib, Chebyshev.psi]
+    simp_rw [mul_comm x, div_mul_eq_mul_div, mul_div_assoc, ← mul_sub]
+    refine ⟨sum_nonneg fun n _ => mul_nonneg ArithmeticFunction.vonMangoldt_nonneg
+      (sub_nonneg.mpr (Nat.floor_le (by positivity))), sum_le_sum fun n _ => ?_⟩
+    exact mul_le_of_le_one_right ArithmeticFunction.vonMangoldt_nonneg (by linarith [Nat.lt_floor_add_one (x / n)])
+  rw [abs_sub_le_iff]
+  constructor <;> apply le_of_mul_le_mul_left _ (show 0 < x by linarith) <;>
+    nlinarith [hψ.1, hψ.2, Real.le_sum_log' hx, Real.sum_log_le' hx, Chebyshev.psi_le_const_mul_self (x := x) (by positivity),
+      Real.log_le_sub_one_of_pos (by norm_num : (0 : ℝ) < 4), (by positivity : 0 ≤ x)]
 
-/-- Short-interval form: `Σ_{q^a < n ≤ q^b} Λ(n)/n = (b - a) log q + O(1)`, with error `≤ 12`. -/
-lemma mertensSum_short (q : ℕ) (hq : 1 < q) {a b : ℝ} (ha : 0 ≤ a) (hb : 0 ≤ b) :
-    |mertensSum ((q : ℝ) ^ b) - mertensSum ((q : ℝ) ^ a) - (b - a) * Real.log q| ≤ 12 := by
-  have hqR : (1 : ℝ) ≤ q := by exact_mod_cast hq.le
-  have hqpos : (0 : ℝ) < q := by linarith
-  have h1 := abs_mertensSum_sub_log_le _ (Real.one_le_rpow hqR hb)
-  have h2 := abs_mertensSum_sub_log_le _ (Real.one_le_rpow hqR ha)
-  rw [Real.log_rpow hqpos] at h1 h2
-  rw [abs_le] at h1 h2 ⊢
-  constructor <;> linarith [h1.1, h1.2, h2.1, h2.2]
+private lemma mertens_succ (n : ℕ) : mertensSum (n + 1) - mertensSum n =
+    Λ (n + 1) / (↑(n + 1 : ℕ) : ℝ) := by
+  simp only [mertensSum, sum_Ioc_succ_top (Nat.zero_le _), add_sub_cancel_left]
 
-/-! ### Summation over a partition -/
+open Set in
+private noncomputable def steps (u c : ℕ → ℝ) (N : ℕ) (t : ℝ) : ℝ :=
+  ∑ i ∈ range N, (Ioc (u i) (u (i + 1))).indicator (fun _ => c i) t
 
-/-- If `φ ≤ c i` on each cell `(u i, u (i + 1)]` of a partition starting at `u 0 = 0`, then the
-weighted sum over `n ≤ q ^ u j` is bounded by the Mertens masses of the cells weighted by `c`. -/
-lemma sum_le_partition (φ : ℝ → ℝ) (q : ℕ) (hq : 1 < q) (u c : ℕ → ℝ) (hu0 : u 0 = 0)
-    (hmono : ∀ i, u i ≤ u (i + 1)) (j : ℕ)
-    (hφ : ∀ i < j, ∀ t, u i < t → t ≤ u (i + 1) → φ t ≤ c i) :
-    ∑ n ∈ Finset.Ioc 0 ⌊(q : ℝ) ^ u j⌋₊, Λ n / n * φ (Real.log n / Real.log q) ≤
-      ∑ i ∈ Finset.range j,
-        c i * (mertensSum ((q : ℝ) ^ u (i + 1)) - mertensSum ((q : ℝ) ^ u i)) := by
-  have hqR : (1 : ℝ) < q := by exact_mod_cast hq
-  have hqpos : (0 : ℝ) < q := by linarith
-  have hℓ : 0 < Real.log q := Real.log_pos hqR
-  induction j with
-  | zero =>
-    simp only [hu0, Real.rpow_zero, Nat.floor_one, Finset.range_zero, Finset.sum_empty]
-    rw [show Finset.Ioc 0 1 = {1} from rfl, Finset.sum_singleton]
-    simp
-  | succ j ih =>
-    have ih' := ih (fun i hi => hφ i (by omega))
-    rw [Finset.sum_range_succ]
-    have hmonoF : ⌊(q : ℝ) ^ u j⌋₊ ≤ ⌊(q : ℝ) ^ u (j + 1)⌋₊ :=
-      Nat.floor_le_floor (Real.rpow_le_rpow_of_exponent_le hqR.le (hmono j))
-    rw [← Finset.sum_Ioc_consecutive _ (Nat.zero_le _) hmonoF]
-    have hS : mertensSum ((q : ℝ) ^ u (j + 1)) - mertensSum ((q : ℝ) ^ u j) =
-        ∑ n ∈ Finset.Ioc ⌊(q : ℝ) ^ u j⌋₊ ⌊(q : ℝ) ^ u (j + 1)⌋₊, Λ n / n := by
-      unfold mertensSum
-      rw [← Finset.sum_Ioc_consecutive _ (Nat.zero_le _) hmonoF]
-      ring
-    rw [hS, Finset.mul_sum]
-    apply add_le_add ih'
-    apply Finset.sum_le_sum
-    intro n hn
-    rw [Finset.mem_Ioc] at hn
-    have hn0 : 0 < n := lt_of_le_of_lt (Nat.zero_le _) hn.1
-    have hnR : (0 : ℝ) < n := by exact_mod_cast hn0
-    have h1 : (q : ℝ) ^ u j < n := (Nat.floor_lt (Real.rpow_pos_of_pos hqpos _).le).1 hn.1
-    have h2 : (n : ℝ) ≤ (q : ℝ) ^ u (j + 1) :=
-      (Nat.le_floor_iff (Real.rpow_pos_of_pos hqpos _).le).1 hn.2
-    have h1' : u j * Real.log q < Real.log n := by
-      rw [← Real.log_rpow hqpos]; exact Real.log_lt_log (Real.rpow_pos_of_pos hqpos _) h1
-    have h2' : Real.log n ≤ u (j + 1) * Real.log q := by
-      rw [← Real.log_rpow hqpos]; exact Real.log_le_log hnR h2
-    have ht1 : u j < Real.log n / Real.log q := by rw [lt_div_iff₀ hℓ]; exact h1'
-    have ht2 : Real.log n / Real.log q ≤ u (j + 1) := by rw [div_le_iff₀ hℓ]; exact h2'
-    have hφn := hφ j (by omega) _ ht1 ht2
-    have hΛ : 0 ≤ Λ n / n := div_nonneg ArithmeticFunction.vonMangoldt_nonneg hnR.le
-    rw [mul_comm (c j)]
-    exact mul_le_mul_of_nonneg_left hφn hΛ
+open Set in
+private lemma steps_at {u c : ℕ → ℝ} (hu : Monotone u) {N : ℕ} {t : ℝ}
+    (ht : t ∈ Ioc (u 0) (u N)) : ∃ i ∈ range N, t ∈ Ioc (u i) (u (i + 1)) ∧ steps u c N t = c i := by
+  obtain ⟨i, hi, ht⟩ : ∃ i ∈ range N, t ∈ Ioc (u i) (u (i + 1)) := by
+    simpa only [Set.mem_iUnion, exists_prop] using Ioc_subset_biUnion_Ioc N u ht
+  refine ⟨i, hi, ht, ?_⟩
+  rw [steps, sum_eq_single_of_mem i hi, indicator_of_mem ht]
+  intro j _ hji
+  apply indicator_of_notMem
+  exact fun hj => Set.disjoint_left.mp (hu.pairwise_disjoint_on_Ioc_succ hji) hj ht
 
-/-! ### Step-function majorants -/
-
-/-- The supremum of `φ` on `[a, b]`. -/
-noncomputable def supOn (φ : ℝ → ℝ) (a b : ℝ) : ℝ := sSup (φ '' Set.Icc a b)
-
-/-- The supremum of `φ` on the `i`-th cell `[i h, (i + 1) h]`. -/
-noncomputable def cell (φ : ℝ → ℝ) (h : ℝ) (i : ℕ) : ℝ := supOn φ (i * h) ((i + 1) * h)
-
-/-- The step function equal to `cell φ h i` on `(i h, (i + 1) h]`. -/
-noncomputable def stepFn (φ : ℝ → ℝ) (h : ℝ) (t : ℝ) : ℝ := cell φ h (⌈t / h⌉₊ - 1)
-
-/-- `supOn` majorizes a function that is bounded above on `[a, b]`. -/
-lemma le_supOn {φ : ℝ → ℝ} {a b t M : ℝ} (hbd : ∀ v ∈ Set.Icc a b, φ v ≤ M)
-    (ht : t ∈ Set.Icc a b) : φ t ≤ supOn φ a b :=
-  le_csSup ⟨M, by rintro _ ⟨v, hv, rfl⟩; exact hbd v hv⟩ ⟨t, ht, rfl⟩
-
-/-- `supOn` on a nonempty interval is at most any upper bound. -/
-lemma supOn_le {φ : ℝ → ℝ} {a b B : ℝ} (hab : a ≤ b) (h : ∀ v ∈ Set.Icc a b, φ v ≤ B) :
-    supOn φ a b ≤ B :=
-  csSup_le ⟨φ a, a, ⟨le_rfl, hab⟩, rfl⟩ (by rintro _ ⟨v, hv, rfl⟩; exact h v hv)
-
-/-- On the cell `(i h, (i + 1) h]` the step function equals `cell φ h i`. -/
-lemma stepFn_eq (φ : ℝ → ℝ) {h : ℝ} (hh : 0 < h) (i : ℕ) {t : ℝ} (ht1 : (i : ℝ) * h < t)
-    (ht2 : t ≤ (i + 1) * h) : stepFn φ h t = cell φ h i := by
-  have hc : ⌈t / h⌉₊ = i + 1 := by
-    rw [Nat.ceil_eq_iff (Nat.succ_ne_zero i)]
-    constructor
-    · rw [Nat.succ_sub_one, lt_div_iff₀ hh]; exact ht1
-    · rw [div_le_iff₀ hh]; push_cast; exact ht2
-  unfold stepFn
-  rw [hc, Nat.add_sub_cancel]
-
-lemma measurable_stepFn (φ : ℝ → ℝ) (h : ℝ) : Measurable (stepFn φ h) := by
-  have : stepFn φ h = (fun k : ℕ => cell φ h (k - 1)) ∘ (fun t : ℝ => ⌈t / h⌉₊) := rfl
-  rw [this]
-  exact measurable_from_nat.comp (measurable_id.div_const h).nat_ceil
-
-/-- `∫₀^{j h} stepFn φ h = Σ_{i < j} cell φ h i · h`, with interval integrability. -/
-lemma integral_stepFn (φ : ℝ → ℝ) {h : ℝ} (hh : 0 < h) (j : ℕ) :
-    IntervalIntegrable (stepFn φ h) volume 0 (j * h) ∧
-      ∫ t in (0 : ℝ)..(j * h), stepFn φ h t = ∑ i ∈ Finset.range j, cell φ h i * h := by
-  induction j with
-  | zero => simp
-  | succ j ih =>
-    have hEq : ∀ t ∈ Set.Ioc ((j : ℝ) * h) (((j + 1 : ℕ) : ℝ) * h),
-        stepFn φ h t = cell φ h j := by
-      intro t ht
-      exact stepFn_eq φ hh j ht.1 (by push_cast at ht; exact ht.2)
-    have hle : (j : ℝ) * h ≤ ((j + 1 : ℕ) : ℝ) * h := by push_cast; nlinarith
-    have hII : IntervalIntegrable (stepFn φ h) volume ((j : ℝ) * h) (((j + 1 : ℕ) : ℝ) * h) := by
-      rw [intervalIntegrable_iff, Set.uIoc_of_le hle]
-      exact (integrableOn_const (C := cell φ h j) (hs := by rw [Real.volume_Ioc]; exact
-        ENNReal.ofReal_ne_top)).congr_fun (fun t ht => (hEq t ht).symm) measurableSet_Ioc
-    have hI : ∫ t in ((j : ℝ) * h)..(((j + 1 : ℕ) : ℝ) * h), stepFn φ h t = cell φ h j * h := by
-      rw [intervalIntegral.integral_congr_ae (g := fun _ => cell φ h j)]
-      · rw [intervalIntegral.integral_const, smul_eq_mul]; push_cast; ring
-      · refine Filter.Eventually.of_forall (fun t ht => ?_)
-        rw [Set.uIoc_of_le hle] at ht
-        exact hEq t ht
-    refine ⟨ih.1.trans hII, ?_⟩
-    rw [← intervalIntegral.integral_add_adjacent_intervals ih.1 hII, ih.2, hI,
-      Finset.sum_range_succ]
-
-/-- For `t ∈ (0, X]` and the uniform mesh `h = X / K`, the cell index of `t` is `< K`
-and `t` lies in the corresponding cell. -/
-lemma ceil_index {X : ℝ} (hX : 0 < X) {K : ℕ} (hK : 0 < K) {t : ℝ} (ht0 : 0 < t)
-    (htX : t ≤ X) :
-    ⌈t / (X / K)⌉₊ - 1 < K ∧ ((⌈t / (X / K)⌉₊ - 1 : ℕ) : ℝ) * (X / K) < t ∧
-      t ≤ (((⌈t / (X / K)⌉₊ - 1 : ℕ) : ℝ) + 1) * (X / K) := by
-  have hKR : (0 : ℝ) < K := Nat.cast_pos.2 hK
-  have hh : 0 < X / K := div_pos hX hKR
-  have hpos : 0 < t / (X / K) := div_pos ht0 hh
-  have hKh : (K : ℝ) * (X / K) = X := by field_simp
-  have hle : t / (X / K) ≤ K := by rw [div_le_iff₀ hh, hKh]; exact htX
-  set m := ⌈t / (X / K)⌉₊ with hm
-  have hm1 : 1 ≤ m := Nat.one_le_iff_ne_zero.2 (Nat.ceil_pos.2 hpos).ne'
-  have hmK : m ≤ K := Nat.ceil_le.2 hle
-  have hcast : ((m - 1 : ℕ) : ℝ) = (m : ℝ) - 1 := by rw [Nat.cast_sub hm1, Nat.cast_one]
-  refine ⟨by omega, ?_, ?_⟩
-  · rw [hcast]
-    have h1 := Nat.ceil_lt_add_one hpos.le
-    rw [← hm] at h1
-    have h2 : (m : ℝ) - 1 < t / (X / K) := by linarith
-    rwa [lt_div_iff₀ hh] at h2
-  · rw [hcast, sub_add_cancel]
-    have h1 := Nat.le_ceil (t / (X / K))
-    rw [← hm] at h1
-    rwa [div_le_iff₀ hh] at h1
-
-/-- For `i < K` the `i`-th cell of the mesh `X / K` lies in `[0, X]`. -/
-lemma cell_subset {X : ℝ} (hX : 0 < X) {K : ℕ} (hK : 0 < K) {i : ℕ} (hi : i < K) {v : ℝ}
-    (hv : v ∈ Set.Icc ((i : ℝ) * (X / K)) ((i + 1) * (X / K))) : v ∈ Set.Icc 0 X := by
-  have hKR : (0 : ℝ) < K := Nat.cast_pos.2 hK
-  have hh : 0 < X / K := div_pos hX hKR
-  have hiK : (i : ℝ) + 1 ≤ K := by exact_mod_cast Nat.succ_le_of_lt hi
-  have hKh : (K : ℝ) * (X / K) = X := by field_simp
-  constructor
-  · have : 0 ≤ (i : ℝ) * (X / K) := by positivity
-    linarith [hv.1]
-  · have : ((i : ℝ) + 1) * (X / K) ≤ K * (X / K) := mul_le_mul_of_nonneg_right hiK hh.le
-    linarith [hv.2]
-
-/-- The cell supremum majorizes `φ` on the closed cell. -/
-lemma le_cell {φ : ℝ → ℝ} {X M : ℝ} (hX : 0 < X) (hbd : ∀ u ∈ Set.Icc 0 X, |φ u| ≤ M)
-    {K : ℕ} (hK : 0 < K) {i : ℕ} (hi : i < K) {t : ℝ}
-    (ht : t ∈ Set.Icc ((i : ℝ) * (X / K)) ((i + 1) * (X / K))) :
-    φ t ≤ cell φ (X / K) i := by
-  unfold cell
-  exact le_supOn (M := M) (fun v hv => (abs_le.1 (hbd v (cell_subset hX hK hi hv))).2) ht
-
-/-- The cell suprema inherit the bound `|φ| ≤ M`. -/
-lemma abs_cell_le {φ : ℝ → ℝ} {X M : ℝ} (hX : 0 < X) (hbd : ∀ u ∈ Set.Icc 0 X, |φ u| ≤ M)
-    {K : ℕ} (hK : 0 < K) {i : ℕ} (hi : i < K) : |cell φ (X / K) i| ≤ M := by
-  have hKR : (0 : ℝ) < K := Nat.cast_pos.2 hK
-  have hh : 0 < X / K := div_pos hX hKR
-  have hab : (i : ℝ) * (X / K) ≤ ((i : ℝ) + 1) * (X / K) := by nlinarith
-  have hmem : (i : ℝ) * (X / K) ∈ Set.Icc ((i : ℝ) * (X / K)) ((i + 1) * (X / K)) :=
-    ⟨le_rfl, hab⟩
-  rw [abs_le]
-  constructor
-  · have h1 := le_cell hX hbd hK hi hmem
-    have h2 := (abs_le.1 (hbd _ (cell_subset hX hK hi hmem))).1
-    linarith
-  · unfold cell
-    exact supOn_le hab (fun v hv => (abs_le.1 (hbd v (cell_subset hX hK hi hv))).2)
-
-/-- At a continuity point `t ∈ (0, X)`, the step majorants on the mesh `X / K` converge to
-`φ t` as `K → ∞`. -/
-lemma tendsto_stepFn {φ : ℝ → ℝ} {X M : ℝ} (hX : 0 < X)
-    (hbd : ∀ u ∈ Set.Icc 0 X, |φ u| ≤ M) {t : ℝ} (ht : t ∈ Set.Ioo 0 X)
-    (hc : ContinuousAt φ t) :
-    Tendsto (fun K : ℕ => stepFn φ (X / K) t) atTop (𝓝 (φ t)) := by
-  rw [Metric.tendsto_atTop]
-  intro η hη
-  obtain ⟨δ, hδ, hδφ⟩ := Metric.continuousAt_iff.1 hc (η / 2) (by linarith)
-  refine ⟨⌈X / δ⌉₊ + 1, fun K hK => ?_⟩
-  have hK0 : 0 < K := by omega
-  have hKR : (0 : ℝ) < K := Nat.cast_pos.2 hK0
-  have hh : 0 < X / K := div_pos hX hKR
-  have hhδ : X / K < δ := by
-    rw [div_lt_iff₀ hKR]
-    have h1 := Nat.le_ceil (X / δ)
-    have h2 : ((⌈X / δ⌉₊ : ℕ) : ℝ) + 1 ≤ K := by exact_mod_cast hK
-    have h3 : X / δ < K := by linarith
-    rw [div_lt_iff₀ hδ] at h3
-    linarith
-  obtain ⟨hiK, hi1, hi2⟩ := ceil_index hX hK0 ht.1 ht.2.le
-  set i := ⌈t / (X / K)⌉₊ - 1 with hidef
-  have hstep : stepFn φ (X / K) t = cell φ (X / K) i := stepFn_eq φ hh i hi1 hi2
-  rw [hstep, Real.dist_eq, abs_lt]
-  have hlow : φ t ≤ cell φ (X / K) i := le_cell hX hbd hK0 hiK ⟨hi1.le, hi2⟩
-  have hexp : ((i : ℝ) + 1) * (X / K) = (i : ℝ) * (X / K) + X / K := by ring
-  have hup : cell φ (X / K) i ≤ φ t + η / 2 := by
-    unfold cell
-    apply supOn_le (by linarith)
-    intro v hv
-    have hdist : dist v t < δ := by
-      rw [Real.dist_eq, abs_lt]
-      constructor <;> linarith [hv.1, hv.2]
-    have := hδφ hdist
-    rw [Real.dist_eq, abs_lt] at this
-    linarith [this.2]
-  constructor <;> linarith
-
-/-- Dominated convergence: the integrals of the step majorants tend to `∫₀^X φ`. -/
-lemma tendsto_integral_stepFn (φ : ℝ → ℝ) (X M : ℝ) (P : Finset ℝ) (hX : 0 < X)
+lemma sum_mertens_tendsto (φ : ℝ → ℝ) {X M : ℝ} {P : Set ℝ} (hP : P.Countable) (hX : 0 < X)
     (hbd : ∀ u ∈ Set.Icc 0 X, |φ u| ≤ M)
     (hcont : ∀ u ∈ Set.Ioo 0 X, u ∉ P → ContinuousAt φ u) :
-    Tendsto (fun K : ℕ => ∫ t in (0 : ℝ)..X, stepFn φ (X / K) t) atTop
+    Tendsto (fun q : ℕ => (∑ n ∈ Finset.Ioc 0 ⌊(q : ℝ) ^ X⌋₊,
+      Λ n / n * φ (Real.log n / Real.log q)) / Real.log q) atTop
       (𝓝 (∫ u in (0 : ℝ)..X, φ u)) := by
-  apply intervalIntegral.tendsto_integral_filter_of_dominated_convergence (fun _ => M)
-  · exact Filter.Eventually.of_forall (fun K => (measurable_stepFn φ _).aestronglyMeasurable)
-  · refine eventually_atTop.2 ⟨1, fun K hK => Filter.Eventually.of_forall (fun t ht => ?_)⟩
-    have hK0 : 0 < K := by omega
-    rw [Set.uIoc_of_le hX.le] at ht
-    obtain ⟨hiK, hi1, hi2⟩ := ceil_index hX hK0 ht.1 ht.2
-    rw [Real.norm_eq_abs, stepFn_eq φ (div_pos hX (Nat.cast_pos.2 hK0)) _ hi1 hi2]
-    exact abs_cell_le hX hbd hK0 hiK
-  · exact intervalIntegrable_const
-  · have hnull : ∀ᵐ t ∂(volume : Measure ℝ), t ∉ ((P : Set ℝ) ∪ {X}) := by
-      apply measure_eq_zero_iff_ae_notMem.1
-      exact ((P.finite_toSet).union (Set.finite_singleton X)).measure_zero _
-    filter_upwards [hnull] with t ht htI
-    rw [Set.uIoc_of_le hX.le] at htI
-    simp only [Set.mem_union, Set.mem_singleton_iff, not_or, Finset.mem_coe] at ht
-    have htIoo : t ∈ Set.Ioo 0 X := ⟨htI.1, lt_of_le_of_ne htI.2 ht.2⟩
-    exact tendsto_stepFn hX hbd htIoo (hcont t htIoo ht.1)
+  let L (q : ℕ) := Real.log q
+  let N (q : ℕ) := ⌊(q : ℝ) ^ X⌋₊
+  let u := mertensSum
+  let r q := u (N q) / X
+  let x (q i : ℕ) := Real.log (↑(i + 1 : ℕ)) / L q
+  let G q (t : ℝ) := steps u (fun i => φ (x q i)) (N q) (t * r q)
+  have hu : Monotone u := monotone_nat_of_le_succ fun i => by
+    rw [← sub_nonneg, mertens_succ]; positivity
+  have h0 : u 0 = 0 := by simp [u, mertensSum]
+  have hx q i (hq : 1 < q) (hi : i ∈ range (N q)) : x q i ∈ Set.Icc 0 X := by
+    refine ⟨tn_nonneg q _, (div_le_iff₀ (log_q_pos hq)).2 ?_⟩
+    rw [← Real.log_rpow (by positivity : (0 : ℝ) < q)]
+    exact Real.log_le_log (by positivity) ((Nat.le_floor_iff (by positivity)).1 (mem_range.mp hi))
+  have hXr q : X * r q = u (N q) := mul_div_cancel₀ _ hX.ne'
+  have hmass q (hq : 1 < q) : X * |r q - L q| ≤ 7 := by
+    rw [← abs_of_pos hX, ← abs_mul, mul_sub, hXr]
+    simpa only [N, L, Real.log_rpow (by positivity : (0 : ℝ) < q)] using
+      abs_mertensSum_sub_log_le _ (Real.one_le_rpow (Nat.one_le_cast.mpr hq.le) hX.le)
+  have hr : Tendsto (fun q => r q / L q) atTop (𝓝 1) := by
+    rw [tendsto_iff_norm_sub_tendsto_zero]
+    refine squeeze_zero' (Eventually.of_forall fun _ => norm_nonneg _) ?_ (tendsto_div_log_nat (7 / X))
+    filter_upwards [eventually_gt_atTop 1] with q hq
+    have hℓ := log_q_pos hq
+    rw [Real.norm_eq_abs, div_sub' hℓ.ne', mul_one, abs_div, abs_of_pos hℓ]
+    gcongr
+    apply (le_div_iff₀ hX).mpr
+    simpa [mul_comm] using hmass q hq
+  have hR : ∀ᶠ q in atTop, 1 < q ∧ 0 < r q := by
+    filter_upwards [eventually_gt_atTop 1, hr.eventually_const_lt zero_lt_one] with q hq hrq
+    exact ⟨hq, (div_pos_iff_of_pos_right (log_q_pos hq)).mp hrq⟩
+  have hclose q i (hq : 1 < q) {t : ℝ} (ht : t ∈ Set.Ioc 0 X)
+      (hi : t * r q ∈ Set.Ioc (u i) (u (i + 1))) : dist (x q i) t ≤ 15 / L q := by
+    have hb := abs_mertensSum_sub_log_le (i + 1 : ℕ) (by exact_mod_cast Nat.succ_pos i)
+    rw [Nat.floor_natCast] at hb
+    have hw : u (i + 1) - u i ≤ 1 := by
+      rw [mertens_succ, div_le_one (by positivity)]
+      exact ArithmeticFunction.vonMangoldt_le_log.trans (Real.log_le_self (by positivity))
+    have he : |t * r q - t * L q| ≤ 7 := by
+      rw [← mul_sub, abs_mul, abs_of_nonneg ht.1.le]
+      exact (mul_le_mul_of_nonneg_right ht.2 (abs_nonneg _)).trans (hmass q hq)
+    change |u (i + 1) - _| ≤ 7 at hb
+    dsimp only [x]
+    rw [Real.dist_eq, div_sub' (log_q_pos hq).ne', abs_div,
+      abs_of_pos (log_q_pos hq), div_le_div_iff_of_pos_right (log_q_pos hq), abs_le]
+    grind [abs_le]
+  have happ : ∀ᶠ q in atTop, ∀ t ∈ Set.Ioc 0 X, ∃ v ∈ Set.Icc 0 X,
+      G q t = φ v ∧ dist v t ≤ 15 / L q := by
+    filter_upwards [hR] with q ⟨hq, hrq⟩ t ht
+    obtain ⟨i, hi, hc, hF⟩ := steps_at (c := fun i => φ (x q i)) (N := N q) hu
+      ⟨h0 ▸ mul_pos ht.1 hrq, hXr q ▸ mul_le_mul_of_nonneg_right ht.2 hrq.le⟩
+    grind
+  have hlim : Tendsto (fun q => ∫ t in (0 : ℝ)..X, G q t) atTop (𝓝 (∫ t in (0 : ℝ)..X, φ t)) := by
+    apply intervalIntegral.tendsto_integral_filter_of_dominated_convergence (fun _ => M)
+    · exact Eventually.of_forall fun q => ((Finset.measurable_fun_sum _ fun i _ =>
+        measurable_const.indicator measurableSet_Ioc).comp (by fun_prop)).aestronglyMeasurable
+    · rw [Set.uIoc_of_le hX.le]
+      filter_upwards [happ] with q hq
+      exact .of_forall fun t ht => by grind [Real.norm_eq_abs]
+    · exact intervalIntegrable_const
+    · have hnull := measure_eq_zero_iff_ae_notMem.mp (hP.measure_zero volume)
+      filter_upwards [hnull, (Ioo_ae_eq_Ioc (μ := volume) (a := (0 : ℝ)) (b := X)).symm] with t hp ht htI
+      rw [Set.uIoc_of_le hX.le] at htI
+      rw [Metric.tendsto_nhds]
+      intro ε hε
+      obtain ⟨δ, hδ, hc⟩ := Metric.continuousAt_iff.mp (hcont _ (ht.mp htI) hp) ε hε
+      filter_upwards [happ, (tendsto_div_log_nat 15).eventually_lt_const hδ] with q hq hqδ
+      grind
+  have H := hr.mul hlim
+  rw [one_mul] at H
+  refine H.congr' ?_
+  filter_upwards [hR] with q ⟨hq, hrq⟩
+  dsimp only [G]
+  rw [div_mul_eq_mul_div, ← smul_eq_mul, intervalIntegral.smul_integral_comp_mul_right, zero_mul, hXr]
+  dsimp only [steps]
+  rw [intervalIntegral.integral_of_le (h0 ▸ hu (Nat.zero_le (N q))), integral_finsetSum, sum_Ioc_eq_range]
+  · simp only [Nat.sub_zero, zero_add]
+    congr 1
+    refine sum_congr rfl fun i hi => ?_
+    rw [setIntegral_indicator measurableSet_Ioc, Set.inter_eq_right.mpr (Set.Ioc_subset_Ioc
+      (by rw [← h0]; exact hu (Nat.zero_le _)) (hu (mem_range.mp hi))),
+      setIntegral_const, Real.volume_real_Ioc_of_le (hu (Nat.le_succ _)),
+      smul_eq_mul, mertens_succ]
+    simp [x, L, Nat.add_comm 1]
+  · exact fun i _ => (integrableOn_const (by simp [Real.volume_Ioc])).indicator measurableSet_Ioc
 
-/-- The statement of `GradedNear.riemann_upper`, proved inside the helper namespace. -/
-theorem riemann_upper_aux (φ : ℝ → ℝ) (X M : ℝ) (P : Finset ℝ) (hX : 0 < X)
-    (hbd : ∀ u ∈ Set.Icc 0 X, |φ u| ≤ M)
-    (hcont : ∀ u ∈ Set.Ioo 0 X, u ∉ P → ContinuousAt φ u)
-    {ε : ℝ} (hε : 0 < ε) :
-    ∃ q₀ : ℕ, ∀ q : ℕ, q₀ ≤ q →
-      (∑ n ∈ Finset.Icc 1 ⌊(q : ℝ) ^ X⌋₊, Λ n / n * φ (Real.log n / Real.log q)) /
-          Real.log q ≤ (∫ u in (0 : ℝ)..X, φ u) + ε := by
-  have hM : 0 ≤ M := le_trans (abs_nonneg _) (hbd 0 ⟨le_rfl, hX.le⟩)
-  have hε2 : 0 < ε / 2 := by linarith
-  obtain ⟨K₁, hK₁⟩ := Filter.eventually_atTop.1
-    ((tendsto_order.1 (tendsto_integral_stepFn φ X M P hX hbd hcont)).2 _
-      (lt_add_of_pos_right _ hε2))
-  set K : ℕ := K₁ + 1 with hKdef
-  have hK : 0 < K := Nat.succ_pos _
-  have hKint := hK₁ K (Nat.le_succ _)
-  have hKR : (0 : ℝ) < K := Nat.cast_pos.2 hK
-  set h : ℝ := X / K with hhdef
-  have hh : 0 < h := div_pos hX hKR
-  have hKh : (K : ℝ) * h = X := by rw [hhdef]; field_simp
-  refine ⟨⌈Real.exp (24 * K * M / ε)⌉₊ + 2, fun q hq => ?_⟩
-  have hq1 : 1 < q := by omega
-  have hqR : (1 : ℝ) < q := by exact_mod_cast hq1
-  have hℓ : 0 < Real.log q := Real.log_pos hqR
-  have hℓbig : 24 * K * M < ε * Real.log q := by
-    have h1 : 24 * K * M / ε < Real.log q := by
-      rw [Real.lt_log_iff_exp_lt (by linarith)]
-      have := Nat.le_ceil (Real.exp (24 * K * M / ε))
-      have : (⌈Real.exp (24 * K * M / ε)⌉₊ : ℝ) + 2 ≤ q := by exact_mod_cast hq
-      linarith
-    rw [div_lt_iff₀ hε] at h1
-    linarith
-  -- the partition `u i = i h`
-  have hpart := sum_le_partition φ q hq1 (fun i => (i : ℝ) * h) (cell φ h) (by simp)
-    (fun i => by push_cast; nlinarith) K
-    (fun i hi t ht1 ht2 => le_cell hX hbd hK hi ⟨ht1.le, by push_cast at ht2 ⊢; linarith⟩)
-  simp only [hKh] at hpart
-  have hIcc : Finset.Icc 1 ⌊(q : ℝ) ^ X⌋₊ = Finset.Ioc 0 ⌊(q : ℝ) ^ X⌋₊ := by
-    ext n; simp only [Finset.mem_Icc, Finset.mem_Ioc]; omega
-  rw [hIcc]
-  -- each cell contributes `c_i h 𝓛 + 12 M`
-  have hterm : ∀ i ∈ Finset.range K,
-      cell φ h i * (mertensSum ((q : ℝ) ^ (((i + 1 : ℕ) : ℝ) * h)) -
-        mertensSum ((q : ℝ) ^ ((i : ℝ) * h))) ≤ cell φ h i * h * Real.log q + 12 * M := by
-    intro i hi
-    have hi' : i < K := Finset.mem_range.1 hi
-    have hs := mertensSum_short q hq1 (a := (i : ℝ) * h) (b := ((i + 1 : ℕ) : ℝ) * h)
-      (by positivity) (by positivity)
-    have hc := abs_cell_le hX hbd hK hi'
-    rw [← hhdef] at hc
-    have hdiff : ((i + 1 : ℕ) : ℝ) * h - (i : ℝ) * h = h := by push_cast; ring
-    rw [hdiff] at hs
-    set D := mertensSum ((q : ℝ) ^ (((i + 1 : ℕ) : ℝ) * h)) -
-      mertensSum ((q : ℝ) ^ ((i : ℝ) * h))
-    have h1 : cell φ h i * (D - h * Real.log q) ≤ |cell φ h i| * |D - h * Real.log q| := by
-      rw [← abs_mul]; exact le_abs_self _
-    have h2 : |cell φ h i| * |D - h * Real.log q| ≤ M * 12 :=
-      mul_le_mul hc hs (abs_nonneg _) hM
-    nlinarith
-  have hsum := Finset.sum_le_sum hterm
-  rw [Finset.sum_add_distrib, Finset.sum_const, Finset.card_range, nsmul_eq_mul,
-    ← Finset.sum_mul] at hsum
-  have hint := (integral_stepFn φ hh K).2
-  rw [hKh] at hint
-  rw [← hint] at hsum
-  rw [div_le_iff₀ hℓ]
-  have hlt := mul_lt_mul_of_pos_right hKint hℓ
-  nlinarith
+/-! ### The tested first factor -/
 
+open NearData
+
+/-- The integrand `φ(u) = e^{2su} f(u)² / ω(u)` of `I_B`. -/
+noncomputable def phi (D : NearData) (u : ℝ) : ℝ := Real.exp (2 * D.s * u) * D.f u ^ 2 / D.omega u
+
+theorem first_factor_bound (D : NearData) (hD : D.Valid) {ε : ℝ} (hε : 0 < ε) :
+    ∀ᶠ q : ℕ in atTop,
+      (∑ n ∈ Ioc 0 ⌊(q : ℝ) ^ D.xf⌋₊, Λ n / n * phi D (tn q n)) /
+          Real.log q ≤ D.IB + ε := by
+  obtain ⟨c, hc, hcω⟩ := hD.omega_lb
+  let p (u : ℝ) := Real.exp (2 * D.s * u) * D.f u ^ 2
+  have hp : ContinuousOn p (Set.Ici 0) := by
+    have hf := hD.f_cond.cont
+    unfold p; fun_prop
+  obtain ⟨M, hM⟩ := isCompact_Icc.exists_bound_of_continuousOn ((hp.div_const c).mono Set.Icc_subset_Ici_self)
+  have hclamped {u : ℝ} (hu : 0 ≤ u) : phi D u = p u / max c (D.omega u) := by
+    grind [phi]
+  have hbd u (hu : u ∈ Set.Icc 0 D.xf) : |phi D u| ≤ M := by
+    rw [hclamped hu.1, abs_of_nonneg (by positivity)]
+    exact (div_le_div_of_nonneg_left (by positivity) hc (le_max_left _ _)).trans
+      (by simpa [Real.norm_of_nonneg (show 0 ≤ p u / c by positivity)] using hM u hu)
+  have hcont u (hu : u ∈ Set.Ioo 0 D.xf) (huP : u ∉ Set.range D.t) : ContinuousAt (phi D) u := by
+    have hne k : u ≠ D.t k := by grind
+    have hH : ContinuousAt D.sieveH u := by
+      unfold NearData.sieveH
+      refine tendsto_finsetSum _ fun k hk => ?_
+      have hk' := mem_range.mp hk
+      have h : u ∉ frontier (Set.Ico (D.t k) (D.t (k + 1))) := by
+        simp [frontier_Ico (hD.t_lt k hk'), hne]
+      exact ((continuousOn_const (c := D.h k)).continuousAt_indicator h).congr
+        (.of_forall fun v => by simp [Set.indicator])
+    have hg := hD.g_cond1.cont.continuousAt (Ici_mem_nhds hu.1)
+    have hω : ContinuousAt D.omega u := by unfold NearData.omega; fun_prop
+    refine ((hp.continuousAt (Ici_mem_nhds hu.1)).div (continuousAt_const.max hω)
+      (ne_of_gt (hc.trans_le (le_max_left _ _)))).congr ?_
+    filter_upwards [Ioi_mem_nhds hu.1] with v hv
+    exact (hclamped hv.le).symm
+  have H := sum_mertens_tendsto (phi D) (Set.countable_range _) hD.f_cond.pos hbd hcont
+  rw [integral_support_interval hD.f_cond.pos.le
+    (fun u hu => by simp [phi, hD.f_cond.vanish u hu])] at H
+  change Tendsto _ _ (𝓝 D.IB) at H
+  exact H.eventually_le_const (lt_add_of_pos_right _ hε)
 end FirstFactor
-
-theorem riemann_upper (φ : ℝ → ℝ) (X M : ℝ) (P : Finset ℝ) (hX : 0 < X)
-    (hbd : ∀ u ∈ Set.Icc 0 X, |φ u| ≤ M)
-    (hcont : ∀ u ∈ Set.Ioo 0 X, u ∉ P → ContinuousAt φ u)
-    {ε : ℝ} (hε : 0 < ε) :
-    ∃ q₀ : ℕ, ∀ q : ℕ, q₀ ≤ q →
-      (∑ n ∈ Finset.Icc 1 ⌊(q : ℝ) ^ X⌋₊, Λ n / n * φ (Real.log n / Real.log q)) /
-          Real.log q ≤ (∫ u in (0 : ℝ)..X, φ u) + ε :=
-  FirstFactor.riemann_upper_aux φ X M P hX hbd hcont hε
 
 end GradedNear
